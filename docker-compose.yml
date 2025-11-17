@@ -1,0 +1,17 @@
+version: '3.8'
+services:
+  mysql-db:
+    image: mysql:latest
+    container_name: mysql-melodia
+    environment:
+      MYSQL_DATABASE: melodia
+      MYSQL_USER: fauzan
+      MYSQL_PASSWORD: passfauzan
+      MYSQL_ROOT_PASSWORD: melodiapass
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+
+volumes:
+  mysql-data:
