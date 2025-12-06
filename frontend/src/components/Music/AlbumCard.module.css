@@ -1,0 +1,453 @@
+.albumCard {
+  background: rgba(15, 23, 42, 0.6);
+  border-radius: 12px;
+  padding: 16px;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(59, 130, 246, 0.1);
+  cursor: pointer;
+}
+
+.albumCard:hover {
+  background: rgba(59, 130, 246, 0.1);
+  border-color: rgba(59, 130, 246, 0.3);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+}
+
+.coverWrapper {
+  position: relative;
+  margin-bottom: 16px;
+}
+
+.cover {
+  width: 100%;
+  aspect-ratio: 1;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 64px;
+  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.2);
+}
+
+.playButton {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: none;
+  background: #3b82f6;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.4);
+  z-index: 10;
+}
+
+.albumCard:hover .playButton {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.playButton:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 24px rgba(59, 130, 246, 0.6);
+}
+
+.info {
+  text-align: left;
+}
+
+.title {
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.artist {
+  color: #94a3b8;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Playing state untuk card */
+.albumCard.playing {
+  background: rgba(159, 122, 234, 0.15);
+  border: 1px solid rgba(159, 122, 234, 0.3);
+}
+
+.albumCard.playing .title {
+  color: #9f7aea;
+}
+
+/* Active state untuk play button */
+.playButton.active {
+  opacity: 1;
+  transform: scale(1.1);
+  background: #9f7aea;
+}
+
+/* Animasi untuk play button saat playing */
+.playButton.active::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 2px solid #9f7aea;
+  transform: translate(-50%, -50%);
+  animation: pulse 1.5s ease-out infinite;
+}
+
+@keyframes pulse {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1.5);
+    opacity: 0;
+  }
+}
+
+/* Hover effect tetap smooth */
+.albumCard:hover .playButton {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+.albumCard.playing:hover .playButton {
+  transform: scale(1.15);
+}
+
+/* ==================== MENU BUTTON (Three Dots) ==================== */
+.menuButton {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(10px);
+  border: none;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transition: all 0.3s ease;
+  z-index: 15;
+}
+
+.albumCard:hover .menuButton {
+  opacity: 1;
+}
+
+.menuButton:hover {
+  background: rgba(0, 0, 0, 0.8);
+  transform: scale(1.1);
+}
+
+.menuButton:active {
+  transform: scale(0.95);
+}
+
+/* ==================== DROPDOWN MENU ==================== */
+.dropdownMenu {
+  position: absolute;
+  top: 48px;
+  width: 260px;
+  max-height: 400px;
+  background: rgba(15, 23, 42, 0.98);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+  z-index: 1000;
+  overflow: hidden;
+  animation: slideDown 0.2s ease-out;
+}
+
+/* ✅ Position RIGHT (default) */
+.dropdownMenu.right {
+  right: 8px;
+  left: auto;
+}
+
+/* ✅ Position LEFT (untuk card di kiri) */
+.dropdownMenu.left {
+  left: 8px;
+  right: auto;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.menuHeader {
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(59, 130, 246, 0.15);
+  font-size: 12px;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  background: rgba(59, 130, 246, 0.05);
+}
+
+.menuLoading,
+.menuEmpty {
+  padding: 32px 20px;
+  text-align: center;
+  color: #94a3b8;
+  font-size: 14px;
+}
+
+.menuEmpty p {
+  margin: 0 0 16px 0;
+  color: #cbd5e1;
+}
+
+.createPlaylistBtn {
+  padding: 10px 20px;
+  border-radius: 24px;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+  border: none;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.createPlaylistBtn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+}
+
+.createPlaylistBtn:active {
+  transform: scale(0.98);
+}
+
+.menuList {
+  max-height: 320px;
+  overflow-y: auto;
+  padding: 4px 0;
+}
+
+/* Custom scrollbar */
+.menuList::-webkit-scrollbar {
+  width: 8px;
+}
+
+.menuList::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.menuList::-webkit-scrollbar-thumb {
+  background: rgba(59, 130, 246, 0.3);
+  border-radius: 4px;
+}
+
+.menuList::-webkit-scrollbar-thumb:hover {
+  background: rgba(59, 130, 246, 0.5);
+}
+
+.menuItem {
+  width: 100%;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: transparent;
+  border: none;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+  font-size: 14px;
+}
+
+.menuItem:hover:not(:disabled) {
+  background: rgba(59, 130, 246, 0.15);
+}
+
+.menuItem:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.menuItem.inPlaylist {
+  color: #9f7aea;
+  background: rgba(159, 122, 234, 0.1);
+}
+
+.menuItem.inPlaylist:hover {
+  background: rgba(159, 122, 234, 0.15);
+}
+
+.playlistIcon {
+  font-size: 18px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(59, 130, 246, 0.15);
+  border-radius: 6px;
+  flex-shrink: 0;
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.playlistName {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+.plusIcon,
+.checkIcon {
+  flex-shrink: 0;
+  color: #94a3b8;
+  transition: all 0.2s;
+}
+
+.menuItem:hover .plusIcon {
+  color: #3b82f6;
+  transform: scale(1.1);
+}
+
+.checkIcon {
+  color: #9f7aea;
+}
+
+.loadingDot {
+  color: #3b82f6;
+  font-weight: bold;
+  animation: blink 1s infinite;
+}
+
+@keyframes blink {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
+/* ==================== RESPONSIVE ==================== */
+
+/* Tablet */
+@media (max-width: 768px) {
+  .menuButton {
+    opacity: 0.9;
+    background: rgba(0, 0, 0, 0.7);
+  }
+
+  .dropdownMenu {
+    width: 240px;
+  }
+
+  /* ✅ Center menu di mobile */
+  .dropdownMenu.left,
+  .dropdownMenu.right {
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+  }
+
+  .cover {
+    font-size: 56px;
+  }
+
+  .playButton {
+    width: 44px;
+    height: 44px;
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+  .albumCard {
+    padding: 12px;
+  }
+
+  .cover {
+    font-size: 48px;
+  }
+
+  .dropdownMenu {
+    width: calc(100vw - 64px);
+    max-width: 280px;
+  }
+
+  /* ✅ Center menu di mobile kecil */
+  .dropdownMenu.left,
+  .dropdownMenu.right {
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+  }
+
+  .playButton {
+    width: 40px;
+    height: 40px;
+    bottom: 8px;
+    right: 8px;
+  }
+
+  .menuButton {
+    width: 32px;
+    height: 32px;
+  }
+
+  .title {
+    font-size: 15px;
+  }
+
+  .artist {
+    font-size: 13px;
+  }
+
+  .menuItem {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+
+  .playlistIcon {
+    width: 32px;
+    height: 32px;
+    font-size: 16px;
+  }
+}

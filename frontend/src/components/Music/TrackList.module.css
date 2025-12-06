@@ -1,0 +1,78 @@
+.trackListContainer {
+  width: 100%;
+  max-width: 1200px;
+}
+
+.listTitle {
+  color: white;
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.headerRow {
+  display: grid;
+  grid-template-columns: 50px 60px 1fr 200px 150px;
+  gap: 16px;
+  padding: 12px 20px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.headerRow span {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.headerIndex {
+  text-align: center;
+}
+
+.headerCover {
+  width: 48px;
+}
+
+.headerDuration {
+  text-align: right;
+  padding-right: 48px;
+}
+
+.trackList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.emptyState {
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.emptyState p {
+  color: #64748b;
+  font-size: 16px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .headerRow {
+    grid-template-columns: 40px 50px 1fr 80px;
+    gap: 12px;
+    padding: 10px 16px;
+  }
+
+  .headerAlbum {
+    display: none;
+  }
+
+  .headerDuration {
+    padding-right: 16px;
+  }
+}
