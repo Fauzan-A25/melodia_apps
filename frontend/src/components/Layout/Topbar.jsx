@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import styles from './Topbar.module.css';
-import { Bell, CircleUser, ChevronDown, BadgeMinus, Search, Music, Upload } from 'lucide-react';
+import { CircleUser, ChevronDown, BadgeMinus, Search, Music, Upload, Clock } from 'lucide-react';
 import { useUser } from '../../context/UserContext';
 
 const Topbar = () => {
@@ -17,7 +17,7 @@ const Topbar = () => {
     navigate('/auth');
   };
 
-  // ✅ Derived value dari URL (tanpa setState di effect)
+  // Derived value dari URL (tanpa setState di effect)
   const queryFromUrl = useMemo(() => {
     if (location.pathname === '/search') {
       const params = new URLSearchParams(location.search);
@@ -26,28 +26,27 @@ const Topbar = () => {
     return '';
   }, [location.pathname, location.search]);
 
-  // ✅ Display value: gunakan URL query jika di search page, otherwise gunakan internal
+  // Display value: gunakan URL query jika di search page, otherwise gunakan internal
   const displayQuery = location.pathname === '/search' ? queryFromUrl : internalQuery;
 
-  // ✅ Handle input change
   const handleSearchChange = (e) => {
     setInternalQuery(e.target.value);
   };
 
-  // ✅ Handle Enter key untuk search
   const handleSearchKeyDown = (e) => {
     if (e.key === 'Enter' && internalQuery.trim()) {
       saveSearchHistory(internalQuery.trim());
       navigate(`/search?q=${encodeURIComponent(internalQuery.trim())}`);
-      setInternalQuery(''); // Clear internal query setelah navigate
+      setInternalQuery('');
     }
   };
 
-  // ✅ Simpan search history ke localStorage
   const saveSearchHistory = (query) => {
     try {
       const history = JSON.parse(localStorage.getItem('searchHistory') || '[]');
-      const filtered = history.filter(item => item.toLowerCase() !== query.toLowerCase());
+      const filtered = history.filter(
+        (item) => item.toLowerCase() !== query.toLowerCase()
+      );
       const newHistory = [query, ...filtered].slice(0, 10);
       localStorage.setItem('searchHistory', JSON.stringify(newHistory));
     } catch (err) {
@@ -70,7 +69,7 @@ const Topbar = () => {
       </div>
 
       <div className={styles.center}>
-        {/* ✅ Search Bar (hanya untuk non-admin) */}
+        {/* Search Bar (hanya untuk non-admin) */}
         {user?.accountType !== 'ADMIN' && (
           <div className={styles.searchContainer}>
             <Search size={18} className={styles.searchIcon} />
@@ -85,18 +84,10 @@ const Topbar = () => {
           </div>
         )}
       </div>
-      
+
       <div className={styles.right}>
-        {/* Notifikasi (hanya untuk non-admin) */}
-        {user?.accountType !== 'ADMIN' && (
-          <button className={styles.iconBtn} title="Notifications">
-            <Bell size={20} />
-            <span className={styles.badge}>3</span>
-          </button>
-        )}
-        
         <div className={styles.userMenu}>
-          <button 
+          <button
             className={styles.userBtn}
             onClick={() => setShowDropdown(!showDropdown)}
           >
@@ -106,17 +97,16 @@ const Topbar = () => {
             <span className={styles.userName}>{user?.username || 'Guest'}</span>
             <ChevronDown size={16} className={styles.chevron} />
           </button>
-          
+
           {showDropdown && (
             <div className={styles.dropdown}>
               <div className={styles.dropdownHeader}>
                 <p>{user?.email}</p>
                 <span className={styles.accountType}>{user?.accountType}</span>
               </div>
-              
-              {/* ✅ Upload Song untuk Artist */}
+
               {user?.accountType === 'ARTIST' && (
-                <button 
+                <button
                   className={styles.dropdownItem}
                   onClick={() => {
                     setShowDropdown(false);
@@ -127,10 +117,9 @@ const Topbar = () => {
                   Upload Song
                 </button>
               )}
-              
-              {/* ✅ My Songs untuk Artist */}
+
               {user?.accountType === 'ARTIST' && (
-                <button 
+                <button
                   className={styles.dropdownItem}
                   onClick={() => {
                     setShowDropdown(false);
@@ -141,8 +130,20 @@ const Topbar = () => {
                   My Songs
                 </button>
               )}
-              
-              <button 
+
+              {/* NEW: History Menu */}
+              <button
+                className={styles.dropdownItem}
+                onClick={() => {
+                  setShowDropdown(false);
+                  navigate('/history');
+                }}
+              >
+                <Clock size={16} />
+                History
+              </button>
+
+              <button
                 className={styles.dropdownItem}
                 onClick={() => {
                   setShowDropdown(false);
@@ -151,7 +152,7 @@ const Topbar = () => {
               >
                 Settings
               </button>
-              
+
               <button className={styles.dropdownItem} onClick={handleLogout}>
                 Logout
               </button>

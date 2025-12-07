@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://localhost:8080/api';
+const API_BASE_URL = 'https://melodia-backend-production.up.railway.app/api';
 
 // ==================== ADMIN SERVICE ====================
 export const adminService = {

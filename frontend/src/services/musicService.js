@@ -1,6 +1,6 @@
 // services/musicService.js
 
-const API_URL = 'http://localhost:8080/api';
+const API_URL = 'https://melodia-backend-production.up.railway.app/api';
 
 export const musicService = {
   // ==================== SONG ENDPOINTS ====================
