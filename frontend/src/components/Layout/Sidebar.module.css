@@ -31,31 +31,41 @@
   background: rgba(59, 130, 246, 0.5);
 }
 
+/* ========== LOGO SECTION ========== */
+
 .logoSection {
   display: flex;
-  align-items: center;
-  gap: 12px;
+  flex-direction: column;      /* Logo di atas, text di bawah */
+  align-items: center;         /* Tengah secara horizontal */
+  gap: 8px;
   margin-bottom: 40px;
   padding-bottom: 24px;
   border-bottom: 1px solid rgba(59, 130, 246, 0.2);
   flex-shrink: 0;
 }
 
-.logoIcon {
-  color: #3b82f6;
-  filter: drop-shadow(0 0 12px rgba(59, 130, 246, 0.6));
-  flex-shrink: 0;
+/* Besarkan logo */
+.melodiaLogo {
+  width: 64px;                 /* Coba 64–80px sampai pas */
+  height: auto;
+  color: #ffffff;
+  filter: drop-shadow(0 0 12px rgba(0, 0, 0, 0.6));
 }
 
+/* Teks di bawah logo */
 .logoText {
-  font-size: 24px;
-  font-weight: 800;
-  background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  letter-spacing: 1px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #ffffff;
+  letter-spacing: 0.5px;
 }
+
+/* Icon lama disembunyikan */
+.logoIcon {
+  display: none;
+}
+
+/* ========== NAV & ITEMS ========== */
 
 .nav {
   display: flex;
@@ -85,7 +95,11 @@
 }
 
 .navItem.active {
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(37, 99, 235, 0.1) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(59, 130, 246, 0.2) 0%,
+    rgba(37, 99, 235, 0.1) 100%
+  );
   color: #3b82f6;
   border-left: 3px solid #3b82f6;
   padding-left: 13px;
@@ -95,7 +109,8 @@
   flex-shrink: 0;
 }
 
-/* ✅ CREATE PLAYLIST BUTTON */
+/* ========== CREATE PLAYLIST BUTTON ========== */
+
 .createPlaylistBtn {
   display: flex;
   align-items: center;
@@ -129,7 +144,8 @@
   transform: none;
 }
 
-/* ✅ PLAYLIST SECTION */
+/* ========== PLAYLIST SECTION ========== */
+
 .playlistSection {
   margin-top: auto;
   flex-shrink: 0;
@@ -177,7 +193,11 @@
 }
 
 .playlistItem.active {
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(37, 99, 235, 0.05) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(59, 130, 246, 0.15) 0%,
+    rgba(37, 99, 235, 0.05) 100%
+  );
   color: #3b82f6;
 }
 
@@ -198,7 +218,8 @@
   margin: 16px 0;
 }
 
-/* ✅ MODAL STYLES */
+/* ========== MODAL ========== */
+
 .modalOverlay {
   position: fixed;
   top: 0;
@@ -355,7 +376,8 @@
   transform: none;
 }
 
-/* ✅ RESPONSIVE DESIGN */
+/* ========== RESPONSIVE ========== */
+
 @media (max-width: 900px) {
   .sidebar {
     width: 72px;
@@ -372,8 +394,12 @@
   }
 
   .logoSection {
-    justify-content: center;
+    align-items: center;
     margin-bottom: 24px;
+  }
+
+  .melodiaLogo {
+    width: 34px;
   }
 
   .navItem,

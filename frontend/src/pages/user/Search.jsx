@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import styles from './Search.module.css';
 import { Play, Album, User, Loader, Search as SearchIcon } from 'lucide-react';
-import { musicService } from '../services/musicService';
+import { musicService } from '../../services/musicService';
 
 const Search = () => {
   const [searchParams] = useSearchParams();

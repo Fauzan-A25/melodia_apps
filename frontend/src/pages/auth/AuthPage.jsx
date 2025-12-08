@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useUser } from '../context/UserContext';
+import { useUser } from '../../context/UserContext';
 import styles from './AuthPage.module.css';
 import { Music2, Mail, Lock, User, Headphones, Mic2, ArrowLeft } from 'lucide-react';
-import { authService } from '../services/authService';
+import { authService } from '../../services/authService';
 
 const AuthPage = () => {
   const navigate = useNavigate();

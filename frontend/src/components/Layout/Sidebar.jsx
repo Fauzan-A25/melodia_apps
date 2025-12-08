@@ -1,4 +1,5 @@
 import { Home, Music, ListMusic, Users, Plus } from 'lucide-react';
+import MelodiaLogo from '../../assets/melodia_logo.svg?react';
 import styles from './Sidebar.module.css';
 import { NavLink } from 'react-router-dom';
 import { useUser } from '../../context/UserContext';
@@ -88,9 +89,9 @@ const Sidebar = ({ onCreatePlaylist }) => {
 
   return (
     <aside className={styles.sidebar}>
+      {/* ✅ LOGO SECTION dengan SVG */}
       <div className={styles.logoSection}>
-        <Music size={32} className={styles.logoIcon} />
-        <h1 className={styles.logoText}>MELODIA</h1>
+        <MelodiaLogo className={styles.melodiaLogo} />
       </div>
 
       <nav className={styles.nav}>

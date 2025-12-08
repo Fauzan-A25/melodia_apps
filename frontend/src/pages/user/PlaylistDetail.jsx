@@ -4,8 +4,8 @@ import {
   ArrowLeft, Play, Pause, Trash2, Music, Clock, AlertCircle, Loader 
 } from 'lucide-react';
 import styles from './PlaylistDetail.module.css';
-import { musicService } from '../services/musicService';
-import { useMusic } from '../context/MusicContext';
+import { musicService } from '../../services/musicService';
+import { useMusic } from '../../context/MusicContext';
 
 const PlaylistDetail = () => {
   const { playlistId } = useParams();

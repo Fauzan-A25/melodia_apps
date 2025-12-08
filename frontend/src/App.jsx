@@ -4,13 +4,12 @@ import { UserProvider, useUser } from './context/UserContext';
 import { MusicProvider } from './context/MusicContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import MainLayout from './components/Layout/MainLayout';
-import AuthPage from './pages/AuthPage';
-import Home from './pages/Home';
-import PlaylistDetail from './pages/PlaylistDetail';
-import Library from './pages/Library';
-import History from './pages/History';
-import Search from './pages/Search';
-import Upload from './pages/Upload';
+import AuthPage from './pages/auth/AuthPage';
+import Home from './pages/user/Home';
+import PlaylistDetail from './pages/user/PlaylistDetail';
+import History from './pages/Settings/History';
+import Search from './pages/user/Search';
+import Upload from './pages/Settings/Upload';
 import Settings from './pages/Settings/Settings';
 
 // Admin Pages
@@ -99,17 +98,6 @@ const RoleBasedRoutes = () => {
           <ProtectedRoute>
             <MainLayout>
               <Home />
-            </MainLayout>
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/library"
-        element={
-          <ProtectedRoute>
-            <MainLayout>
-              <Library />
             </MainLayout>
           </ProtectedRoute>
         }

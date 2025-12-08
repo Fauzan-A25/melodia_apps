@@ -137,6 +137,12 @@ const AdminDashboard = () => {
             <h3>Manage Users</h3>
             <p>Kelola akun user dan artist</p>
           </Link>
+
+          <Link to="/admin/songs" className={styles.actionCard}>
+            <div className={styles.actionIcon}>🎵</div>
+            <h3>Manage Songs</h3>
+            <p>Kelola lagu dan metadata</p>
+          </Link>
         </div>
       </div>
     </div>

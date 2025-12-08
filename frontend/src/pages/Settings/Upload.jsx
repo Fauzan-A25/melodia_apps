@@ -2,9 +2,9 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Upload as UploadIcon, Music, X, Loader } from 'lucide-react';
 import styles from './Upload.module.css';
-import { musicService } from '../services/musicService';
-import { useUser } from '../context/UserContext';
-import MultiSelect from '../components/Common/MultiSelect';
+import { musicService } from '../../services/musicService';
+import { useUser } from '../../context/UserContext';
+import MultiSelect from '../../components/Common/MultiSelect';
 
 const Upload = () => {
   const navigate = useNavigate();

@@ -1,4 +1,4 @@
-// components/Music/AlbumCard.jsx
+// components/Music/AlbumCard.jsx - COMPLETE dengan TITIK 3 BESAR 52px
 import { useState, useRef, useEffect, useCallback } from 'react';
 import styles from './AlbumCard.module.css';
 import { Play, Pause, MoreVertical, Plus, Check } from 'lucide-react';
@@ -11,17 +11,14 @@ const AlbumCard = ({ track, onPlay }) => {
   const [userPlaylists, setUserPlaylists] = useState([]);
   const [loadingPlaylists, setLoadingPlaylists] = useState(false);
   const [addingToPlaylist, setAddingToPlaylist] = useState(null);
-  const [menuPosition, setMenuPosition] = useState('right'); // ✅ Track menu position
+  const [menuPosition, setMenuPosition] = useState('right');
   
   const menuRef = useRef(null);
-  const cardRef = useRef(null); // ✅ Ref untuk detect posisi card
+  const cardRef = useRef(null);
   
   const userId = localStorage.getItem('userId');
-  
-  // Check if this track is currently playing
   const isCurrentlyPlaying = currentSong?.songId === track.id && isPlaying;
 
-  // Fetch user playlists
   const fetchUserPlaylists = useCallback(async () => {
     try {
       setLoadingPlaylists(true);
@@ -34,14 +31,12 @@ const AlbumCard = ({ track, onPlay }) => {
     }
   }, [userId]);
 
-  // Fetch user playlists when menu opens
   useEffect(() => {
     if (showMenu && userId) {
       fetchUserPlaylists();
     }
   }, [showMenu, userId, fetchUserPlaylists]);
 
-  // Close menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (menuRef.current && !menuRef.current.contains(event.target)) {
@@ -65,23 +60,18 @@ const AlbumCard = ({ track, onPlay }) => {
     }
   };
 
-  // ✅ Handle menu click dengan dynamic positioning
   const handleMenuClick = (e) => {
     e.stopPropagation();
     
-    // Detect posisi card di viewport
     if (cardRef.current) {
       const rect = cardRef.current.getBoundingClientRect();
       const viewportWidth = window.innerWidth;
       
-      // Jika card terlalu ke kiri (< 300px dari kiri), buka menu ke kanan
-      // Jika card terlalu ke kanan (< 300px dari kanan), buka menu ke kiri
       if (rect.left < 300) {
         setMenuPosition('left');
       } else if (viewportWidth - rect.right < 300) {
         setMenuPosition('right');
       } else {
-        // Default ke kanan jika ada cukup ruang
         setMenuPosition('right');
       }
     }
@@ -101,12 +91,10 @@ const AlbumCard = ({ track, onPlay }) => {
       setAddingToPlaylist(playlistId);
       await musicService.addSongToPlaylist(playlistId, track.id, userId);
       
-      // Show success feedback
       setTimeout(() => {
         setAddingToPlaylist(null);
         setShowMenu(false);
       }, 500);
-      
     } catch (err) {
       console.error('Error adding to playlist:', err);
       alert('Failed to add song to playlist: ' + err.message);
@@ -114,14 +102,13 @@ const AlbumCard = ({ track, onPlay }) => {
     }
   };
 
-  // Check if song is already in playlist
   const isSongInPlaylist = (playlist) => {
     return playlist.songs?.some(song => song.songId === track.id) || false;
   };
 
   return (
     <div 
-      ref={cardRef} // ✅ Tambahkan ref
+      ref={cardRef}
       className={`${styles.albumCard} ${isCurrentlyPlaying ? styles.playing : ''}`} 
       onClick={handlePlay}
     >
@@ -134,83 +121,85 @@ const AlbumCard = ({ track, onPlay }) => {
           aria-label={isCurrentlyPlaying ? `Pause ${track.title}` : `Play ${track.title}`}
         >
           {isCurrentlyPlaying ? (
-            <Pause size={20} fill="white" />
+            <Pause size={20} fill="#1e3a8a" />
           ) : (
-            <Play size={20} fill="white" />
+            <Play size={20} fill="#1e3a8a" />
           )}
         </button>
 
-        {/* Menu Button (Three Dots) */}
-        <button 
-          className={styles.menuButton}
-          onClick={handleMenuClick}
-          aria-label="More options"
-        >
-          <MoreVertical size={20} />
-        </button>
-
-        {/* ✅ Dropdown Menu dengan dynamic position class */}
-        {showMenu && (
-          <div 
-            className={`${styles.dropdownMenu} ${styles[menuPosition]}`}
-            ref={menuRef} 
-            onClick={(e) => e.stopPropagation()}
+        {/* ✅ TITIK 3 BESAR 52px */}
+        <div className={styles.menuContainer}>
+          <button 
+            className={`${styles.menuButton} ${isCurrentlyPlaying ? styles.playingMenu : ''}`}
+            onClick={handleMenuClick}
+            aria-label="More options"
           >
-            <div className={styles.menuHeader}>
-              <span>Add to playlist</span>
-            </div>
-
-            {loadingPlaylists ? (
-              <div className={styles.menuLoading}>Loading playlists...</div>
-            ) : userPlaylists.length === 0 ? (
-              <div className={styles.menuEmpty}>
-                <p>No playlists yet</p>
-                <button 
-                  className={styles.createPlaylistBtn}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setShowMenu(false);
-                    window.location.href = '/playlist';
-                  }}
-                >
-                  Create Playlist
-                </button>
-              </div>
-            ) : (
-              <div className={styles.menuList}>
-                {userPlaylists.map((playlist) => {
-                  const inPlaylist = isSongInPlaylist(playlist);
-                  const isAdding = addingToPlaylist === playlist.playlistId;
-
-                  return (
-                    <button
-                      key={playlist.playlistId}
-                      className={`${styles.menuItem} ${inPlaylist ? styles.inPlaylist : ''}`}
-                      onClick={(e) => !inPlaylist && handleAddToPlaylist(playlist.playlistId, e)}
-                      disabled={inPlaylist || isAdding}
-                    >
-                      <span className={styles.playlistIcon}>{playlist.cover || '🎵'}</span>
-                      <span className={styles.playlistName}>{playlist.name}</span>
-                      {inPlaylist ? (
-                        <Check size={16} className={styles.checkIcon} />
-                      ) : isAdding ? (
-                        <span className={styles.loadingDot}>...</span>
-                      ) : (
-                        <Plus size={16} className={styles.plusIcon} />
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        )}
+            <MoreVertical size={24} strokeWidth={3} />
+          </button>
+        </div>
       </div>
 
       <div className={styles.info}>
         <h3 className={styles.title}>{track.title}</h3>
         <p className={styles.artist}>{track.artist}</p>
       </div>
+
+      {/* ✅ DROPDOWN MENU */}
+      {showMenu && (
+        <div 
+          className={`${styles.dropdownMenu} ${styles[menuPosition]}`}
+          ref={menuRef} 
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className={styles.menuHeader}>
+            <span>Add to playlist</span>
+          </div>
+
+          {loadingPlaylists ? (
+            <div className={styles.menuLoading}>Loading playlists...</div>
+          ) : userPlaylists.length === 0 ? (
+            <div className={styles.menuEmpty}>
+              <p>No playlists yet</p>
+              <button 
+                className={styles.createPlaylistBtn}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowMenu(false);
+                  window.location.href = '/playlist';
+                }}
+              >
+                Create Playlist
+              </button>
+            </div>
+          ) : (
+            <div className={styles.menuList}>
+              {userPlaylists.map((playlist) => {
+                const inPlaylist = isSongInPlaylist(playlist);
+                const isAdding = addingToPlaylist === playlist.playlistId;
+
+                return (
+                  <button
+                    key={playlist.playlistId}
+                    className={`${styles.menuItem} ${inPlaylist ? styles.inPlaylist : ''}`}
+                    onClick={(e) => !inPlaylist && handleAddToPlaylist(playlist.playlistId, e)}
+                    disabled={inPlaylist || isAdding}
+                  >
+                    <span className={styles.playlistIcon}>{playlist.cover || '🎵'}</span>
+                    <span className={styles.playlistName}>{playlist.name}</span>
+                    {inPlaylist ? (
+                      <Check size={16} className={styles.checkIcon} />
+                    ) : isAdding ? (
+                      <span className={styles.loadingDot}>...</span>
+                    ) : (
+                      <Plus size={16} className={styles.plusIcon} />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };

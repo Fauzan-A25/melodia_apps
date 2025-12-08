@@ -2,9 +2,9 @@
 import { useState, useEffect } from 'react';
 import { Play, Pause, Loader } from 'lucide-react';
 import styles from './Home.module.css';
-import AlbumCard from '../components/Music/AlbumCard';
-import { musicService } from '../services/musicService';
-import { useMusic } from '../context/MusicContext';
+import AlbumCard from '../../components/Music/AlbumCard';
+import { musicService } from '../../services/musicService';
+import { useMusic } from '../../context/MusicContext';
 
 const Home = () => {
   const { playSong, currentSong, isPlaying } = useMusic();
