@@ -1,5 +1,5 @@
 import { Home, Music, ListMusic, Users, Plus } from 'lucide-react';
-import MelodiaLogo from '../../assets/melodia_logo.svg?react';
+import MelodiaLogo from '../../assets/melodia_logo.svg';
 import styles from './Sidebar.module.css';
 import { NavLink } from 'react-router-dom';
 import { useUser } from '../../context/UserContext';

@@ -131,17 +131,19 @@ const Topbar = () => {
                 </button>
               )}
 
-              {/* NEW: History Menu */}
-              <button
-                className={styles.dropdownItem}
-                onClick={() => {
-                  setShowDropdown(false);
-                  navigate('/history');
-                }}
-              >
-                <Clock size={16} />
-                History
-              </button>
+              {/* ✅ History Menu - HANYA untuk non-admin */}
+              {user?.accountType !== 'ADMIN' && (
+                <button
+                  className={styles.dropdownItem}
+                  onClick={() => {
+                    setShowDropdown(false);
+                    navigate('/history');
+                  }}
+                >
+                  <Clock size={16} />
+                  History
+                </button>
+              )}
 
               <button
                 className={styles.dropdownItem}
