@@ -463,15 +463,14 @@ export const musicService = {
   /**
    * Get user history info
    * GET /api/history/{userId}
+   * Returns summary even if history is empty
    */
   getUserHistory: async (userId) => {
     try {
       const response = await fetch(`${API_URL}/history/${userId}`);
       
+      // ✅ Always succeeds (returns empty summary if no history)
       if (!response.ok) {
-        if (response.status === 404) {
-          throw new Error('History not found');
-        }
         throw new Error('Failed to fetch history');
       }
 
@@ -485,15 +484,14 @@ export const musicService = {
   /**
    * Get all played songs
    * GET /api/history/{userId}/songs
+   * Returns empty list if no history, not 404
    */
   getPlayedSongs: async (userId) => {
     try {
       const response = await fetch(`${API_URL}/history/${userId}/songs`);
       
+      // ✅ Always succeeds (returns empty list if no history)
       if (!response.ok) {
-        if (response.status === 404) {
-          throw new Error('History not found');
-        }
         throw new Error('Failed to fetch played songs');
       }
 
@@ -510,14 +508,16 @@ export const musicService = {
    */
   getRecentlyPlayedSongs: async (userId, limit = 10) => {
     try {
+      if (limit <= 0) {
+        throw new Error('Limit must be positive');
+      }
+      
       const response = await fetch(
         `${API_URL}/history/${userId}/songs/recent?limit=${limit}`
       );
       
+      // ✅ Always succeeds (returns empty list if no history)
       if (!response.ok) {
-        if (response.status === 404) {
-          throw new Error('History not found');
-        }
         throw new Error('Failed to fetch recent songs');
       }
 
@@ -531,6 +531,7 @@ export const musicService = {
   /**
    * Add song to history (when user plays a song)
    * POST /api/history/{userId}/songs
+   * Body: { songId }
    */
   addSongToHistory: async (userId, songId) => {
     try {
@@ -601,6 +602,7 @@ export const musicService = {
   /**
    * Clear all history
    * DELETE /api/history/{userId}
+   * Success even if history doesn't exist (idempotent)
    */
   clearUserHistory: async (userId) => {
     try {
@@ -611,10 +613,8 @@ export const musicService = {
         },
       });
 
+      // ✅ Always succeeds (idempotent operation)
       if (!response.ok) {
-        if (response.status === 404) {
-          throw new Error('History not found');
-        }
         let errorMessage = 'Failed to clear history';
         try {
           const errorData = await response.json();

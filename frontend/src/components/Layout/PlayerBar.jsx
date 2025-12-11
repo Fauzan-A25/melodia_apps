@@ -3,8 +3,9 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import styles from './PlayerBar.module.css';
 import { Play, Pause, SkipBack, SkipForward, Shuffle, Repeat, Volume2, Heart, X } from 'lucide-react';
 import { useMusic } from '../../context/MusicContext';
+import { musicService } from '../../services/musicService';
+import { useUser } from '../../context/UserContext';
 
-// ✅ GANTI dengan Supabase project URL kamu
 const SUPABASE_URL = 'https://byqxamggdqsnikvkkivr.supabase.co';
 
 const PlayerBar = () => {
@@ -23,14 +24,24 @@ const PlayerBar = () => {
     isShuffled,
   } = useMusic();
 
+  const { user } = useUser();
   const audioRef = useRef(null);
   const isLoadingRef = useRef(false);
+  const userIdRef = useRef(null);
 
   // Local state
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [isLiked, setIsLiked] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  // ==================== SYNC USER ID ====================
+  useEffect(() => {
+    userIdRef.current =
+      user?.accountId ||
+      localStorage.getItem('userId') ||
+      localStorage.getItem('accountId');
+  }, [user]);
 
   // ==================== EFFECTS ====================
 
@@ -40,7 +51,7 @@ const PlayerBar = () => {
 
     const audio = audioRef.current;
     
-    // ✅ Construct direct Supabase URL
+    // ✅ SUPABASE DIRECT URL (yang sebelumnya)
     const streamUrl = currentSong.filePath
       ? `${SUPABASE_URL}/storage/v1/object/public/songs/${currentSong.filePath}`
       : null;
@@ -84,6 +95,19 @@ const PlayerBar = () => {
         .then(() => {
           console.log('▶️ Playing...');
           setGlobalIsPlaying(true);
+
+          // ✅ ADD SONG TO HISTORY via musicService (Railway backend)
+          const songId = currentSong.songId || currentSong.id;
+          const userId = userIdRef.current;
+          
+          if (userId && songId) {
+            musicService
+              .addSongToHistory(userId, songId)
+              .then(() => console.log('✅ Added to history:', songId))
+              .catch(err => console.error('❌ Failed to add to history:', err));
+          } else {
+            console.warn('⚠️ Cannot add to history: missing userId or songId');
+          }
         })
         .catch(err => {
           if (err.name !== 'AbortError') {
@@ -240,7 +264,9 @@ const PlayerBar = () => {
 
       {/* Track Info */}
       <div className={styles.trackInfo}>
-        <div className={styles.albumCover}>🎵</div>
+        <div className={styles.albumCover}>
+          {currentSong.coverEmoji || '🎵'}
+        </div>
         <div className={styles.trackDetails}>
           <h4>{currentSong.title}</h4>
           <p>{currentSong.artist?.username || currentSong.artistName || 'Unknown Artist'}</p>

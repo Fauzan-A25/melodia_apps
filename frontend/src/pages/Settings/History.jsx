@@ -1,16 +1,26 @@
+// src/pages/Settings/History.jsx
 import { useEffect, useState } from 'react';
 import styles from './History.module.css';
 import { Clock, User, Play } from 'lucide-react';
 import { musicService } from '../../services/musicService';
+import { useUser } from '../../context/UserContext';
 
-const History = ({ userId }) => {
+const History = () => {
+  const { user, loading: authLoading } = useUser();
   const [songs, setSongs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
     const loadHistory = async () => {
-      if (!userId) {
+      if (authLoading) return;
+
+      const effectiveUserId =
+        user?.accountId ||
+        localStorage.getItem('userId') ||
+        localStorage.getItem('accountId');
+
+      if (!effectiveUserId) {
         setLoading(false);
         setError('User not logged in');
         return;
@@ -20,9 +30,8 @@ const History = ({ userId }) => {
         setLoading(true);
         setError('');
 
-        // Ambil semua lagu yang pernah diputar
-        const response = await musicService.getPlayedSongs(userId);
-        // Response dari backend: { userId, totalSongs, songs: [...] }
+        // ✅ DTO: { userId, songs: [...] }
+        const response = await musicService.getPlayedSongs(effectiveUserId);
         setSongs(response.songs || []);
       } catch (err) {
         console.error('Failed to fetch history:', err);
@@ -33,14 +42,14 @@ const History = ({ userId }) => {
     };
 
     loadHistory();
-  }, [userId]);
+  }, [user, authLoading]);
 
   const handlePlay = (song) => {
-    // Di sini bisa trigger pemutar lagu global / context
     console.log('Play song from history:', song);
+    // TODO: Integrate dengan MusicContext untuk putar lagu
   };
 
-  if (loading) {
+  if (authLoading || loading) {
     return (
       <div className={styles.historyContainer}>
         <header className={styles.header}>
@@ -48,7 +57,7 @@ const History = ({ userId }) => {
           <h1 className={styles.title}>History</h1>
         </header>
         <div className={styles.listArea}>
-          <div className={styles.empty}>Loading history...</div>
+          <div className={styles.empty}>⏳ Loading history...</div>
         </div>
       </div>
     );
@@ -62,7 +71,7 @@ const History = ({ userId }) => {
           <h1 className={styles.title}>History</h1>
         </header>
         <div className={styles.listArea}>
-          <div className={styles.empty}>{error}</div>
+          <div className={styles.empty}>❌ {error}</div>
         </div>
       </div>
     );
@@ -79,23 +88,28 @@ const History = ({ userId }) => {
         {songs.length > 0 ? (
           <div className={styles.list}>
             {songs.map((track) => (
-              <div className={styles.card} key={track.songId || track.id}>
-                {/* Kalau backend punya cover/artwork url, pakai img, sementara pakai emoji fallback */}
+              <div className={styles.card} key={track.id || track.songId}>
                 <div className={styles.cover}>
                   {track.coverEmoji || '🎵'}
                 </div>
 
                 <div className={styles.info}>
-                  <span className={styles.titleTrack}>{track.title}</span>
-
-                  <span className={styles.artist}>
-                    <User size={13} /> {track.artist?.name || track.artistName || 'Unknown Artist'}
+                  <span className={styles.titleTrack}>
+                    {track.title || 'Untitled'}
                   </span>
 
-                  {/* Jika History belum simpan waktu play, bisa di-hide atau pakai placeholder */}
+                  <span className={styles.artist}>
+                    <User size={13} />{' '}
+                    {track.artist?.name ||
+                      track.artistName ||
+                      'Unknown Artist'}
+                  </span>
+
+                  {/* Jika DTO belum punya playedAt, tidak akan crash */}
                   {track.playedAt && (
                     <span className={styles.playedAt}>
-                      Played at {track.playedAt}
+                      Played at{' '}
+                      {new Date(track.playedAt).toLocaleString()}
                     </span>
                   )}
                 </div>
@@ -103,6 +117,7 @@ const History = ({ userId }) => {
                 <button
                   className={styles.playBtn}
                   onClick={() => handlePlay(track)}
+                  title="Play song"
                 >
                   <Play size={17} />
                 </button>
@@ -110,7 +125,7 @@ const History = ({ userId }) => {
             ))}
           </div>
         ) : (
-          <div className={styles.empty}>No history yet.</div>
+          <div className={styles.empty}>📭 No history yet.</div>
         )}
       </div>
     </div>
