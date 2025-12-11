@@ -1,4 +1,5 @@
-import { useState } from 'react';
+// src/pages/auth/AuthPage.jsx
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../../context/UserContext';
 import styles from './AuthPage.module.css';
@@ -7,8 +8,8 @@ import { authService } from '../../services/authService';
 
 const AuthPage = () => {
   const navigate = useNavigate();
-  const { login: loginUser } = useUser();
-  
+  const { user, isAuthenticated, loading: contextLoading } = useUser();
+
   const [isLogin, setIsLogin] = useState(true);
   const [registrationStep, setRegistrationStep] = useState(1);
   const [formData, setFormData] = useState({
@@ -22,12 +23,21 @@ const AuthPage = () => {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState('');
 
+  // ✅ Auto redirect kalau sudah login (misalnya user buka /auth tapi sudah login)
+  useEffect(() => {
+    if (!contextLoading && isAuthenticated) {
+      const redirectPath =
+        user?.accountType === 'ADMIN' ? '/admin/dashboard' : '/home';
+      navigate(redirectPath, { replace: true });
+    }
+  }, [contextLoading, isAuthenticated, user?.accountType, navigate]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setSuccess('');
 
-    // Step 1 validation
+    // Step 1 validation - untuk artist perlu ke step 2
     if (!isLogin && registrationStep === 1) {
       if (formData.role === 'artist') {
         setRegistrationStep(2);
@@ -39,7 +49,7 @@ const AuthPage = () => {
 
     try {
       if (isLogin) {
-        // ✅ LOGIN
+        // ==================== LOGIN ====================
         console.log('=== LOGIN ATTEMPT ===');
         console.log('Username:', formData.username);
         
@@ -49,61 +59,42 @@ const AuthPage = () => {
         );
         
         console.log('📦 Login result from backend:', result);
-        console.log('Available fields:', Object.keys(result));
 
-        // ✅ PENTING: Simpan ke localStorage
-        if (result.accountId) {
-          // accountType bisa "USER" atau "ARTIST" dari backend
-          const role = result.accountType || result.role || 'user';
-          
-          localStorage.setItem('userId', result.accountId);
-          localStorage.setItem('username', result.username);
-          localStorage.setItem('role', role);
-          localStorage.setItem('email', result.email || '');
-          
-          // Jika artist, simpan bio juga
-          if (result.bio) {
-            localStorage.setItem('bio', result.bio);
-          }
-          
-          console.log('✅ User data saved to localStorage:');
-          console.log('  - userId:', result.accountId);
-          console.log('  - username:', result.username);
-          console.log('  - role:', role);
-          console.log('  - email:', result.email);
-          if (result.bio) {
-            console.log('  - bio:', result.bio.substring(0, 50) + '...');
-          }
-        } else {
-          console.error('⚠️ WARNING: accountId not found in login result!');
-          console.log('Full result:', JSON.stringify(result, null, 2));
-          
-          // Coba cari field alternatif
-          if (result.id) {
-            console.log('Found "id" field, using as userId');
-            localStorage.setItem('userId', result.id);
-          } else if (result.userId) {
-            console.log('Found "userId" field');
-            localStorage.setItem('userId', result.userId);
-          } else {
-            throw new Error('User ID not found in login response');
-          }
+        // Simpan via authService.login → localStorage
+        // Trigger refresh ke useAuth/useUser
+        window.dispatchEvent(new CustomEvent('auth:refresh'));
+
+        if (!result.accountId) {
+          throw new Error('Login failed: Account ID missing');
         }
 
-        // Update context
-        loginUser(result);
-        
+        if (!result.token) {
+          throw new Error('Login failed: JWT token missing');
+        }
+
+        console.log('✅ Login successful - localStorage ready, context auto-sync:');
+        console.log('  - userId:', result.accountId);
+        console.log('  - username:', result.username);
+        console.log('  - role:', result.accountType);
+        console.log('  - token:', result.token.substring(0, 20) + '...');
+
         setSuccess('Login successful! Redirecting...');
-        
+
+        // Redirect langsung (tidak perlu tunggu context)
+        const redirectPath =
+          result.accountType === 'ADMIN' ? '/admin/dashboard' : '/home';
         setTimeout(() => {
-          navigate('/home');
-        }, 1000);
-        
+          navigate(redirectPath, { replace: true });
+        }, 800);
       } else {
-        // ✅ REGISTRATION
+        // ==================== REGISTRATION ====================
         console.log('=== REGISTRATION ATTEMPT ===');
         console.log('Username:', formData.username);
+        console.log('Email:', formData.email);
         console.log('Role:', formData.role);
+        if (formData.role === 'artist') {
+          console.log('Bio length:', formData.bio.length);
+        }
         
         const result = await authService.register(
           formData.username, 
@@ -114,8 +105,9 @@ const AuthPage = () => {
         );
         
         console.log('✅ Registration success:', result);
-        setSuccess('Registration successful! Please login.');
+        setSuccess('Registration successful! Please login with your credentials.');
         
+        // Reset form dan switch ke login setelah 2 detik
         setTimeout(() => {
           setIsLogin(true);
           setRegistrationStep(1);
@@ -126,11 +118,23 @@ const AuthPage = () => {
             role: 'user',
             bio: ''
           });
+          setSuccess('');
         }, 2000);
       }
     } catch (err) {
       console.error('❌ Auth error:', err);
-      setError(err.message || 'An error occurred');
+      
+      let errorMessage = err.message || 'An error occurred';
+      
+      if (errorMessage.includes('401') || errorMessage.includes('Invalid credentials')) {
+        errorMessage = 'Username atau password salah';
+      } else if (errorMessage.includes('Username already exists')) {
+        errorMessage = 'Username sudah digunakan';
+      } else if (errorMessage.includes('Email already exists')) {
+        errorMessage = 'Email sudah terdaftar';
+      }
+      
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -158,6 +162,17 @@ const AuthPage = () => {
     setError('');
   };
 
+  // Optional: loading saat context masih inisialisasi
+  if (contextLoading) {
+    return (
+      <div className={styles.authContainer}>
+        <div className={styles.authCard}>
+          <p>⏳ Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={styles.authContainer}>
       <div className={styles.authCard}>
@@ -171,22 +186,33 @@ const AuthPage = () => {
           <button
             className={`${styles.toggleBtn} ${isLogin ? styles.active : ''}`}
             onClick={() => handleToggle(true)}
+            disabled={loading}
           >
             Login
           </button>
           <button
             className={`${styles.toggleBtn} ${!isLogin ? styles.active : ''}`}
             onClick={() => handleToggle(false)}
+            disabled={loading}
           >
             Register
           </button>
         </div>
 
-        {error && <div className={styles.errorMessage}>{error}</div>}
-        {success && <div className={styles.successMessage}>{success}</div>}
+        {error && (
+          <div className={styles.errorMessage}>
+            {error}
+          </div>
+        )}
+        
+        {success && (
+          <div className={styles.successMessage}>
+            {success}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className={styles.form}>
-          {(!isLogin && registrationStep === 1) || isLogin ? (
+          {((!isLogin && registrationStep === 1) || isLogin) && (
             <>
               <div className={styles.inputGroup}>
                 <User size={20} className={styles.icon} />
@@ -198,6 +224,8 @@ const AuthPage = () => {
                   onChange={handleChange}
                   className={styles.input}
                   required
+                  disabled={loading}
+                  autoComplete="username"
                 />
               </div>
 
@@ -212,6 +240,8 @@ const AuthPage = () => {
                     onChange={handleChange}
                     className={styles.input}
                     required
+                    disabled={loading}
+                    autoComplete="email"
                   />
                 </div>
               )}
@@ -227,6 +257,8 @@ const AuthPage = () => {
                   className={styles.input}
                   required
                   minLength={6}
+                  disabled={loading}
+                  autoComplete={isLogin ? "current-password" : "new-password"}
                 />
               </div>
 
@@ -242,6 +274,7 @@ const AuthPage = () => {
                         checked={formData.role === 'user'}
                         onChange={handleChange}
                         className={styles.radioInput}
+                        disabled={loading}
                       />
                       <Headphones size={24} className={styles.roleIcon} />
                       <div className={styles.roleText}>
@@ -258,6 +291,7 @@ const AuthPage = () => {
                         checked={formData.role === 'artist'}
                         onChange={handleChange}
                         className={styles.radioInput}
+                        disabled={loading}
                       />
                       <Mic2 size={24} className={styles.roleIcon} />
                       <div className={styles.roleText}>
@@ -274,10 +308,14 @@ const AuthPage = () => {
                 className={styles.submitBtn}
                 disabled={loading}
               >
-                {loading ? 'Loading...' : (isLogin ? 'Sign In' : (formData.role === 'artist' ? 'Lanjutkan' : 'Create Account'))}
+                {loading ? (
+                  <span>⏳ Loading...</span>
+                ) : (
+                  isLogin ? 'Sign In' : (formData.role === 'artist' ? 'Lanjutkan' : 'Create Account')
+                )}
               </button>
             </>
-          ) : null}
+          )}
 
           {!isLogin && registrationStep === 2 && formData.role === 'artist' && (
             <div className={styles.artistBioSection}>
@@ -285,6 +323,7 @@ const AuthPage = () => {
                 type="button"
                 onClick={handleBackToStep1}
                 className={styles.backButton}
+                disabled={loading}
               >
                 <ArrowLeft size={20} />
                 Kembali
@@ -299,22 +338,26 @@ const AuthPage = () => {
               <div className={styles.inputGroup}>
                 <textarea
                   name="bio"
-                  placeholder="Contoh: Musisi indie dari Jakarta yang fokus di genre pop rock dan folk. Sudah bermusik sejak 2018..."
+                  placeholder="Contoh: Musisi indie dari Jakarta ..."
                   value={formData.bio}
                   onChange={handleChange}
                   className={styles.textarea}
                   rows={5}
                   required
                   minLength={20}
+                  disabled={loading}
                 />
+                <small className={styles.charCount}>
+                  {formData.bio.length} / 20 karakter minimum
+                </small>
               </div>
 
               <button 
                 type="submit" 
                 className={styles.submitBtn}
-                disabled={loading}
+                disabled={loading || formData.bio.length < 20}
               >
-                {loading ? 'Creating Account...' : 'Buat Akun Musisi'}
+                {loading ? '⏳ Creating Account...' : 'Buat Akun Musisi'}
               </button>
             </div>
           )}

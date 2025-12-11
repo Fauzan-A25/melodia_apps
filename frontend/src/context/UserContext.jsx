@@ -1,49 +1,41 @@
-import { createContext, useContext, useState } from 'react';
+// src/context/UserContext.jsx
+import { createContext, useContext, useMemo } from 'react';
+import { useAuthContext } from './AuthContext';
 
-const UserContext = createContext();
+const UserContext = createContext(null);
 
 export const UserProvider = ({ children }) => {
-  const [user, setUser] = useState(() => {
-    try {
-      const savedUser = localStorage.getItem('melodia_user');
-      return savedUser ? JSON.parse(savedUser) : null;
-    } catch (error) {
-      console.error('Error parsing user data:', error);
-      localStorage.removeItem('melodia_user');
-      return null;
-    }
-  });
+  const auth = useAuthContext();
 
-  const [loading, _] = useState(false);
+  const value = useMemo(() => ({
+    // State dari AuthContext
+    user: auth.user,
+    isAuthenticated: auth.isAuthenticated,
+    loading: auth.isLoading,
+    error: auth.error,
 
-  const login = (userData) => {
-    setUser(userData);
-    localStorage.setItem('melodia_user', JSON.stringify(userData));
-  };
-
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('melodia_user');
-  };
-
-  const updateUser = (userData) => {
-    setUser(userData);
-    localStorage.setItem('melodia_user', JSON.stringify(userData));
-  };
-
-  const isAuthenticated = () => user !== null;
+    // Methods - alias langsung ke AuthContext
+    login: auth.login,              // login(email, password)
+    logout: auth.logout,
+    register: auth.register,
+    updateUser: auth.updateProfile, // alias untuk updateUser
+    hasRole: auth.hasRole,
+    clearError: auth.clearError,
+  }), [
+    auth.user,
+    auth.isAuthenticated,
+    auth.isLoading,
+    auth.error,
+    auth.login,
+    auth.logout,
+    auth.register,
+    auth.updateProfile,
+    auth.hasRole,
+    auth.clearError,
+  ]);
 
   return (
-    <UserContext.Provider
-      value={{
-        user,
-        login,
-        logout,
-        updateUser,
-        isAuthenticated,
-        loading,
-      }}
-    >
+    <UserContext.Provider value={value}>
       {children}
     </UserContext.Provider>
   );
@@ -57,3 +49,5 @@ export const useUser = () => {
   }
   return context;
 };
+
+export default UserContext;

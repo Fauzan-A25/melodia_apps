@@ -246,18 +246,41 @@ export const musicService = {
    * Get all playlists by user
    * GET /api/playlists/user/{userId}
    */
+  /**
+   * Get all playlists by user
+   * GET /api/playlists/user/{userId}
+   */
   getUserPlaylists: async (userId) => {
     try {
+      // ✅ VALIDATION: Cek apakah userId valid dan bukan admin
+      if (!userId) {
+        console.warn('getUserPlaylists: No userId provided');
+        return [];
+      }
+
+      // ✅ SKIP untuk admin (ID dimulai dengan ADM)
+      if (userId.startsWith('ADM')) {
+        console.warn('getUserPlaylists: Skipping for admin user');
+        return [];
+      }
+
+      console.log('Fetching playlists for userId:', userId);
       const response = await fetch(`${API_URL}/playlists/user/${userId}`);
       
       if (!response.ok) {
+        // ✅ Handle 404 gracefully (user belum punya playlist)
+        if (response.status === 404) {
+          console.log('No playlists found for user (404)');
+          return [];
+        }
         throw new Error('Failed to fetch user playlists');
       }
 
       return await response.json();
     } catch (error) {
       console.error('Error fetching user playlists:', error);
-      throw error;
+      // ✅ Return empty array instead of throwing
+      return [];
     }
   },
 
@@ -431,6 +454,221 @@ export const musicService = {
       return await response.json();
     } catch (error) {
       console.error('Error fetching playlist songs:', error);
+      throw error;
+    }
+  },
+
+  // ==================== HISTORY ENDPOINTS ====================
+
+  /**
+   * Get user history info
+   * GET /api/history/{userId}
+   */
+  getUserHistory: async (userId) => {
+    try {
+      const response = await fetch(`${API_URL}/history/${userId}`);
+      
+      if (!response.ok) {
+        if (response.status === 404) {
+          throw new Error('History not found');
+        }
+        throw new Error('Failed to fetch history');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching user history:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Get all played songs
+   * GET /api/history/{userId}/songs
+   */
+  getPlayedSongs: async (userId) => {
+    try {
+      const response = await fetch(`${API_URL}/history/${userId}/songs`);
+      
+      if (!response.ok) {
+        if (response.status === 404) {
+          throw new Error('History not found');
+        }
+        throw new Error('Failed to fetch played songs');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching played songs:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Get recently played songs
+   * GET /api/history/{userId}/songs/recent?limit=10
+   */
+  getRecentlyPlayedSongs: async (userId, limit = 10) => {
+    try {
+      const response = await fetch(
+        `${API_URL}/history/${userId}/songs/recent?limit=${limit}`
+      );
+      
+      if (!response.ok) {
+        if (response.status === 404) {
+          throw new Error('History not found');
+        }
+        throw new Error('Failed to fetch recent songs');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching recently played songs:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Add song to history (when user plays a song)
+   * POST /api/history/{userId}/songs
+   */
+  addSongToHistory: async (userId, songId) => {
+    try {
+      const response = await fetch(`${API_URL}/history/${userId}/songs`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          songId,
+        }),
+      });
+
+      if (!response.ok) {
+        let errorMessage = 'Failed to add song to history';
+        try {
+          const errorData = await response.json();
+          if (errorData?.message) errorMessage = errorData.message;
+        } catch {
+          const text = await response.text();
+          if (text) errorMessage = text;
+        }
+        throw new Error(errorMessage);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error adding song to history:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Remove song from history
+   * DELETE /api/history/{userId}/songs/{songId}
+   */
+  removeSongFromHistory: async (userId, songId) => {
+    try {
+      const response = await fetch(
+        `${API_URL}/history/${userId}/songs/${songId}`,
+        {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      if (!response.ok) {
+        let errorMessage = 'Failed to remove song from history';
+        try {
+          const errorData = await response.json();
+          if (errorData?.message) errorMessage = errorData.message;
+        } catch {
+          const text = await response.text();
+          if (text) errorMessage = text;
+        }
+        throw new Error(errorMessage);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error removing song from history:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Clear all history
+   * DELETE /api/history/{userId}
+   */
+  clearUserHistory: async (userId) => {
+    try {
+      const response = await fetch(`${API_URL}/history/${userId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        if (response.status === 404) {
+          throw new Error('History not found');
+        }
+        let errorMessage = 'Failed to clear history';
+        try {
+          const errorData = await response.json();
+          if (errorData?.message) errorMessage = errorData.message;
+        } catch {
+          const text = await response.text();
+          if (text) errorMessage = text;
+        }
+        throw new Error(errorMessage);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error clearing history:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Check if song has been played
+   * GET /api/history/{userId}/songs/{songId}/played
+   */
+  checkIfSongPlayed: async (userId, songId) => {
+    try {
+      const response = await fetch(
+        `${API_URL}/history/${userId}/songs/${songId}/played`
+      );
+      
+      if (!response.ok) {
+        throw new Error('Failed to check song played status');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error checking if song played:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Get history summary (for dashboard)
+   * GET /api/history/{userId}/summary
+   */
+  getHistorySummary: async (userId) => {
+    try {
+      const response = await fetch(`${API_URL}/history/${userId}/summary`);
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch history summary');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching history summary:', error);
       throw error;
     }
   },

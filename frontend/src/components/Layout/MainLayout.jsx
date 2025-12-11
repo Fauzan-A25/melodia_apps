@@ -6,34 +6,54 @@ import PlayerBar from './PlayerBar';
 import { Plus } from 'lucide-react';
 import { useUser } from '../../context/UserContext';
 import { useMusic } from '../../context/MusicContext';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { musicService } from '../../services/musicService';
 
 const MainLayout = ({ children }) => {
   const { user } = useUser();
   const { currentSong } = useMusic();
+
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newPlaylist, setNewPlaylist] = useState({ name: '', description: '' });
   const [creating, setCreating] = useState(false);
+
   const [userId, setUserId] = useState(null);
+  const [accountType, setAccountType] = useState(null);
+  const [initialized, setInitialized] = useState(false);
 
-  const showPlayer = user?.accountType !== 'ADMIN' && currentSong !== null;
-
-  // Ambil userId
+  // ✅ Ambil userId & accountType dari context + localStorage, lalu tandai initialized
   useEffect(() => {
-    const id = localStorage.getItem('userId') || localStorage.getItem('accountId');
-    setUserId(id);
+    const storedId =
+      localStorage.getItem('userId') || localStorage.getItem('accountId');
+    const storedRole =
+      localStorage.getItem('role') || localStorage.getItem('accountType');
+
+    const effectiveId = user?.accountId || storedId;
+    const effectiveType = user?.accountType || storedRole;
+
+    setUserId(effectiveId || null);
+    setAccountType(effectiveType || null);
+    setInitialized(true);
   }, [user]);
 
-  // ✅ FIXED: Create Playlist Handler + EVENT EMITTER
+  const isAdmin = useMemo(
+    () => accountType === 'ADMIN',
+    [accountType]
+  );
+
+  // ✅ Player hanya untuk non-admin
+  const showPlayer = !isAdmin && currentSong !== null;
+
+  // ✅ Create Playlist Handler + EVENT EMITTER
   const handleCreatePlaylist = async (e) => {
     e.preventDefault();
-    
-    if (!userId || user?.accountType === 'ADMIN') {
+
+    // Jangan izinkan sebelum initialized, atau kalau admin, atau tidak ada userId
+    if (!initialized || !userId || isAdmin) {
       alert('Access denied');
       return;
     }
-    
+
     if (!newPlaylist.name.trim()) {
       alert('Playlist name is required');
       return;
@@ -41,18 +61,17 @@ const MainLayout = ({ children }) => {
 
     try {
       setCreating(true);
-      
+
       await musicService.createPlaylist(
         userId,
         newPlaylist.name,
         newPlaylist.description
       );
-      
-      // ✅ EMIT GLOBAL EVENT - Auto refresh sidebar INSTANT!
+
+      // Emit event untuk refresh sidebar
       window.dispatchEvent(new CustomEvent('playlist:created'));
       console.log('🎵 playlist:created event dispatched!');
-      
-      // Reset form
+
       setNewPlaylist({ name: '', description: '' });
       setShowCreateModal(false);
       alert('Playlist created successfully!');
@@ -66,31 +85,37 @@ const MainLayout = ({ children }) => {
 
   return (
     <div className={styles.layout}>
-      {/* Sidebar - TANPA MODAL */}
+      {/* Sidebar */}
       <Sidebar onCreatePlaylist={() => setShowCreateModal(true)} />
-      
+
       <div className={styles.mainArea}>
         <Topbar />
         <div className={styles.pageContent}>
           {children}
         </div>
       </div>
-      
+
       {showPlayer && (
         <div className={styles.playerBarWrapper}>
           <PlayerBar />
         </div>
       )}
 
-      {/* ✅ MODAL DI ROOT LEVEL - SELALU CENTER SCREEN */}
+      {/* Modal Create Playlist */}
       {showCreateModal && (
-        <div className={styles.modalOverlay} onClick={() => setShowCreateModal(false)}>
-          <div className={styles.createPlaylistModal} onClick={(e) => e.stopPropagation()}>
+        <div
+          className={styles.modalOverlay}
+          onClick={() => setShowCreateModal(false)}
+        >
+          <div
+            className={styles.createPlaylistModal}
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className={styles.modalHeader}>
               <Plus size={24} />
               <h3>Create New Playlist</h3>
             </div>
-            
+
             <form onSubmit={handleCreatePlaylist}>
               <div className={styles.formGroup}>
                 <label htmlFor="playlistName">Name *</label>
@@ -98,26 +123,33 @@ const MainLayout = ({ children }) => {
                   id="playlistName"
                   type="text"
                   value={newPlaylist.name}
-                  onChange={(e) => setNewPlaylist({ ...newPlaylist, name: e.target.value })}
+                  onChange={(e) =>
+                    setNewPlaylist({ ...newPlaylist, name: e.target.value })
+                  }
                   placeholder="My Favorite Songs"
                   maxLength={100}
                   autoFocus
                   required
                 />
               </div>
-              
+
               <div className={styles.formGroup}>
                 <label htmlFor="playlistDesc">Description (optional)</label>
                 <textarea
                   id="playlistDesc"
                   value={newPlaylist.description}
-                  onChange={(e) => setNewPlaylist({ ...newPlaylist, description: e.target.value })}
+                  onChange={(e) =>
+                    setNewPlaylist({
+                      ...newPlaylist,
+                      description: e.target.value,
+                    })
+                  }
                   placeholder="Add a description..."
                   maxLength={200}
                   rows={2}
                 />
               </div>
-              
+
               <div className={styles.modalActions}>
                 <button
                   type="button"
@@ -130,10 +162,16 @@ const MainLayout = ({ children }) => {
                 >
                   Cancel
                 </button>
-                <button 
-                  type="submit" 
-                  className={styles.createBtn} 
-                  disabled={creating || !newPlaylist.name.trim()}
+                <button
+                  type="submit"
+                  className={styles.createBtn}
+                  disabled={
+                    creating ||
+                    !newPlaylist.name.trim() ||
+                    isAdmin ||
+                    !userId ||
+                    !initialized
+                  }
                 >
                   {creating ? 'Creating...' : 'Create'}
                 </button>

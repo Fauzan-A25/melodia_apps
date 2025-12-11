@@ -1,34 +1,111 @@
+import { useEffect, useState } from 'react';
 import styles from './History.module.css';
 import { Clock, User, Play } from 'lucide-react';
+import { musicService } from '../../services/musicService';
 
-// Data dummy pemutaran lagu—bisa diganti dari backend atau state
-const mockHistory = [
-  { id: 1, title: 'Midnight Dreams', artist: 'Luna Wave', playedAt: '2025-11-20 18:45', cover: '⭐' },
-  { id: 2, title: 'Ocean Breeze', artist: 'Coastal Vibe', playedAt: '2025-11-22 10:09', cover: '🌊' },
-  { id: 3, title: 'Rainy Days', artist: 'Jazz Collective', playedAt: '2025-11-22 13:15', cover: '☔' },
-  { id: 4, title: 'Urban Jungle', artist: 'City Beats', playedAt: '2025-11-22 14:05', cover: '🏙️' },
-  { id: 5, title: 'Starlight', artist: 'Cosmic Band', playedAt: '2025-11-22 18:30', cover: '🌌' },
-];
+const History = ({ userId }) => {
+  const [songs, setSongs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-const History = () => {
+  useEffect(() => {
+    const loadHistory = async () => {
+      if (!userId) {
+        setLoading(false);
+        setError('User not logged in');
+        return;
+      }
+
+      try {
+        setLoading(true);
+        setError('');
+
+        // Ambil semua lagu yang pernah diputar
+        const response = await musicService.getPlayedSongs(userId);
+        // Response dari backend: { userId, totalSongs, songs: [...] }
+        setSongs(response.songs || []);
+      } catch (err) {
+        console.error('Failed to fetch history:', err);
+        setError(err.message || 'Failed to fetch history');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadHistory();
+  }, [userId]);
+
+  const handlePlay = (song) => {
+    // Di sini bisa trigger pemutar lagu global / context
+    console.log('Play song from history:', song);
+  };
+
+  if (loading) {
+    return (
+      <div className={styles.historyContainer}>
+        <header className={styles.header}>
+          <Clock size={32} className={styles.headerIcon} />
+          <h1 className={styles.title}>History</h1>
+        </header>
+        <div className={styles.listArea}>
+          <div className={styles.empty}>Loading history...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className={styles.historyContainer}>
+        <header className={styles.header}>
+          <Clock size={32} className={styles.headerIcon} />
+          <h1 className={styles.title}>History</h1>
+        </header>
+        <div className={styles.listArea}>
+          <div className={styles.empty}>{error}</div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={styles.historyContainer}>
       <header className={styles.header}>
         <Clock size={32} className={styles.headerIcon} />
         <h1 className={styles.title}>History</h1>
       </header>
+
       <div className={styles.listArea}>
-        {mockHistory.length > 0 ? (
+        {songs.length > 0 ? (
           <div className={styles.list}>
-            {mockHistory.map((track) => (
-              <div className={styles.card} key={track.id}>
-                <div className={styles.cover}>{track.cover}</div>
+            {songs.map((track) => (
+              <div className={styles.card} key={track.songId || track.id}>
+                {/* Kalau backend punya cover/artwork url, pakai img, sementara pakai emoji fallback */}
+                <div className={styles.cover}>
+                  {track.coverEmoji || '🎵'}
+                </div>
+
                 <div className={styles.info}>
                   <span className={styles.titleTrack}>{track.title}</span>
-                  <span className={styles.artist}><User size={13} /> {track.artist}</span>
-                  <span className={styles.playedAt}>Played at {track.playedAt}</span>
+
+                  <span className={styles.artist}>
+                    <User size={13} /> {track.artist?.name || track.artistName || 'Unknown Artist'}
+                  </span>
+
+                  {/* Jika History belum simpan waktu play, bisa di-hide atau pakai placeholder */}
+                  {track.playedAt && (
+                    <span className={styles.playedAt}>
+                      Played at {track.playedAt}
+                    </span>
+                  )}
                 </div>
-                <button className={styles.playBtn}><Play size={17} /></button>
+
+                <button
+                  className={styles.playBtn}
+                  onClick={() => handlePlay(track)}
+                >
+                  <Play size={17} />
+                </button>
               </div>
             ))}
           </div>

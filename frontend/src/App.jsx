@@ -1,7 +1,8 @@
-// App.jsx - FIXED
+// App.jsx
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { UserProvider, useUser } from './context/UserContext';
 import { MusicProvider } from './context/MusicContext';
+import { AuthProvider } from './context/AuthContext'; // pastikan path-nya benar
 import ProtectedRoute from './components/ProtectedRoute';
 import MainLayout from './components/Layout/MainLayout';
 import AuthPage from './pages/auth/AuthPage';
@@ -25,8 +26,13 @@ import ArtistSong from './pages/Settings/ArtistSong';
 const RoleBasedRoutes = () => {
   const { user } = useUser();
 
-  // Jika user adalah ADMIN
-  if (user?.accountType === 'ADMIN') {
+  // Fallback role dari localStorage biar stabil saat awal render
+  const storedRole =
+    localStorage.getItem('role') || localStorage.getItem('accountType');
+  const effectiveAccountType = user?.accountType || storedRole;
+
+  // Jika ADMIN
+  if (effectiveAccountType === 'ADMIN') {
     return (
       <Routes>
         <Route
@@ -89,7 +95,7 @@ const RoleBasedRoutes = () => {
     );
   }
 
-  // Jika USER atau ARTIST
+  // Jika USER atau ARTIST (atau belum ada role → anggap non-admin)
   return (
     <Routes>
       <Route
@@ -103,9 +109,7 @@ const RoleBasedRoutes = () => {
         }
       />
 
-      {/* ✅ HAPUS Route /playlist - Sudah digabung ke PlaylistDetail */}
-
-      {/* Route untuk Playlist Detail - HANDLE SEMUA playlist */}
+      {/* Playlist detail */}
       <Route
         path="/playlist/:playlistId"
         element={
@@ -117,7 +121,7 @@ const RoleBasedRoutes = () => {
         }
       />
 
-      {/* ✅ Route untuk /playlist → redirect ke first playlist atau home */}
+      {/* /playlist → redirect ke home */}
       <Route
         path="/playlist"
         element={
@@ -192,17 +196,19 @@ const RoleBasedRoutes = () => {
 
 const App = () => {
   return (
-    <UserProvider>
-      <MusicProvider>
-        <Routes>
-          {/* Public Route - Auth (tanpa layout) */}
-          <Route path="/auth" element={<AuthPage />} />
+    <AuthProvider>
+      <UserProvider>
+        <MusicProvider>
+          <Routes>
+            {/* Public Route - Auth (tanpa layout) */}
+            <Route path="/auth" element={<AuthPage />} />
 
-          {/* All other routes handled by RoleBasedRoutes */}
-          <Route path="*" element={<RoleBasedRoutes />} />
-        </Routes>
-      </MusicProvider>
-    </UserProvider>
+            {/* All other routes handled by RoleBasedRoutes */}
+            <Route path="*" element={<RoleBasedRoutes />} />
+          </Routes>
+        </MusicProvider>
+      </UserProvider>
+    </AuthProvider>
   );
 };
 
