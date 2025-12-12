@@ -1,167 +1,339 @@
-# melodia_apps
-backend/
+<div align="center">
+
+# 🎵 Melodia
+
+**Personal Music Streaming Web Application**
+
+[![React](https://img.shields.io/badge/React-18.x-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://reactjs.org/)
+[![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.x-6DB33F?style=for-the-badge&logo=spring&logoColor=white)](https://spring.io/projects/spring-boot)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-316192?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![Railway](https://img.shields.io/badge/Railway-Deployed-0B0D0E?style=for-the-badge&logo=railway&logoColor=white)](https://railway.app/)
+
+</div>
+
+---
+
+## 📖 Tentang Melodia
+
+Melodia adalah aplikasi web pemutar musik yang berfokus pada **personalisasi** dan pengalaman mendengarkan musik yang sederhana namun powerful. Pengguna dapat mengelola koleksi lagu, membuat playlist pribadi, dan menikmati streaming musik dengan antarmuka yang intuitif.
+
+Aplikasi ini dikembangkan dengan menerapkan prinsip **Object-Oriented Programming (OOP)** dalam pengelolaan entitas seperti User, Song, Playlist, dan MusicPlayer.
+
+### 🎯 Tujuan Proyek
+
+- ✅ Menerapkan konsep OOP (inheritance, encapsulation, abstraction, interface) secara optimal
+- ✅ Menghadirkan aplikasi musik berbasis web dengan fitur playlist pribadi dan manajemen lagu
+- ✅ Melatih kolaborasi tim dan penerapan arsitektur backend–frontend modern
+- ✅ Memberikan pengalaman personal dalam mendengarkan musik tanpa batasan platform komersial
+
+---
+
+## 🚀 Fitur Utama
+
+- 🔐 **Authentication System** - Login dan registrasi user dengan JWT token
+- 🎼 **Music Library Management** - Kelola koleksi lagu secara personal
+- 📝 **Custom Playlists** - Buat, edit, dan hapus playlist sesuai preferensi
+- 👤 **Multi-Role System** - Dukungan untuk user, artist, dan admin
+- 🎧 **Music Streaming** - Play, pause, next, previous dengan kontrol penuh
+- 📊 **Listening History** - Pantau riwayat lagu yang didengarkan
+- ⚙️ **User Settings** - Kelola profil dan preferensi akun
+
+---
+
+## 🛠️ Tech Stack & Arsitektur
+
+### Frontend
+- **Framework**: React 18.x
+- **Build Tool**: Vite
+- **Routing**: React Router DOM
+- **State Management**: React Context API
+- **Styling**: CSS Modules + Lucide React Icons
+- **HTTP Client**: Axios
+- **Deployment**: GitHub Pages
+
+### Backend
+- **Framework**: Spring Boot 3.x (Java)
+- **Security**: Spring Security + JWT Authentication
+- **ORM**: Spring Data JPA
+- **Validation**: Bean Validation API
+- **Deployment**: Railway
+
+### Database
+- **RDBMS**: PostgreSQL 15
+- **Cloud Provider**: Supabase
+- **Local Dev**: Docker (optional)
+
+### Architecture Flow
+
+```
+
+┌─────────────┐         REST API        ┌──────────────┐        JPA/JDBC        ┌─────────────┐
+│   React     │ ◄─────────────────────► │ Spring Boot  │ ◄────────────────────► │ PostgreSQL  │
+│ (Frontend)  │     JSON over HTTP      │  (Backend)   │    SQL Queries         │ (Supabase)  │
+└─────────────┘                         └──────────────┘                        └─────────────┘
+GitHub Pages                              Railway                               Cloud Database
+
+```
+
+---
+
+## 📂 Project Structure
+
+```
+
+melodia/
 │
+├── backend/                      \# Spring Boot Backend
+│   ├── src/
+│   │   ├── main/
+│   │   │   ├── java/melodia/
+│   │   │   │   ├── config/              \# Security, CORS, Bean configs
+│   │   │   │   ├── controller/          \# REST API Controllers
+│   │   │   │   │   ├── admin/           \# Admin endpoints
+│   │   │   │   │   ├── artist/          \# Artist endpoints
+│   │   │   │   │   └── user/            \# User endpoints
+│   │   │   │   ├── exception/           \# Custom exception handlers
+│   │   │   │   ├── model/
+│   │   │   │   │   ├── dto/             \# Data Transfer Objects
+│   │   │   │   │   │   ├── request/     \# Request DTOs (auth, admin, user)
+│   │   │   │   │   │   └── response/    \# Response DTOs (history, etc)
+│   │   │   │   │   ├── entity/          \# JPA Entities (User, Song, Playlist)
+│   │   │   │   │   └── repository/      \# Spring Data JPA Repositories
+│   │   │   │   ├── security/            \# JWT, Auth filters, UserDetails
+│   │   │   │   └── view/
+│   │   │   │       ├── interfaces/      \# Service interfaces
+│   │   │   │       └── service/         \# Business logic implementation
+│   │   │   │           ├── admin/       \# Admin services
+│   │   │   │           ├── auth/        \# Authentication services
+│   │   │   │           ├── music/       \# Music management services
+│   │   │   │           ├── strategy/    \# Design pattern implementations
+│   │   │   │           └── user/        \# User services
+│   │   │   └── resources/               \# application.properties, static files
+│   │   └── test/                        \# Unit \& Integration tests
+│   └── docker-entrypoint-initdb.d/      \# Database init scripts
+│
+└── frontend/                     \# React Frontend
+├── public/                          \# Static assets
 ├── src/
-│   └── main/
-│       ├── java/
-│       │   └── melodia/
-│       │       ├── MelodiaApplication.java              # Main entry point
-│       │       │
-│       │       ├── config/                              # ⚙️ Configuration
-│       │       │   ├── SecurityConfig.java              # Spring Security + role-based access
-│       │       │   ├── CorsConfig.java                  # CORS untuk frontend & admin panel
-│       │       │   ├── SwaggerConfig.java               # API documentation
-│       │       │   └── FileStorageConfig.java           # File upload config
-│       │       │
-│       │       ├── controller/                          # 🌐 REST API Controllers
-│       │       │   ├── user/                            # End-User Controllers (pendengar)
-│       │       │   │   ├── AuthController.java          # Login/Register untuk User
-│       │       │   │   ├── UserProfileController.java   # User profile management
-│       │       │   │   ├── MusicController.java         # Song, Playlist, Album browsing
-│       │       │   │   ├── PlayerController.java        # Music player + queue + playback
-│       │       │   │   └── LibraryController.java       # User library & history
-│       │       │   │
-│       │       │   └── admin/                           # Admin Controllers (backend management)
-│       │       │       ├── AdminAuthController.java     # Admin login
-│       │       │       ├── AdminDashboardController.java # Stats & overview
-│       │       │       ├── AdminUserController.java     # User management (CRUD, ban, etc)
-│       │       │       ├── AdminArtistController.java   # Artist management
-│       │       │       ├── AdminMusicController.java    # Song & Album management
-│       │       │       └── AdminReportController.java   # Reports & analytics
-│       │       │
-│       │       ├── entity/                              # 🗂️ JPA Entities (Database Models)
-│       │       │   ├── Account.java                     # Abstract base (username, email, password, role)
-│       │       │   ├── User.java                        # End-user (extends Account)
-│       │       │   ├── Artist.java                      # Artist (extends Account, managed by Admin)
-│       │       │   ├── Admin.java                       # Admin (extends Account)
-│       │       │   ├── Song.java                        # Song entity
-│       │       │   ├── Album.java                       # Album entity
-│       │       │   ├── Playlist.java                    # Playlist entity
-│       │       │   ├── Library.java                     # User library
-│       │       │   ├── History.java                     # Listening history
-│       │       │   └── Queue.java                       # Player queue (part of PlayerState)
-│       │       │
-│       │       ├── repository/                          # 💾 Spring Data JPA Repositories
-│       │       │   ├── AccountRepository.java           # Base account queries
-│       │       │   ├── UserRepository.java              # User-specific queries
-│       │       │   ├── ArtistRepository.java            # Artist queries
-│       │       │   ├── AdminRepository.java             # Admin queries
-│       │       │   ├── SongRepository.java              # Song CRUD & search
-│       │       │   ├── AlbumRepository.java             # Album queries
-│       │       │   ├── PlaylistRepository.java          # Playlist queries
-│       │       │   ├── LibraryRepository.java           # Library queries
-│       │       │   └── HistoryRepository.java           # History tracking
-│       │       │
-│       │       ├── service/                             # 🔧 Business Logic Services
-│       │       │   ├── auth/                            # Authentication Services
-│       │       │   │   ├── AuthenticationService.java   # Login/logout/token logic
-│       │       │   │   └── RegistrationService.java     # User & Admin registration
-│       │       │   │
-│       │       │   ├── user/                            # End-User Services
-│       │       │   │   ├── UserService.java             # User profile operations
-│       │       │   │   ├── LibraryService.java          # Library management
-│       │       │   │   ├── HistoryService.java          # History tracking
-│       │       │   │   └── PlayerService.java           # Music player (Singleton) + Queue + Playback Strategy
-│       │       │   │
-│       │       │   ├── admin/                           # Admin Services
-│       │       │   │   ├── AdminService.java            # Admin operations
-│       │       │   │   ├── UserManagementService.java   # Manage users (ban, delete, etc)
-│       │       │   │   ├── ArtistManagementService.java # Manage artists
-│       │       │   │   └── ReportService.java           # Analytics & reports
-│       │       │   │
-│       │       │   ├── music/                           # Music Content Services
-│       │       │   │   ├── MusicService.java            # Song & Playlist management (unified)
-│       │       │   │   ├── AlbumService.java            # Album management (Admin-only)
-│       │       │   │   └── FileStorageService.java      # File upload/storage
-│       │       │   │
-│       │       │   └── strategy/                        # 🎯 Strategy Pattern (Playback)
-│       │       │       ├── PlaybackStrategy.java        # Interface
-│       │       │       ├── SequentialPlayback.java      # Sequential strategy
-│       │       │       ├── ShufflePlayback.java         # Shuffle strategy
-│       │       │       └── RepeatPlayback.java          # Repeat strategy
-│       │       │
-│       │       ├── dto/                                 # 📦 Data Transfer Objects
-│       │       │   ├── request/
-│       │       │   │   ├── auth/
-│       │       │   │   │   ├── LoginRequest.java
-│       │       │   │   │   ├── RegisterRequest.java     # Unified registration
-│       │       │   │   │   └── AdminLoginRequest.java
-│       │       │   │   │
-│       │       │   │   ├── user/
-│       │       │   │   │   ├── UpdateProfileRequest.java
-│       │       │   │   │   ├── CreatePlaylistRequest.java
-│       │       │   │   │   └── PlayerActionRequest.java
-│       │       │   │   │
-│       │       │   │   └── admin/
-│       │       │   │       ├── CreateArtistRequest.java
-│       │       │   │       ├── UploadSongRequest.java
-│       │       │   │       ├── CreateAlbumRequest.java
-│       │       │   │       └── ManageUserRequest.java
-│       │       │   │
-│       │       │   └── response/
-│       │       │       ├── AuthResponse.java            # With JWT token
-│       │       │       ├── UserResponse.java
-│       │       │       ├── ArtistResponse.java
-│       │       │       ├── AdminResponse.java
-│       │       │       ├── SongResponse.java
-│       │       │       ├── AlbumResponse.java
-│       │       │       ├── PlaylistResponse.java
-│       │       │       ├── PlayerStateResponse.java
-│       │       │       └── ErrorResponse.java           # Standard error format
-│       │       │
-│       │       ├── exception/                           # ❌ Custom Exceptions & Handlers
-│       │       │   ├── GlobalExceptionHandler.java      # Centralized error handling
-│       │       │   ├── auth/
-│       │       │   │   ├── AuthenticationException.java # Login/token errors (try-catch)
-│       │       │   │   ├── PasswordValidationException.java # Password errors (try-catch)
-│       │       │   │   └── UnauthorizedException.java   # 401 errors
-│       │       │   │
-│       │       │   ├── user/
-│       │       │   │   ├── UserNotFoundException.java
-│       │       │   │   └── LibraryException.java
-│       │       │   │
-│       │       │   ├── music/
-│       │       │   │   ├── SongNotFoundException.java
-│       │       │   │   ├── PlaylistException.java
-│       │       │   │   └── AlbumException.java
-│       │       │   │
-│       │       │   ├── admin/
-│       │       │   │   ├── AdminAccessException.java
-│       │       │   │   └── ManagementException.java
-│       │       │   │
-│       │       │   └── common/
-│       │       │       ├── ResourceNotFoundException.java # Generic 404
-│       │       │       ├── BadRequestException.java     # 400 errors
-│       │       │       ├── FileStorageException.java    # File upload errors
-│       │       │       └── ValidationException.java     # Input validation errors
-│       │       │
-│       │       ├── util/                                # 🔧 Utility Classes
-│       │       │   ├── IDGenerator.java                 # UUID generator
-│       │       │   ├── PasswordUtil.java                # BCrypt + validation (with try-catch)
-│       │       │   ├── ValidationUtil.java              # Input validation (with try-catch)
-│       │       │   ├── FileUtil.java                    # File handling helpers
-│       │       │   └── JwtUtil.java                     # JWT token generation/validation
-│       │       │
-│       │       ├── security/                            # 🔐 Security Components
-│       │       │   ├── JwtAuthenticationFilter.java     # JWT filter
-│       │       │   ├── CustomUserDetailsService.java    # Load user for authentication
-│       │       │   └── RoleEnum.java                    # USER, ARTIST, ADMIN roles
-│       │       │
-│       │       └── interfaces/                          # 🔌 Custom Interfaces
-│       │           ├── Loginable.java                   # Login interface
-│       │           ├── Searchable.java                  # Search interface
-│       │           └── Playable.java                    # Playable interface
-│       │
-│       └── resources/
-│           ├── application.properties                   # Main config
-│           ├── application-dev.properties               # Dev environment
-│           ├── application-prod.properties              # Production environment
-│           ├── static/                                  # Static resources
-│           │   └── uploads/                             # Uploaded songs/images
-│           └── templates/                               # Email templates (optional)
-│
-├── Dockerfile                                           # Docker build config
-├── .dockerignore                                        # Docker ignore file
-├── docker-compose.yml                                   # Multi-container setup
-├── pom.xml                                              # Maven dependencies
-└── README.md                                            # Project documentation
+│   ├── assets/                      \# Images, icons, media
+│   ├── components/                  \# Reusable UI components
+│   │   ├── Auth/                    \# Login, Register components
+│   │   ├── Common/                  \# Buttons, Cards, Modals
+│   │   ├── Layout/                  \# Navbar, Sidebar, Footer
+│   │   └── Music/                   \# Player, Playlist components
+│   ├── context/                     \# React Context providers
+│   ├── hooks/                       \# Custom React hooks
+│   ├── pages/                       \# Route pages
+│   │   ├── admin/                   \# Admin dashboard pages
+│   │   ├── auth/                    \# Login/Register pages
+│   │   ├── Settings/                \# User settings pages
+│   │   └── user/                    \# User dashboard pages
+│   ├── services/                    \# API service calls (Axios)
+│   ├── styles/                      \# Global CSS, themes
+│   └── utils/                       \# Helper functions, constants
+└── dist/                            \# Production build output
+
+```
+
+---
+
+## 💻 Installation
+
+### Prerequisites
+
+- **Java 17+** (for Spring Boot)
+- **Node.js 18+** (for React)
+- **PostgreSQL 15+** (atau gunakan Supabase)
+- **Maven** (untuk build backend)
+- **Git**
+
+### 1️⃣ Clone Repository
+
+```
+
+git clone https://github.com/your-username/melodia.git
+cd melodia
+
+```
+
+### 2️⃣ Setup Backend
+
+```
+
+cd backend
+
+# Configure application.properties
+
+# Edit src/main/resources/application.properties
+
+# Set database credentials (PostgreSQL/Supabase)
+
+# Install dependencies \& run
+
+mvn clean install
+mvn spring-boot:run
+
+# Backend akan berjalan di http://localhost:8080
+
+```
+
+**Environment Variables (Backend)**:
+```
+
+spring.datasource.url=jdbc:postgresql://your-supabase-url:5432/melodia
+spring.datasource.username=your-db-username
+spring.datasource.password=your-db-password
+jwt.secret=your-secret-key
+
+```
+
+### 3️⃣ Setup Frontend
+
+```
+
+cd frontend
+
+# Install dependencies
+
+npm install
+
+# Configure API endpoint
+
+# Edit src/services/api.js atau .env file
+
+# VITE_API_BASE_URL=http://localhost:8080/api
+
+# Run development server
+
+npm run dev
+
+# Frontend akan berjalan di http://localhost:5173
+
+```
+
+### 4️⃣ (Optional) Setup Database dengan Docker
+
+```
+
+
+# Di root project
+
+docker-compose up -d
+
+# Database akan berjalan di localhost:5432
+
+```
+
+---
+
+## 🔌 API Overview
+
+### Authentication
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/auth/register` | Register user baru |
+| POST | `/api/auth/login` | Login dan dapatkan JWT token |
+| POST | `/api/auth/logout` | Logout user |
+
+### Music Management
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/music/songs` | Get all songs |
+| GET | `/api/music/songs/{id}` | Get song by ID |
+| POST | `/api/music/songs` | Upload new song (artist/admin) |
+| DELETE | `/api/music/songs/{id}` | Delete song (admin) |
+
+### Playlist
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/user/playlists` | Get user playlists |
+| POST | `/api/user/playlists` | Create new playlist |
+| PUT | `/api/user/playlists/{id}` | Update playlist |
+| DELETE | `/api/user/playlists/{id}` | Delete playlist |
+| POST | `/api/user/playlists/{id}/songs` | Add song to playlist |
+
+### User & History
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/user/profile` | Get user profile |
+| PUT | `/api/user/profile` | Update user profile |
+| GET | `/api/user/history` | Get listening history |
+
+> 📝 **Note**: Semua endpoint (kecuali `/auth`) memerlukan JWT token di header:  
+> `Authorization: Bearer <your-jwt-token>`
+
+---
+
+## 🎨 Screenshots
+
+> _Screenshots akan ditambahkan setelah deployment final_
+
+---
+
+## 🚀 Deployment
+
+### Frontend (GitHub Pages)
+```
+
+cd frontend
+npm run build
+npm run deploy
+
+```
+
+### Backend (Railway)
+1. Push code ke GitHub
+2. Connect repository di Railway dashboard
+3. Set environment variables
+4. Deploy otomatis dari branch `main`
+
+---
+
+## 👥 Team
+
+Proyek ini dikembangkan sebagai tugas mata kuliah **Object-Oriented Programming**.
+
+| Role | Responsibility |
+|------|----------------|
+| Backend Developer | Spring Boot API, Database design, Security |
+| Frontend Developer | React UI/UX, State management, Integration |
+| Full-Stack Developer | End-to-end features, Testing, Deployment |
+
+---
+
+## 📝 License
+
+This project is developed for educational purposes.  
+© 2025 Melodia Team - Telkom University
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Please follow these steps:
+
+1. Fork the repository
+2. Create feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+---
+
+## 📞 Contact & Support
+
+Jika ada pertanyaan atau issue, silakan buka [GitHub Issues](https://github.com/your-username/melodia/issues).
+
+---
+
+<div align="center">
+
+**⭐ Star this repo if you find it helpful!**
+
+Made with ❤️ by Melodia Team
+
+</div>
