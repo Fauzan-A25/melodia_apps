@@ -145,10 +145,10 @@ const AdminDashboard = () => {
             <p>Kelola lagu dan metadata</p>
           </Link>
 
-          <Link to="/admin/upload" className={styles.actionCard}>
-            <div className={styles.actionIcon}>⬆️</div>
-            <h3>Upload Song</h3>
-            <p>Upload lagu baru ke platform</p>
+          <Link to="/admin/users" className={styles.actionCard}>
+            <div className={styles.actionIcon}>👥</div>
+            <h3>Manage Users</h3>
+            <p>Kelola pengguna musik</p>
           </Link>
         </div>
       </div>

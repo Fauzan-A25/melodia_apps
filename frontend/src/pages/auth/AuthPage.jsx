@@ -3,7 +3,9 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuthContext } from '../../context/AuthContext';
 import styles from './AuthPage.module.css';
-import { Music2, Mail, Lock, User, Headphones } from 'lucide-react';
+import { Music2, Mail, Lock, User } from 'lucide-react';
+
+const USERNAME_REGEX = /^[^\s]+$/; // username tidak boleh mengandung spasi
 
 const AuthPage = () => {
   const navigate = useNavigate();
@@ -23,7 +25,7 @@ const AuthPage = () => {
     email: '',
     password: '',
     username: '',
-    role: 'user', // tetap dikirim 'user' ke backend
+    role: 'user',
     bio: '',
   });
   const [error, setError] = useState('');
@@ -64,6 +66,11 @@ const AuthPage = () => {
     setLoading(true);
 
     try {
+      // Validasi username: tidak boleh mengandung spasi
+      if (!USERNAME_REGEX.test(formData.username)) {
+        throw new Error('Username tidak boleh mengandung spasi');
+      }
+
       if (isLogin) {
         // LOGIN
         const result = await login(formData.username, formData.password);
@@ -95,8 +102,8 @@ const AuthPage = () => {
           formData.username,
           formData.email,
           formData.password,
-          'user', // paksa role user
-          '' // bio kosong
+          'user',
+          ''
         );
 
         if (!result.success) {
@@ -119,6 +126,10 @@ const AuthPage = () => {
       let errorMessage = err.message || 'An error occurred';
 
       if (
+        errorMessage.includes('Username tidak boleh mengandung spasi')
+      ) {
+        errorMessage = 'Username tidak boleh mengandung spasi';
+      } else if (
         errorMessage.includes('401') ||
         errorMessage.includes('Invalid credentials')
       ) {
@@ -279,26 +290,6 @@ const AuthPage = () => {
               autoComplete={isLogin ? 'current-password' : 'new-password'}
             />
           </div>
-
-          {/* Role sekarang fixed user -> cukup informasi teks saja */}
-          {!isLogin && (
-            <div className={styles.roleSection}>
-              <label className={styles.roleLabel}>Account type:</label>
-              <div className={styles.roleOptions}>
-                <div
-                  className={`${styles.roleOption} ${styles.roleActive}`}
-                >
-                  <Headphones size={24} className={styles.roleIcon} />
-                  <div className={styles.roleText}>
-                    <span className={styles.roleName}>Listener</span>
-                    <span className={styles.roleDesc}>
-                      Nikmati musik favorit Anda
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
 
           <button
             type="submit"

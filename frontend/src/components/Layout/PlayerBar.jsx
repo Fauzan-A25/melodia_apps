@@ -1,7 +1,15 @@
-// components/Layout/PlayerBar.jsx
 import { useState, useRef, useEffect, useCallback } from 'react';
 import styles from './PlayerBar.module.css';
-import { Play, Pause, SkipBack, SkipForward, Shuffle, Repeat, Volume2, Heart, X } from 'lucide-react';
+import {
+  Play,
+  Pause,
+  SkipBack,
+  SkipForward,
+  Shuffle,
+  Repeat,
+  Volume2,
+  X,
+} from 'lucide-react';
 import { useMusic } from '../../context/MusicContext';
 import { musicService } from '../../services/musicService';
 import { useUser } from '../../context/UserContext';
@@ -9,10 +17,10 @@ import { useUser } from '../../context/UserContext';
 const SUPABASE_URL = 'https://byqxamggdqsnikvkkivr.supabase.co';
 
 const PlayerBar = () => {
-  const { 
-    currentSong, 
-    playNext, 
-    playPrevious, 
+  const {
+    currentSong,
+    playNext,
+    playPrevious,
     stopMusic,
     isPlaying: globalIsPlaying,
     setIsPlaying: setGlobalIsPlaying,
@@ -29,13 +37,10 @@ const PlayerBar = () => {
   const isLoadingRef = useRef(false);
   const userIdRef = useRef(null);
 
-  // Local state
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
-  const [isLiked, setIsLiked] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  // ==================== SYNC USER ID ====================
   useEffect(() => {
     userIdRef.current =
       user?.accountId ||
@@ -43,41 +48,29 @@ const PlayerBar = () => {
       localStorage.getItem('accountId');
   }, [user]);
 
-  // ==================== EFFECTS ====================
-
-  // Load new song when currentSong changes
+  // Load new song
   useEffect(() => {
     if (!currentSong || !audioRef.current) return;
 
     const audio = audioRef.current;
-    
-    // ✅ SUPABASE DIRECT URL (yang sebelumnya)
+
     const streamUrl = currentSong.filePath
       ? `${SUPABASE_URL}/storage/v1/object/public/songs/${currentSong.filePath}`
       : null;
 
     if (!streamUrl) {
-      console.error('❌ No file path for song:', currentSong);
+      console.log('[PlayerBar] no filePath', currentSong);
       return;
     }
 
-    console.log('🎵 Loading song:', {
-      songId: currentSong.songId,
-      title: currentSong.title,
-      filePath: currentSong.filePath,
-      streamUrl: streamUrl
-    });
-    
-    // Abort previous load
     isLoadingRef.current = true;
     audio.pause();
     audio.currentTime = 0;
-    
     audio.src = streamUrl;
     audio.load();
 
     const handleLoadStart = () => {
-      console.log('⏳ Loading started...');
+      console.log('[PlayerBar] loadstart');
       setIsLoading(true);
       setCurrentTime(0);
       setDuration(0);
@@ -85,53 +78,48 @@ const PlayerBar = () => {
 
     const handleCanPlay = () => {
       if (!isLoadingRef.current) return;
-      
-      console.log('✅ Audio ready to play');
+      console.log('[PlayerBar] canplay, auto play');
+
       setIsLoading(false);
       isLoadingRef.current = false;
-      
-      // Auto play new song
-      audio.play()
+
+      audio
+        .play()
         .then(() => {
-          console.log('▶️ Playing...');
           setGlobalIsPlaying(true);
 
-          // ✅ ADD SONG TO HISTORY via musicService (Railway backend)
           const songId = currentSong.songId || currentSong.id;
           const userId = userIdRef.current;
-          
+
           if (userId && songId) {
             musicService
               .addSongToHistory(userId, songId)
-              .then(() => console.log('✅ Added to history:', songId))
-              .catch(err => console.error('❌ Failed to add to history:', err));
-          } else {
-            console.warn('⚠️ Cannot add to history: missing userId or songId');
+              .then(() => console.log('[PlayerBar] added to history', songId))
+              .catch((err) =>
+                console.log('[PlayerBar] add history error', err),
+              );
           }
         })
-        .catch(err => {
+        .catch((err) => {
           if (err.name !== 'AbortError') {
-            console.error('❌ Play error:', err);
+            console.log('[PlayerBar] play error on canplay', err);
+            setGlobalIsPlaying(false);
           }
         });
     };
 
-    const handleError = (e) => {
+    const handleError = () => {
+      console.log('[PlayerBar] audio error');
       setIsLoading(false);
       isLoadingRef.current = false;
-      console.error('❌ Audio load error:', {
-        error: e,
-        src: audio.src,
-        networkState: audio.networkState,
-        readyState: audio.readyState
-      });
     };
 
     audio.addEventListener('loadstart', handleLoadStart);
     audio.addEventListener('canplay', handleCanPlay);
     audio.addEventListener('error', handleError);
-    
+
     return () => {
+      console.log('[PlayerBar] cleanup load listeners');
       audio.removeEventListener('loadstart', handleLoadStart);
       audio.removeEventListener('canplay', handleCanPlay);
       audio.removeEventListener('error', handleError);
@@ -141,12 +129,15 @@ const PlayerBar = () => {
 
   // Handle song end
   const handleSongEnd = useCallback(() => {
-    console.log('🔚 Song ended, playing next...');
-    setGlobalIsPlaying(false);
+    console.log('[PlayerBar] audio ended, repeatMode=', repeatMode);
+    if (repeatMode === 'one') {
+      // audio.loop akan meng-handle repeat one
+      return;
+    }
     playNext();
-  }, [playNext, setGlobalIsPlaying]);
+  }, [playNext, repeatMode]);
 
-  // Update time when playing
+  // Time & ended listeners
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
@@ -156,15 +147,16 @@ const PlayerBar = () => {
       const dur = audio.duration;
       if (!isNaN(dur) && isFinite(dur)) {
         setDuration(dur);
-        console.log('⏱️ Duration:', Math.floor(dur), 'seconds');
       }
     };
 
+    console.log('[PlayerBar] attach audio listeners');
     audio.addEventListener('timeupdate', updateTime);
     audio.addEventListener('loadedmetadata', updateDuration);
     audio.addEventListener('ended', handleSongEnd);
 
     return () => {
+      console.log('[PlayerBar] cleanup audio listeners');
       audio.removeEventListener('timeupdate', updateTime);
       audio.removeEventListener('loadedmetadata', updateDuration);
       audio.removeEventListener('ended', handleSongEnd);
@@ -177,42 +169,42 @@ const PlayerBar = () => {
     if (!audio || !currentSong || isLoadingRef.current) return;
 
     if (globalIsPlaying) {
-      audio.play().catch(err => {
+      audio.play().catch((err) => {
         if (err.name !== 'AbortError') {
-          console.error('Play error:', err);
+          console.log('[PlayerBar] play error (sync)', err);
+          setGlobalIsPlaying(false);
         }
       });
     } else {
       audio.pause();
     }
-  }, [globalIsPlaying, currentSong]);
+  }, [globalIsPlaying, currentSong, setGlobalIsPlaying]);
 
-  // Sync volume
+  // Volume
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.volume = globalVolume / 100;
     }
   }, [globalVolume]);
 
-  // ==================== HANDLERS ====================
-
   const togglePlayPause = () => {
     const audio = audioRef.current;
     if (!audio || !currentSong || isLoading) return;
 
     if (globalIsPlaying) {
+      console.log('[PlayerBar] pause click');
       audio.pause();
       setGlobalIsPlaying(false);
-      console.log('⏸️ Paused');
     } else {
-      audio.play()
+      console.log('[PlayerBar] play click');
+      audio
+        .play()
         .then(() => {
           setGlobalIsPlaying(true);
-          console.log('▶️ Playing');
         })
-        .catch(err => {
+        .catch((err) => {
           if (err.name !== 'AbortError') {
-            console.error('Play error:', err);
+            console.log('[PlayerBar] play error (click)', err);
             setGlobalIsPlaying(false);
           }
         });
@@ -239,7 +231,6 @@ const PlayerBar = () => {
       audio.src = '';
     }
     isLoadingRef.current = false;
-    console.log('❌ Player closed');
     stopMusic();
   };
 
@@ -250,16 +241,15 @@ const PlayerBar = () => {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  // ==================== RENDER ====================
-
   if (!currentSong) return null;
 
   return (
     <div className={styles.playerBar}>
-      <audio 
-        ref={audioRef} 
+      <audio
+        ref={audioRef}
         preload="metadata"
         crossOrigin="anonymous"
+        loop={repeatMode === 'one'}
       />
 
       {/* Track Info */}
@@ -269,29 +259,28 @@ const PlayerBar = () => {
         </div>
         <div className={styles.trackDetails}>
           <h4>{currentSong.title}</h4>
-          <p>{currentSong.artist?.username || currentSong.artistName || 'Unknown Artist'}</p>
+          <p>
+            {currentSong.artist?.username ||
+              currentSong.artistName ||
+              'Unknown Artist'}
+          </p>
         </div>
-        <button
-          className={`${styles.likeBtn} ${isLiked ? styles.liked : ''}`}
-          onClick={() => setIsLiked(!isLiked)}
-          title={isLiked ? 'Unlike' : 'Like'}
-        >
-          <Heart size={20} fill={isLiked ? 'currentColor' : 'none'} />
-        </button>
       </div>
 
       {/* Player Controls */}
       <div className={styles.playerControls}>
         <div className={styles.controlButtons}>
-          <button 
-            className={`${styles.controlBtn} ${isShuffled ? styles.active : ''}`}
+          <button
+            className={`${styles.controlBtn} ${
+              isShuffled ? styles.active : ''
+            }`}
             onClick={toggleShuffle}
             title="Shuffle"
           >
             <Shuffle size={18} />
           </button>
-          <button 
-            className={styles.controlBtn} 
+          <button
+            className={styles.controlBtn}
             onClick={playPrevious}
             title="Previous"
           >
@@ -301,7 +290,13 @@ const PlayerBar = () => {
             className={styles.playPauseBtn}
             onClick={togglePlayPause}
             disabled={isLoading}
-            title={isLoading ? 'Loading...' : globalIsPlaying ? 'Pause' : 'Play'}
+            title={
+              isLoading
+                ? 'Loading...'
+                : globalIsPlaying
+                ? 'Pause'
+                : 'Play'
+            }
           >
             {isLoading ? (
               <div className={styles.spinner} />
@@ -311,20 +306,24 @@ const PlayerBar = () => {
               <Play size={24} />
             )}
           </button>
-          <button 
-            className={styles.controlBtn} 
+          <button
+            className={styles.controlBtn}
             onClick={playNext}
             title="Next"
           >
             <SkipForward size={20} />
           </button>
-          <button 
-            className={`${styles.controlBtn} ${repeatMode !== 'off' ? styles.active : ''}`}
+          <button
+            className={`${styles.controlBtn} ${
+              repeatMode !== 'off' ? styles.active : ''
+            }`}
             onClick={toggleRepeat}
             title={`Repeat: ${repeatMode}`}
           >
             <Repeat size={18} />
-            {repeatMode === 'one' && <span className={styles.repeatBadge}>1</span>}
+            {repeatMode === 'one' && (
+              <span className={styles.repeatBadge}>1</span>
+            )}
           </button>
         </div>
 
@@ -354,9 +353,9 @@ const PlayerBar = () => {
           value={globalVolume}
           onChange={handleVolumeChange}
         />
-        <button 
-          className={styles.closeBtn} 
-          onClick={handleClose} 
+        <button
+          className={styles.closeBtn}
+          onClick={handleClose}
           title="Close player"
         >
           <X size={18} />

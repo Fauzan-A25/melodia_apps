@@ -1,4 +1,3 @@
-// context/MusicContext.jsx
 import { createContext, useContext, useState, useMemo, useCallback } from 'react';
 
 const MusicContext = createContext(null);
@@ -23,15 +22,15 @@ export const MusicProvider = ({ children }) => {
   // ==================== LIBRARY METHODS ====================
 
   const addToLibrary = useCallback((track) => {
-    setLibrary(prev => {
-      const exists = prev.find(t => t.id === track.id);
+    setLibrary((prev) => {
+      const exists = prev.find((t) => t.id === track.id);
       if (exists) return prev;
       return [...prev, track];
     });
   }, []);
 
   const removeFromLibrary = useCallback((trackId) => {
-    setLibrary(prev => prev.filter(t => t.id !== trackId));
+    setLibrary((prev) => prev.filter((t) => t.id !== trackId));
   }, []);
 
   // ==================== PLAYLIST METHODS ====================
@@ -46,80 +45,92 @@ export const MusicProvider = ({ children }) => {
       cover: '🎵',
       color: 'linear-gradient(135deg, #3b82f6 0%, #6366f1 100%)',
     };
-    setPlaylists(prev => [...prev, newPlaylist]);
+    setPlaylists((prev) => [...prev, newPlaylist]);
     return newPlaylist;
   }, []);
 
   const addToPlaylist = useCallback((playlistId, track) => {
-    setPlaylists(prev => prev.map(playlist => {
-      if (playlist.id === playlistId) {
-        const exists = playlist.tracks.find(t => t.id === track.id);
-        if (exists) return playlist;
-        return {
-          ...playlist,
-          tracks: [...playlist.tracks, track],
-        };
-      }
-      return playlist;
-    }));
+    setPlaylists((prev) =>
+      prev.map((playlist) => {
+        if (playlist.id === playlistId) {
+          const exists = playlist.tracks.find((t) => t.id === track.id);
+          if (exists) return playlist;
+          return {
+            ...playlist,
+            tracks: [...playlist.tracks, track],
+          };
+        }
+        return playlist;
+      }),
+    );
   }, []);
 
   const removeFromPlaylist = useCallback((playlistId, trackId) => {
-    setPlaylists(prev => prev.map(playlist => {
-      if (playlist.id === playlistId) {
-        return {
-          ...playlist,
-          tracks: playlist.tracks.filter(t => t.id !== trackId),
-        };
-      }
-      return playlist;
-    }));
+    setPlaylists((prev) =>
+      prev.map((playlist) => {
+        if (playlist.id === playlistId) {
+          return {
+            ...playlist,
+            tracks: playlist.tracks.filter((t) => t.id !== trackId),
+          };
+        }
+        return playlist;
+      }),
+    );
   }, []);
 
   const deletePlaylist = useCallback((playlistId) => {
-    setPlaylists(prev => prev.filter(p => p.id !== playlistId));
+    setPlaylists((prev) => prev.filter((p) => p.id !== playlistId));
   }, []);
 
   const updatePlaylist = useCallback((playlistId, updates) => {
-    setPlaylists(prev => prev.map(playlist => {
-      if (playlist.id === playlistId) {
-        return { ...playlist, ...updates };
-      }
-      return playlist;
-    }));
+    setPlaylists((prev) =>
+      prev.map((playlist) => {
+        if (playlist.id === playlistId) {
+          return { ...playlist, ...updates };
+        }
+        return playlist;
+      }),
+    );
   }, []);
 
-  const getPlaylistById = useCallback((playlistId) => {
-    return playlists.find(p => p.id === playlistId) || null;
-  }, [playlists]);
+  const getPlaylistById = useCallback(
+    (playlistId) => {
+      return playlists.find((p) => p.id === playlistId) || null;
+    },
+    [playlists],
+  );
 
   // ==================== FAVORITES METHODS ====================
 
   const addToFavorites = useCallback((track) => {
-    setFavorites(prev => {
-      const exists = prev.find(t => t.id === track.id);
+    setFavorites((prev) => {
+      const exists = prev.find((t) => t.id === track.id);
       if (exists) return prev;
       return [...prev, track];
     });
   }, []);
 
   const removeFromFavorites = useCallback((trackId) => {
-    setFavorites(prev => prev.filter(t => t.id !== trackId));
+    setFavorites((prev) => prev.filter((t) => t.id !== trackId));
   }, []);
 
   const toggleFavorite = useCallback((track) => {
-    setFavorites(prev => {
-      const exists = prev.find(t => t.id === track.id);
+    setFavorites((prev) => {
+      const exists = prev.find((t) => t.id === track.id);
       if (exists) {
-        return prev.filter(t => t.id !== track.id);
+        return prev.filter((t) => t.id !== track.id);
       }
       return [...prev, track];
     });
   }, []);
 
-  const isFavorite = useCallback((trackId) => {
-    return favorites.some(t => t.id === trackId);
-  }, [favorites]);
+  const isFavorite = useCallback(
+    (trackId) => {
+      return favorites.some((t) => t.id === trackId);
+    },
+    [favorites],
+  );
 
   // ==================== HISTORY METHODS ====================
 
@@ -128,8 +139,8 @@ export const MusicProvider = ({ children }) => {
       ...track,
       playedAt: new Date().toISOString(),
     };
-    setHistory(prev => {
-      const filtered = prev.filter(t => t.id !== track.id);
+    setHistory((prev) => {
+      const filtered = prev.filter((t) => t.id !== track.id);
       return [historyEntry, ...filtered].slice(0, 50);
     });
   }, []);
@@ -140,68 +151,132 @@ export const MusicProvider = ({ children }) => {
 
   // ==================== SEARCH ====================
 
-  const searchTracks = useCallback((query) => {
-    if (!query || query.length < 2) return [];
-    const lowerQuery = query.toLowerCase();
-    return library.filter(track =>
-      track.title.toLowerCase().includes(lowerQuery) ||
-      track.artist.toLowerCase().includes(lowerQuery) ||
-      track.album?.toLowerCase().includes(lowerQuery)
-    );
-  }, [library]);
+  const searchTracks = useCallback(
+    (query) => {
+      if (!query || query.length < 2) return [];
+      const lowerQuery = query.toLowerCase();
+      return library.filter(
+        (track) =>
+          track.title.toLowerCase().includes(lowerQuery) ||
+          track.artist.toLowerCase().includes(lowerQuery) ||
+          track.album?.toLowerCase().includes(lowerQuery),
+      );
+    },
+    [library],
+  );
 
   // ==================== PLAYER METHODS ====================
 
-  const playSong = useCallback((song, songList = [], index = 0) => {
-    setCurrentSong(song);
-    setQueue(songList);
-    setCurrentIndex(index);
-    setIsPlaying(true);
-    addToHistory(song);
-  }, [addToHistory]);
+  const playSong = useCallback(
+    (song, songList = [], index = 0) => {
+      console.log('[playSong]', {
+        songId: song?.id || song?.songId,
+        index,
+        listLength: songList.length,
+      });
+      setCurrentSong(song);
+      setQueue(songList);
+      setCurrentIndex(index);
+      setIsPlaying(true);
+      addToHistory(song);
+    },
+    [addToHistory],
+  );
 
-  const playNext = useCallback(() => {
-    if (repeatMode === 'one') {
-      return; // Stay on current song
-    }
+  const playNext = useCallback(
+    () => {
+      console.log('[playNext] called', {
+        queueLength: queue?.length,
+        currentIndex,
+        repeatMode,
+        isShuffled,
+        currentSongId: queue[currentIndex]?.id || queue[currentIndex]?.songId,
+      });
 
-    let nextIndex;
-    if (isShuffled) {
-      nextIndex = Math.floor(Math.random() * queue.length);
-    } else if (currentIndex < queue.length - 1) {
-      nextIndex = currentIndex + 1;
-    } else if (repeatMode === 'all') {
-      nextIndex = 0; // Loop back to start
-    } else {
-      return; // End of queue
-    }
+      if (!queue || queue.length === 0) {
+        console.log('[playNext] queue empty, returning');
+        return;
+      }
 
-    setCurrentIndex(nextIndex);
-    setCurrentSong(queue[nextIndex]);
-    addToHistory(queue[nextIndex]);
-  }, [currentIndex, queue, repeatMode, isShuffled, addToHistory]);
+      if (repeatMode === 'one') {
+        console.log('[playNext] repeatMode=one, replay same song');
+        setCurrentSong(queue[currentIndex]);
+        addToHistory(queue[currentIndex]);
+        return;
+      }
 
-  const playPrevious = useCallback(() => {
-    if (currentIndex > 0) {
-      const prevIndex = currentIndex - 1;
-      setCurrentIndex(prevIndex);
-      setCurrentSong(queue[prevIndex]);
-      addToHistory(queue[prevIndex]);
-    } else if (repeatMode === 'all') {
-      const lastIndex = queue.length - 1;
-      setCurrentIndex(lastIndex);
-      setCurrentSong(queue[lastIndex]);
-      addToHistory(queue[lastIndex]);
-    }
-  }, [currentIndex, queue, repeatMode, addToHistory]);
+      let nextIndex = currentIndex;
+
+      if (isShuffled && queue.length > 1) {
+        let randomIndex = currentIndex;
+        while (randomIndex === currentIndex) {
+          randomIndex = Math.floor(Math.random() * queue.length);
+        }
+        nextIndex = randomIndex;
+        console.log('[playNext] shuffled, nextIndex=', nextIndex);
+      } else if (currentIndex < queue.length - 1) {
+        nextIndex = currentIndex + 1;
+        console.log('[playNext] normal next, nextIndex=', nextIndex);
+      } else if (repeatMode === 'all') {
+        nextIndex = 0;
+        console.log('[playNext] repeat all, looping to index 0');
+      } else {
+        console.log('[playNext] end of queue & repeat=off, stop');
+        return;
+      }
+
+      console.log('[playNext] setting currentIndex & currentSong', {
+        nextIndex,
+        nextSongId: queue[nextIndex]?.id || queue[nextIndex]?.songId,
+      });
+
+      setCurrentIndex(nextIndex);
+      setCurrentSong(queue[nextIndex]);
+      addToHistory(queue[nextIndex]);
+    },
+    [currentIndex, queue, repeatMode, isShuffled, addToHistory],
+  );
+
+  const playPrevious = useCallback(
+    () => {
+      console.log('[playPrevious] called', {
+        queueLength: queue?.length,
+        currentIndex,
+        repeatMode,
+      });
+
+      if (!queue || queue.length === 0) {
+        console.log('[playPrevious] queue empty, returning');
+        return;
+      }
+
+      if (currentIndex > 0) {
+        const prevIndex = currentIndex - 1;
+        console.log('[playPrevious] normal prev, index=', prevIndex);
+        setCurrentIndex(prevIndex);
+        setCurrentSong(queue[prevIndex]);
+        addToHistory(queue[prevIndex]);
+      } else if (repeatMode === 'all') {
+        const lastIndex = queue.length - 1;
+        console.log('[playPrevious] repeat all, jump to last index=', lastIndex);
+        setCurrentIndex(lastIndex);
+        setCurrentSong(queue[lastIndex]);
+        addToHistory(queue[lastIndex]);
+      } else {
+        console.log('[playPrevious] at start & repeat=off, stop');
+      }
+    },
+    [currentIndex, queue, repeatMode, addToHistory],
+  );
 
   const stopMusic = useCallback(() => {
+    console.log('[stopMusic]');
     setCurrentSong(null);
     setIsPlaying(false);
   }, []);
 
   const togglePlay = useCallback(() => {
-    setIsPlaying(prev => !prev);
+    setIsPlaying((prev) => !prev);
   }, []);
 
   const changeVolume = useCallback((newVolume) => {
@@ -210,117 +285,135 @@ export const MusicProvider = ({ children }) => {
   }, []);
 
   const toggleMute = useCallback(() => {
-    setIsMuted(prev => !prev);
+    setIsMuted((prev) => !prev);
   }, []);
 
   const toggleRepeat = useCallback(() => {
-    setRepeatMode(prev => {
-      if (prev === 'off') return 'all';
-      if (prev === 'all') return 'one';
-      return 'off';
+    setRepeatMode((prev) => {
+      const next =
+        prev === 'off' ? 'all' :
+        prev === 'all' ? 'one' :
+        'off';
+      console.log('[toggleRepeat]', { prev, next });
+      return next;
     });
   }, []);
 
   const toggleShuffle = useCallback(() => {
-    setIsShuffled(prev => !prev);
+    setIsShuffled((prev) => {
+      const next = !prev;
+      console.log('[toggleShuffle]', { prev, next });
+      return next;
+    });
   }, []);
 
   const addToQueue = useCallback((song) => {
-    setQueue(prev => [...prev, song]);
+    setQueue((prev) => {
+      const next = [...prev, song];
+      console.log('[addToQueue]', {
+        addedId: song?.id || song?.songId,
+        newLength: next.length,
+      });
+      return next;
+    });
   }, []);
 
   const clearQueue = useCallback(() => {
+    console.log('[clearQueue]');
     setQueue([]);
     setCurrentIndex(0);
   }, []);
 
   // ==================== MEMOIZED VALUE ====================
 
-  const value = useMemo(() => ({
-    // Library & Playlists
-    library,
-    playlists,
-    history,
-    favorites,
-    addToLibrary,
-    removeFromLibrary,
-    createPlaylist,
-    addToPlaylist,
-    removeFromPlaylist,
-    deletePlaylist,
-    updatePlaylist,
-    getPlaylistById,
-    addToFavorites,
-    removeFromFavorites,
-    toggleFavorite,
-    isFavorite,
-    addToHistory,
-    clearHistory,
-    searchTracks,
+  const value = useMemo(
+    () => ({
+      // Library & Playlists
+      library,
+      playlists,
+      history,
+      favorites,
+      addToLibrary,
+      removeFromLibrary,
+      createPlaylist,
+      addToPlaylist,
+      removeFromPlaylist,
+      deletePlaylist,
+      updatePlaylist,
+      getPlaylistById,
+      addToFavorites,
+      removeFromFavorites,
+      toggleFavorite,
+      isFavorite,
+      addToHistory,
+      clearHistory,
+      searchTracks,
 
-    // Player State
-    currentSong,
-    queue,
-    currentIndex,
-    isPlaying,
-    volume,
-    isMuted,
-    repeatMode,
-    isShuffled,
+      // Player State
+      currentSong,
+      queue,
+      currentIndex,
+      isPlaying,
+      volume,
+      isMuted,
+      repeatMode,
+      isShuffled,
 
-    // Player Controls
-    playSong,
-    playNext,
-    playPrevious,
-    stopMusic,
-    togglePlay,
-    changeVolume,
-    toggleMute,
-    toggleRepeat,
-    toggleShuffle,
-    addToQueue,
-    clearQueue,
-    setIsPlaying,
-  }), [
-    library,
-    playlists,
-    history,
-    favorites,
-    currentSong,
-    queue,
-    currentIndex,
-    isPlaying,
-    volume,
-    isMuted,
-    repeatMode,
-    isShuffled,
-    addToLibrary,
-    removeFromLibrary,
-    createPlaylist,
-    addToPlaylist,
-    removeFromPlaylist,
-    deletePlaylist,
-    updatePlaylist,
-    getPlaylistById,
-    addToFavorites,
-    removeFromFavorites,
-    toggleFavorite,
-    isFavorite,
-    addToHistory,
-    clearHistory,
-    searchTracks,
-    playSong,
-    playNext,
-    playPrevious,
-    stopMusic,
-    togglePlay,
-    changeVolume,
-    toggleMute,
-    toggleRepeat,
-    toggleShuffle,
-    addToQueue,
-    clearQueue,
-  ]);
+      // Player Controls
+      playSong,
+      playNext,
+      playPrevious,
+      stopMusic,
+      togglePlay,
+      changeVolume,
+      toggleMute,
+      toggleRepeat,
+      toggleShuffle,
+      addToQueue,
+      clearQueue,
+      setIsPlaying,
+    }),
+    [
+      library,
+      playlists,
+      history,
+      favorites,
+      currentSong,
+      queue,
+      currentIndex,
+      isPlaying,
+      volume,
+      isMuted,
+      repeatMode,
+      isShuffled,
+      addToLibrary,
+      removeFromLibrary,
+      createPlaylist,
+      addToPlaylist,
+      removeFromPlaylist,
+      deletePlaylist,
+      updatePlaylist,
+      getPlaylistById,
+      addToFavorites,
+      removeFromFavorites,
+      toggleFavorite,
+      isFavorite,
+      addToHistory,
+      clearHistory,
+      searchTracks,
+      playSong,
+      playNext,
+      playPrevious,
+      stopMusic,
+      togglePlay,
+      changeVolume,
+      toggleMute,
+      toggleRepeat,
+      toggleShuffle,
+      addToQueue,
+      clearQueue,
+    ],
+  );
 
   return (
     <MusicContext.Provider value={value}>
@@ -328,10 +421,6 @@ export const MusicProvider = ({ children }) => {
     </MusicContext.Provider>
   );
 };
-
-// context/MusicContext.jsx
-
-// ... semua code di atas tetap sama
 
 /**
  * Custom hook to use music context
