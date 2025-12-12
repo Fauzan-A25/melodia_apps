@@ -2,9 +2,10 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { UserProvider, useUser } from './context/UserContext';
 import { MusicProvider } from './context/MusicContext';
-import { AuthProvider } from './context/AuthContext'; // pastikan path-nya benar
+import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import MainLayout from './components/Layout/MainLayout';
+import SessionTimeoutWarning from './components/Auth/SessionTimeoutWarning';
 import AuthPage from './pages/auth/AuthPage';
 import Home from './pages/user/Home';
 import PlaylistDetail from './pages/user/PlaylistDetail';
@@ -199,6 +200,9 @@ const App = () => {
     <AuthProvider>
       <UserProvider>
         <MusicProvider>
+          {/* ✅ Session Timeout Warning - Global component */}
+          <SessionTimeoutWarning />
+          
           <Routes>
             {/* Public Route - Auth (tanpa layout) */}
             <Route path="/auth" element={<AuthPage />} />

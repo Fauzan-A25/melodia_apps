@@ -12,11 +12,8 @@ const getAuthHeader = () => {
 
 // ==================== HELPER: Save Auth Data (legacy keys) ====================
 const saveAuthData = (data) => {
-  console.log('💾 Saving auth data (legacy keys):', data);
-
   if (data.token) {
     localStorage.setItem('token', data.token);
-    console.log('✅ JWT token saved (legacy key)');
   }
 
   if (data.accountId) {
@@ -44,7 +41,6 @@ const saveAuthData = (data) => {
 
 // ==================== HELPER: Sync ke STORAGE_KEYS.USER_DATA & AUTH_TOKEN ====================
 const syncAuthToUseAuthStorage = (data) => {
-  // Bentuk userData yang dibaca useAuth.initializeAuth()
   const userData = {
     accountId: data.accountId,
     username: data.username,
@@ -52,8 +48,6 @@ const syncAuthToUseAuthStorage = (data) => {
     accountType: data.accountType,
     bio: data.bio ?? null,
   };
-
-  console.log('💾 Sync to STORAGE_KEYS.USER_DATA:', userData);
 
   setStorageItem(STORAGE_KEYS.USER_DATA, userData);
   if (data.token) {
@@ -74,8 +68,6 @@ const clearAuthData = () => {
 
   removeStorageItem(STORAGE_KEYS.AUTH_TOKEN);
   removeStorageItem(STORAGE_KEYS.USER_DATA);
-
-  console.log('✅ Auth data cleared from localStorage + STORAGE_KEYS');
 };
 
 // ==================== HELPER: Check Token Expiry ====================
@@ -93,8 +85,6 @@ const isTokenExpired = (token) => {
 export const authService = {
   // ==================== LOGIN ====================
   login: async (usernameOrEmail, password) => {
-    console.log('🔐 Attempting login for:', usernameOrEmail);
-
     const response = await fetch(`${API_BASE_URL}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -119,34 +109,26 @@ export const authService = {
 
     const data = await response.json();
 
-    console.log('📦 Login response from backend:', data);
-
     if (!data.token) {
-      console.error('❌ JWT token not found in response!');
       throw new Error('Authentication token missing');
     }
 
     if (!data.accountId) {
-      console.error('⚠️ WARNING: accountId not found in login response!');
       if (data.id) data.accountId = data.id;
       else if (data.userId) data.accountId = data.userId;
       else if (data.account_id) data.accountId = data.account_id;
       else throw new Error('Account ID missing from response');
     }
 
-    // Legacy keys (dipakai Sidebar, dll)
+    // Save to storage
     saveAuthData(data);
-    // ✅ Sinkron ke storage versi useAuth
     syncAuthToUseAuthStorage(data);
 
-    console.log('✅ Login successful, token & userData saved');
     return data;
   },
 
   // ==================== REGISTER ====================
   register: async (username, email, password, role, bio = '') => {
-    console.log('📝 Attempting registration:', { username, email, role });
-
     const endpoint =
       role === 'artist'
         ? `${API_BASE_URL}/auth/register/artist`
@@ -175,15 +157,11 @@ export const authService = {
     }
 
     const data = await response.json();
-    console.log('✅ Registration successful:', data);
-
     return data;
   },
 
   // ==================== LOGOUT ====================
   logout: async () => {
-    console.log('🚪 Attempting logout...');
-
     try {
       const token = getStorageItem(STORAGE_KEYS.AUTH_TOKEN) || localStorage.getItem('token');
 
@@ -195,10 +173,8 @@ export const authService = {
           },
         });
       }
-
-      console.log('✅ Logout successful');
     } catch (error) {
-      console.error('⚠️ Logout request failed:', error);
+      console.error('Logout request failed:', error);
     } finally {
       clearAuthData();
     }
@@ -206,17 +182,13 @@ export const authService = {
 
   // ==================== VALIDATE TOKEN ====================
   validateToken: async () => {
-    console.log('🔍 Validating token...');
-
     const token = getStorageItem(STORAGE_KEYS.AUTH_TOKEN) || localStorage.getItem('token');
 
     if (!token) {
-      console.log('❌ No token found');
       return false;
     }
 
     if (isTokenExpired(token)) {
-      console.log('❌ Token expired (client-side check)');
       clearAuthData();
       return false;
     }
@@ -230,20 +202,18 @@ export const authService = {
       });
 
       if (!response.ok) {
-        console.log('❌ Token invalid (server-side check)');
         clearAuthData();
         return false;
       }
 
       const data = await response.json();
-      console.log('✅ Token valid');
 
       saveAuthData(data);
       syncAuthToUseAuthStorage(data);
 
       return true;
     } catch (error) {
-      console.error('❌ Token validation error:', error);
+      console.error('Token validation error:', error);
       clearAuthData();
       return false;
     }
@@ -251,8 +221,6 @@ export const authService = {
 
   // ==================== REFRESH TOKEN ====================
   refreshToken: async () => {
-    console.log('🔄 Refreshing token...');
-
     try {
       const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
         method: 'POST',
@@ -262,20 +230,18 @@ export const authService = {
       });
 
       if (!response.ok) {
-        console.log('❌ Token refresh failed');
         clearAuthData();
         throw new Error('Token refresh failed');
       }
 
       const data = await response.json();
-      console.log('✅ Token refreshed successfully');
 
       saveAuthData(data);
       syncAuthToUseAuthStorage(data);
 
       return data;
     } catch (error) {
-      console.error('❌ Token refresh error:', error);
+      console.error('Token refresh error:', error);
       clearAuthData();
       throw error;
     }
@@ -283,8 +249,6 @@ export const authService = {
 
   // ==================== GET CURRENT USER ====================
   getCurrentUser: async () => {
-    console.log('👤 Getting current user...');
-
     try {
       const response = await fetch(`${API_BASE_URL}/auth/me`, {
         method: 'GET',
@@ -294,20 +258,18 @@ export const authService = {
       });
 
       if (!response.ok) {
-        console.log('❌ Failed to get current user');
         clearAuthData();
         return null;
       }
 
       const data = await response.json();
-      console.log('✅ Current user retrieved:', data);
 
       saveAuthData(data);
       syncAuthToUseAuthStorage(data);
 
       return data;
     } catch (error) {
-      console.error('❌ Get current user error:', error);
+      console.error('Get current user error:', error);
       return null;
     }
   },
@@ -321,8 +283,6 @@ export const authService = {
 
   // ==================== UPDATE PROFILE ====================
   updateProfile: async (profile, accountType) => {
-    console.log('📝 Updating profile...');
-
     const payload =
       accountType === 'ARTIST'
         ? {
@@ -356,7 +316,6 @@ export const authService = {
     }
 
     const data = await response.json();
-    console.log('✅ Profile updated');
 
     saveAuthData(data);
     syncAuthToUseAuthStorage(data);
@@ -366,8 +325,6 @@ export const authService = {
 
   // ==================== CHANGE PASSWORD ====================
   changePassword: async (currentPassword, newPassword, username) => {
-    console.log('🔑 Changing password...');
-
     const response = await fetch(`${API_BASE_URL}/auth/change-password`, {
       method: 'POST',
       headers: {
@@ -388,14 +345,11 @@ export const authService = {
       throw new Error(msg);
     }
 
-    console.log('✅ Password changed successfully');
     return response.json();
   },
 
   // ==================== DELETE ACCOUNT ====================
   deleteAccount: async (username) => {
-    console.log('🗑️ Deleting account...');
-
     const response = await fetch(`${API_BASE_URL}/auth/account/${username}`, {
       method: 'DELETE',
       headers: {
@@ -414,7 +368,6 @@ export const authService = {
       throw new Error(msg);
     }
 
-    console.log('✅ Account deleted successfully');
     clearAuthData();
     return true;
   },
