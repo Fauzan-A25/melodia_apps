@@ -60,7 +60,7 @@ export const musicService = {
   getStreamUrl: (songId) => {
     return `${API_URL}/songs/stream/${songId}`;
   },
-  
+
   /**
    * Admin delete any song
    * DELETE /api/admin/songs/{songId}
@@ -95,7 +95,6 @@ export const musicService = {
       throw error;
     }
   },
-
 
   // ==================== GENRE ENDPOINTS ====================
 
@@ -137,11 +136,10 @@ export const musicService = {
     try {
       const response = await fetch(`${API_URL}/artist/songs/upload`, {
         method: 'POST',
-        body: formData, // Browser will set Content-Type automatically
+        body: formData,
       });
 
       if (!response.ok) {
-        // Kadang backend kirim plain text, jadi aman pakai try-catch
         let errorMessage = 'Failed to upload song';
         try {
           const errorData = await response.json();
@@ -197,12 +195,13 @@ export const musicService = {
 
   /**
    * Get artist's uploaded songs (filter di frontend)
+   * Sekarang pakai artist.artistId, bukan accountId
    */
   getArtistSongs: async (artistId) => {
     try {
       const allSongs = await musicService.getAllSongs();
       return allSongs.filter(
-        (song) => song.artist && song.artist.accountId === artistId
+        (song) => song.artist && song.artist.artistId === artistId
       );
     } catch (error) {
       console.error('Error fetching artist songs:', error);
@@ -231,7 +230,9 @@ export const musicService = {
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: 'Failed to create playlist' }));
+        const errorData = await response
+          .json()
+          .catch(() => ({ message: 'Failed to create playlist' }));
         throw new Error(errorData.message || 'Failed to create playlist');
       }
 
@@ -246,19 +247,13 @@ export const musicService = {
    * Get all playlists by user
    * GET /api/playlists/user/{userId}
    */
-  /**
-   * Get all playlists by user
-   * GET /api/playlists/user/{userId}
-   */
   getUserPlaylists: async (userId) => {
     try {
-      // ✅ VALIDATION: Cek apakah userId valid dan bukan admin
       if (!userId) {
         console.warn('getUserPlaylists: No userId provided');
         return [];
       }
 
-      // ✅ SKIP untuk admin (ID dimulai dengan ADM)
       if (userId.startsWith('ADM')) {
         console.warn('getUserPlaylists: Skipping for admin user');
         return [];
@@ -266,9 +261,8 @@ export const musicService = {
 
       console.log('Fetching playlists for userId:', userId);
       const response = await fetch(`${API_URL}/playlists/user/${userId}`);
-      
+
       if (!response.ok) {
-        // ✅ Handle 404 gracefully (user belum punya playlist)
         if (response.status === 404) {
           console.log('No playlists found for user (404)');
           return [];
@@ -279,7 +273,6 @@ export const musicService = {
       return await response.json();
     } catch (error) {
       console.error('Error fetching user playlists:', error);
-      // ✅ Return empty array instead of throwing
       return [];
     }
   },
@@ -291,7 +284,7 @@ export const musicService = {
   getPlaylistById: async (playlistId) => {
     try {
       const response = await fetch(`${API_URL}/playlists/${playlistId}`);
-      
+
       if (!response.ok) {
         throw new Error('Playlist not found');
       }
@@ -322,7 +315,9 @@ export const musicService = {
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: 'Failed to update playlist' }));
+        const errorData = await response
+          .json()
+          .catch(() => ({ message: 'Failed to update playlist' }));
         throw new Error(errorData.message || 'Failed to update playlist');
       }
 
@@ -350,7 +345,9 @@ export const musicService = {
       );
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: 'Failed to delete playlist' }));
+        const errorData = await response
+          .json()
+          .catch(() => ({ message: 'Failed to delete playlist' }));
         throw new Error(errorData.message || 'Failed to delete playlist');
       }
 
@@ -379,8 +376,12 @@ export const musicService = {
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: 'Failed to add song' }));
-        throw new Error(errorData.message || 'Failed to add song to playlist');
+        const errorData = await response
+          .json()
+          .catch(() => ({ message: 'Failed to add song' }));
+        throw new Error(
+          errorData.message || 'Failed to add song to playlist'
+        );
       }
 
       return await response.json();
@@ -407,8 +408,12 @@ export const musicService = {
       );
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: 'Failed to remove song' }));
-        throw new Error(errorData.message || 'Failed to remove song from playlist');
+        const errorData = await response
+          .json()
+          .catch(() => ({ message: 'Failed to remove song' }));
+        throw new Error(
+          errorData.message || 'Failed to remove song from playlist'
+        );
       }
 
       return await response.json();
@@ -427,7 +432,7 @@ export const musicService = {
       const response = await fetch(
         `${API_URL}/playlists/search?query=${encodeURIComponent(query)}`
       );
-      
+
       if (!response.ok) {
         throw new Error('Search failed');
       }
@@ -445,8 +450,10 @@ export const musicService = {
    */
   getPlaylistSongs: async (playlistId) => {
     try {
-      const response = await fetch(`${API_URL}/playlists/${playlistId}/songs`);
-      
+      const response = await fetch(
+        `${API_URL}/playlists/${playlistId}/songs`
+      );
+
       if (!response.ok) {
         throw new Error('Failed to fetch playlist songs');
       }
@@ -468,8 +475,7 @@ export const musicService = {
   getUserHistory: async (userId) => {
     try {
       const response = await fetch(`${API_URL}/history/${userId}`);
-      
-      // ✅ Always succeeds (returns empty summary if no history)
+
       if (!response.ok) {
         throw new Error('Failed to fetch history');
       }
@@ -489,8 +495,7 @@ export const musicService = {
   getPlayedSongs: async (userId) => {
     try {
       const response = await fetch(`${API_URL}/history/${userId}/songs`);
-      
-      // ✅ Always succeeds (returns empty list if no history)
+
       if (!response.ok) {
         throw new Error('Failed to fetch played songs');
       }
@@ -511,12 +516,11 @@ export const musicService = {
       if (limit <= 0) {
         throw new Error('Limit must be positive');
       }
-      
+
       const response = await fetch(
         `${API_URL}/history/${userId}/songs/recent?limit=${limit}`
       );
-      
-      // ✅ Always succeeds (returns empty list if no history)
+
       if (!response.ok) {
         throw new Error('Failed to fetch recent songs');
       }
@@ -613,7 +617,6 @@ export const musicService = {
         },
       });
 
-      // ✅ Always succeeds (idempotent operation)
       if (!response.ok) {
         let errorMessage = 'Failed to clear history';
         try {
@@ -642,7 +645,7 @@ export const musicService = {
       const response = await fetch(
         `${API_URL}/history/${userId}/songs/${songId}/played`
       );
-      
+
       if (!response.ok) {
         throw new Error('Failed to check song played status');
       }
@@ -661,7 +664,7 @@ export const musicService = {
   getHistorySummary: async (userId) => {
     try {
       const response = await fetch(`${API_URL}/history/${userId}/summary`);
-      
+
       if (!response.ok) {
         throw new Error('Failed to fetch history summary');
       }

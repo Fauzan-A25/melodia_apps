@@ -1,18 +1,19 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Upload as UploadIcon, Music, X, Loader } from 'lucide-react';
-import styles from './Upload.module.css';
-import { musicService } from '../../services/musicService';
+import styles from './AdminUpload.module.css';
+import { adminService, handleApiError } from '../../services/api';
 import { useUser } from '../../context/UserContext';
 import MultiSelect from '../../components/Common/MultiSelect';
 
-const Upload = () => {
+const AdminUpload = () => {
   const navigate = useNavigate();
   const { user } = useUser();
-  
+
   const [formData, setFormData] = useState({
     title: '',
-    genreIds: [], // ✅ sekarang array
+    artistId: '',
+    genreIds: [],
     releaseYear: new Date().getFullYear(),
     duration: 0,
   });
@@ -26,54 +27,44 @@ const Upload = () => {
   const [genres, setGenres] = useState([]);
   const [loadingGenres, setLoadingGenres] = useState(true);
 
+  const [artists, setArtists] = useState([]);
+  const [loadingArtists, setLoadingArtists] = useState(true);
+
+  // ==================== FETCH GENRES + ARTISTS ====================
   useEffect(() => {
-    const fetchGenres = async () => {
+    if (!user || user.accountType !== 'ADMIN') {
+      return;
+    }
+
+    const fetchInitialData = async () => {
       try {
         setLoadingGenres(true);
-        const genresData = await musicService.getAllGenres();
-        setGenres(genresData);
+        setLoadingArtists(true);
+
+        const [genresData, artistsData] = await Promise.all([
+          adminService.getAllGenres(),
+          adminService.getArtistsForDropdown(),
+        ]);
+
+        setGenres(genresData || []);
+        setArtists(artistsData || []);
       } catch (err) {
-        console.error('Failed to fetch genres:', err);
-        setError('Failed to load genres. Please refresh the page.');
+        console.error('Failed to load initial data:', err);
+        setError(handleApiError(err) || 'Failed to load data. Please refresh.');
       } finally {
         setLoadingGenres(false);
+        setLoadingArtists(false);
       }
     };
 
-    if (user?.accountType === 'ARTIST') {
-      fetchGenres();
-    }
+    fetchInitialData();
   }, [user]);
 
-  if (!user) {
-    return (
-      <div className={styles.errorContainer}>
-        <h2>Please Login</h2>
-        <p>You need to be logged in to access this page.</p>
-        <button onClick={() => navigate('/auth')} className={styles.backBtn}>
-          Go to Login
-        </button>
-      </div>
-    );
-  }
-
-  if (user.accountType !== 'ARTIST') {
-    return (
-      <div className={styles.errorContainer}>
-        <h2>Access Denied</h2>
-        <p>Only artists can upload music.</p>
-        <button onClick={() => navigate('/home')} className={styles.backBtn}>
-          Back to Home
-        </button>
-      </div>
-    );
-  }
-
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
+    setFormData((prev) => ({
+      ...prev,
       [e.target.name]: e.target.value,
-    });
+    }));
     setError('');
   };
 
@@ -130,6 +121,11 @@ const Upload = () => {
       return;
     }
 
+    if (!formData.artistId) {
+      setError('Please select an artist');
+      return;
+    }
+
     if (!formData.genreIds.length) {
       setError('Please select at least one genre');
       return;
@@ -138,33 +134,33 @@ const Upload = () => {
     setLoading(true);
 
     try {
-      const uploadData = new FormData();
-      uploadData.append('audioFile', audioFile);
-      uploadData.append('title', formData.title.trim());
-      // ✅ kirim array genreIds sebagai JSON string
-      uploadData.append('genreIds', JSON.stringify(formData.genreIds));
-      uploadData.append('releaseYear', formData.releaseYear);
-      uploadData.append('duration', formData.duration);
-      uploadData.append('artistId', user.accountId);
+      await adminService.uploadSong({
+        audioFile,
+        title: formData.title.trim(),
+        artistId: formData.artistId,
+        genreIds: formData.genreIds,
+        releaseYear: formData.releaseYear,
+        duration: formData.duration,
+      });
 
-      await musicService.uploadSong(uploadData);
-
-      setSuccess('Song uploaded successfully! 🎉');
+      setSuccess('Song uploaded successfully!');
 
       setTimeout(() => {
         removeAudioFile();
         setFormData({
           title: '',
+          artistId: '',
           genreIds: [],
           releaseYear: new Date().getFullYear(),
           duration: 0,
         });
         setSuccess('');
-        navigate('/home');
-      }, 2000);
+        // optional: balik ke halaman admin songs
+        // navigate('/admin/songs');
+      }, 1500);
     } catch (err) {
-      setError(err.message || 'Failed to upload song');
       console.error('Upload error:', err);
+      setError(handleApiError(err) || 'Failed to upload song');
     } finally {
       setLoading(false);
     }
@@ -176,20 +172,45 @@ const Upload = () => {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
+  // ==================== GUARD RENDER ====================
+  if (!user) {
+    return (
+      <div className={styles.errorContainer}>
+        <h2>Please Login</h2>
+        <p>You need to be logged in to access this page.</p>
+        <button onClick={() => navigate('/auth')} className={styles.backBtn}>
+          Go to Login
+        </button>
+      </div>
+    );
+  }
+
+  if (user.accountType !== 'ADMIN') {
+    return (
+      <div className={styles.errorContainer}>
+        <h2>Access Denied</h2>
+        <p>Only admins can upload songs here.</p>
+        <button onClick={() => navigate('/home')} className={styles.backBtn}>
+          Back to Home
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className={styles.uploadContainer}>
       <div className={styles.uploadCard}>
         <div className={styles.header}>
           <UploadIcon size={32} className={styles.headerIcon} />
-          <h1>Upload New Song</h1>
-          <p>Share your music with the world</p>
+          <h1>Admin Upload Song</h1>
+          <p>Upload songs and assign to artists</p>
         </div>
 
         {error && <div className={styles.errorMessage}>{error}</div>}
         {success && <div className={styles.successMessage}>{success}</div>}
 
         <form onSubmit={handleSubmit} className={styles.form}>
-          {/* Audio File Upload */}
+          {/* Audio File */}
           <div className={styles.fileSection}>
             <label className={styles.fileLabel}>
               <Music size={20} />
@@ -231,7 +252,7 @@ const Upload = () => {
             )}
           </div>
 
-          {/* Song Details */}
+          {/* Song Title */}
           <div className={styles.inputGroup}>
             <label htmlFor="title">Song Title *</label>
             <input
@@ -247,6 +268,29 @@ const Upload = () => {
             />
           </div>
 
+          {/* Artist Dropdown */}
+          <div className={styles.inputGroup}>
+            <label htmlFor="artistId">Artist *</label>
+            <select
+              id="artistId"
+              name="artistId"
+              value={formData.artistId}
+              onChange={handleChange}
+              className={styles.input}
+              disabled={loading || loadingArtists}
+            >
+              <option value="">
+                {loadingArtists ? 'Loading artists...' : 'Select artist'}
+              </option>
+              {artists.map((artist) => (
+                <option key={artist.artistId} value={artist.artistId}>
+                  {artist.artistName}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Genres + Release Year */}
           <div className={styles.inputRow}>
             <div className={styles.inputGroup}>
               <MultiSelect
@@ -255,9 +299,9 @@ const Upload = () => {
                   loadingGenres ? 'Loading genres...' : 'Select genres'
                 }
                 values={formData.genreIds}
-                options={genres.map((genre) => ({
-                  value: genre.id,
-                  label: genre.name,
+                options={genres.map((g) => ({
+                  value: g.genreId ?? g.id,
+                  label: g.name,
                 }))}
                 disabled={loading || loadingGenres}
                 onChange={(vals) =>
@@ -285,10 +329,11 @@ const Upload = () => {
             </div>
           </div>
 
+          {/* Actions */}
           <div className={styles.actions}>
             <button
               type="button"
-              onClick={() => navigate('/home')}
+              onClick={() => navigate('/admin/dashboard')}
               className={styles.cancelBtn}
               disabled={loading}
             >
@@ -297,7 +342,12 @@ const Upload = () => {
             <button
               type="submit"
               className={styles.submitBtn}
-              disabled={loading || !audioFile || loadingGenres}
+              disabled={
+                loading ||
+                !audioFile ||
+                loadingGenres ||
+                loadingArtists
+              }
             >
               {loading ? (
                 <>
@@ -318,4 +368,4 @@ const Upload = () => {
   );
 };
 
-export default Upload;
+export default AdminUpload;

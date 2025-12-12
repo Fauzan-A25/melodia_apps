@@ -1,7 +1,15 @@
 import { useState, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import styles from './Topbar.module.css';
-import { CircleUser, ChevronDown, BadgeMinus, Search, Music, Upload, Clock } from 'lucide-react';
+import {
+  CircleUser,
+  ChevronDown,
+  BadgeMinus,
+  Search,
+  Music,
+  Upload,
+  Clock,
+} from 'lucide-react';
 import { useUser } from '../../context/UserContext';
 
 const Topbar = () => {
@@ -27,7 +35,8 @@ const Topbar = () => {
   }, [location.pathname, location.search]);
 
   // Display value: gunakan URL query jika di search page, otherwise gunakan internal
-  const displayQuery = location.pathname === '/search' ? queryFromUrl : internalQuery;
+  const displayQuery =
+    location.pathname === '/search' ? queryFromUrl : internalQuery;
 
   const handleSearchChange = (e) => {
     setInternalQuery(e.target.value);
@@ -43,9 +52,11 @@ const Topbar = () => {
 
   const saveSearchHistory = (query) => {
     try {
-      const history = JSON.parse(localStorage.getItem('searchHistory') || '[]');
+      const history = JSON.parse(
+        localStorage.getItem('searchHistory') || '[]',
+      );
       const filtered = history.filter(
-        (item) => item.toLowerCase() !== query.toLowerCase()
+        (item) => item.toLowerCase() !== query.toLowerCase(),
       );
       const newHistory = [query, ...filtered].slice(0, 10);
       localStorage.setItem('searchHistory', JSON.stringify(newHistory));
@@ -58,7 +69,8 @@ const Topbar = () => {
     <header className={styles.topbar}>
       <div className={styles.left}>
         <span className={styles.greeting}>
-          Welcome back, <span className={styles.username}>{user?.username || 'Guest'}</span>! 👋
+          Welcome back,{' '}
+          <span className={styles.username}>{user?.username || 'Guest'}</span>! 👋
           {user?.accountType === 'ADMIN' && (
             <span className={styles.adminBadge}>
               <BadgeMinus size={16} />
@@ -89,7 +101,7 @@ const Topbar = () => {
         <div className={styles.userMenu}>
           <button
             className={styles.userBtn}
-            onClick={() => setShowDropdown(!showDropdown)}
+            onClick={() => setShowDropdown((prev) => !prev)}
           >
             <div className={styles.avatar}>
               <CircleUser size={24} />
@@ -105,33 +117,23 @@ const Topbar = () => {
                 <span className={styles.accountType}>{user?.accountType}</span>
               </div>
 
-              {user?.accountType === 'ARTIST' && (
-                <button
-                  className={styles.dropdownItem}
-                  onClick={() => {
-                    setShowDropdown(false);
-                    navigate('/upload');
-                  }}
-                >
-                  <Upload size={16} />
-                  Upload Song
-                </button>
+              {/* Menu khusus ADMIN */}
+              {user?.accountType === 'ADMIN' && (
+                <>
+                  <button
+                    className={styles.dropdownItem}
+                    onClick={() => {
+                      setShowDropdown(false);
+                      navigate('/admin/upload');
+                    }}
+                  >
+                    <Upload size={16} />
+                    Upload Song
+                  </button>
+                </>
               )}
 
-              {user?.accountType === 'ARTIST' && (
-                <button
-                  className={styles.dropdownItem}
-                  onClick={() => {
-                    setShowDropdown(false);
-                    navigate('/settings/my-songs');
-                  }}
-                >
-                  <Music size={16} />
-                  My Songs
-                </button>
-              )}
-
-              {/* ✅ History Menu - HANYA untuk non-admin */}
+              {/* History Menu - hanya non-admin */}
               {user?.accountType !== 'ADMIN' && (
                 <button
                   className={styles.dropdownItem}

@@ -1,18 +1,15 @@
 const API_BASE_URL = 'https://melodia-backend-production.up.railway.app/api';
 
-// ==================== ADMIN SERVICE ====================
 export const adminService = {
   // --- Dashboard Stats ---
   getStats: async () => {
     const response = await fetch(`${API_BASE_URL}/admin/stats`, {
       method: 'GET',
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 'Content-Type': 'application/json' },
     });
-    
     if (!response.ok) {
       throw new Error('Failed to fetch admin stats');
     }
-    
     return response.json();
   },
 
@@ -20,13 +17,11 @@ export const adminService = {
   getAllGenres: async () => {
     const response = await fetch(`${API_BASE_URL}/admin/genres`, {
       method: 'GET',
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 'Content-Type': 'application/json' },
     });
-    
     if (!response.ok) {
       throw new Error('Failed to fetch genres');
     }
-    
     return response.json();
   },
 
@@ -34,21 +29,19 @@ export const adminService = {
     const response = await fetch(`${API_BASE_URL}/admin/genres`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: genreName, description })  // ✅ Changed: name instead of genreName
+      body: JSON.stringify({ name: genreName, description }),
     });
-    
+
     if (!response.ok) {
       let errorMessage = 'Failed to create genre';
       try {
         const error = await response.json();
         errorMessage = error.error || errorMessage;
       } catch {
-        // Unable to parse error response, use default message
         console.log('Error parsing create genre response');
       }
       throw new Error(errorMessage);
     }
-    
     return response.json();
   },
 
@@ -56,42 +49,38 @@ export const adminService = {
     const response = await fetch(`${API_BASE_URL}/admin/genres/${genreId}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: genreName, description })  // ✅ Changed: name instead of genreName
+      body: JSON.stringify({ name: genreName, description }),
     });
-    
+
     if (!response.ok) {
       let errorMessage = 'Failed to update genre';
       try {
         const error = await response.json();
         errorMessage = error.error || errorMessage;
       } catch {
-        // Unable to parse error response, use default message
         console.log('Error parsing update genre response');
       }
       throw new Error(errorMessage);
     }
-    
     return response.json();
   },
 
   deleteGenre: async (genreId) => {
     const response = await fetch(`${API_BASE_URL}/admin/genres/${genreId}`, {
       method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 'Content-Type': 'application/json' },
     });
-    
+
     if (!response.ok) {
       let errorMessage = 'Failed to delete genre';
       try {
         const error = await response.json();
         errorMessage = error.error || errorMessage;
       } catch {
-        // Unable to parse error response, use default message
         console.log('Error parsing delete genre response');
       }
       throw new Error(errorMessage);
     }
-    
     return response.json();
   },
 
@@ -99,118 +88,239 @@ export const adminService = {
   getAllUsers: async () => {
     const response = await fetch(`${API_BASE_URL}/admin/users`, {
       method: 'GET',
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 'Content-Type': 'application/json' },
     });
-    
     if (!response.ok) {
       throw new Error('Failed to fetch users');
     }
-    
     return response.json();
   },
 
   getUsersByType: async (accountType) => {
-    const response = await fetch(`${API_BASE_URL}/admin/users?type=${accountType}`, {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' }
-    });
-    
+    const response = await fetch(
+      `${API_BASE_URL}/admin/users?type=${accountType}`,
+      {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      },
+    );
     if (!response.ok) {
       throw new Error(`Failed to fetch ${accountType}s`);
     }
-    
     return response.json();
   },
 
   getBannedUsers: async () => {
     const response = await fetch(`${API_BASE_URL}/admin/users/banned`, {
       method: 'GET',
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 'Content-Type': 'application/json' },
     });
-    
     if (!response.ok) {
       throw new Error('Failed to fetch banned users');
     }
-    
     return response.json();
   },
 
   banUser: async (accountId, reason) => {
-    const response = await fetch(`${API_BASE_URL}/admin/users/${accountId}/ban`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ reason })
-    });
-    
+    const response = await fetch(
+      `${API_BASE_URL}/admin/users/${accountId}/ban`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason }),
+      },
+    );
+
     if (!response.ok) {
       let errorMessage = 'Failed to ban user';
       try {
         const error = await response.json();
         errorMessage = error.error || errorMessage;
       } catch {
-        // Unable to parse error response, use default message
         console.log('Error parsing ban user response');
       }
       throw new Error(errorMessage);
     }
-    
     return response.json();
   },
 
   unbanUser: async (accountId) => {
-    const response = await fetch(`${API_BASE_URL}/admin/users/${accountId}/unban`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' }
-    });
-    
+    const response = await fetch(
+      `${API_BASE_URL}/admin/users/${accountId}/unban`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      },
+    );
+
     if (!response.ok) {
       let errorMessage = 'Failed to unban user';
       try {
         const error = await response.json();
         errorMessage = error.error || errorMessage;
       } catch {
-        // Unable to parse error response, use default message
         console.log('Error parsing unban user response');
       }
       throw new Error(errorMessage);
     }
-    
     return response.json();
   },
 
   deleteUser: async (accountId) => {
     const response = await fetch(`${API_BASE_URL}/admin/users/${accountId}`, {
       method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 'Content-Type': 'application/json' },
     });
-    
+
     if (!response.ok) {
       let errorMessage = 'Failed to delete user';
       try {
         const error = await response.json();
         errorMessage = error.error || errorMessage;
       } catch {
-        // Unable to parse error response, use default message
         console.log('Error parsing delete user response');
       }
       throw new Error(errorMessage);
     }
-    
     return response.json();
   },
 
   searchUsers: async (query) => {
-    const response = await fetch(`${API_BASE_URL}/admin/users/search?q=${encodeURIComponent(query)}`, {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' }
-    });
-    
+    const response = await fetch(
+      `${API_BASE_URL}/admin/users/search?q=${encodeURIComponent(query)}`,
+      {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      },
+    );
     if (!response.ok) {
       throw new Error('Failed to search users');
     }
-    
     return response.json();
-  }
+  },
+
+  // --- Artist Management (metadata) ---
+
+  /**
+   * GET /api/admin/artists
+   */
+  getAllArtists: async () => {
+    const response = await fetch(`${API_BASE_URL}/admin/artists`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    if (!response.ok) {
+      throw new Error('Failed to fetch artists');
+    }
+    return response.json();
+  },
+
+  /**
+   * POST /api/admin/artists
+   * body: { artistName, bio }
+   */
+  createArtist: async (artistName, bio = '') => {
+    const response = await fetch(`${API_BASE_URL}/admin/artists`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ artistName, bio }),
+    });
+
+    if (!response.ok) {
+      let errorMessage = 'Failed to create artist';
+      try {
+        const error = await response.json();
+        errorMessage = error.message || error.error || errorMessage;
+      } catch {
+        console.log('Error parsing create artist response');
+      }
+      throw new Error(errorMessage);
+    }
+    return response.json();
+  },
+
+  /**
+   * DELETE /api/admin/artists/{artistId}
+   */
+  deleteArtist: async (artistId) => {
+    const response = await fetch(`${API_BASE_URL}/admin/artists/${artistId}`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    if (!response.ok) {
+      let errorMessage = 'Failed to delete artist';
+      try {
+        const error = await response.json();
+        errorMessage = error.message || error.error || errorMessage;
+      } catch {
+        console.log('Error parsing delete artist response');
+      }
+      throw new Error(errorMessage);
+    }
+    return response.json();
+  },
+
+  // --- Artist (dropdown) & Song Management ---
+
+  getArtistsForDropdown: async () => {
+    const response = await fetch(`${API_BASE_URL}/admin/songs/artists`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    if (!response.ok) {
+      throw new Error('Failed to fetch artists');
+    }
+    return response.json();
+  },
+
+  uploadSong: async (data) => {
+    const formData = new FormData();
+    formData.append('audioFile', data.audioFile);
+    formData.append('title', data.title);
+    formData.append('artistId', data.artistId);
+    formData.append('genreIds', JSON.stringify(data.genreIds));
+    formData.append('releaseYear', String(data.releaseYear));
+    formData.append('duration', String(data.duration));
+
+    const response = await fetch(`${API_BASE_URL}/admin/songs/upload`, {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!response.ok) {
+      let errorMessage = 'Failed to upload song';
+      try {
+        const error = await response.json();
+        errorMessage = error.error || error.message || errorMessage;
+      } catch {
+        console.log('Error parsing upload song response');
+      }
+      throw new Error(errorMessage);
+    }
+
+    return response.json();
+  },
+
+  deleteSong: async (songId) => {
+    const response = await fetch(`${API_BASE_URL}/admin/songs/${songId}`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    if (!response.ok) {
+      let errorMessage = 'Failed to delete song';
+      try {
+        const error = await response.json();
+        errorMessage = error.error || error.message || errorMessage;
+      } catch {
+        console.log('Error parsing delete song response');
+      }
+      throw new Error(errorMessage);
+    }
+
+    return response.json();
+  },
 };
 
 // ==================== HELPER FUNCTION ====================

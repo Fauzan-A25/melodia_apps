@@ -3,48 +3,51 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuthContext } from '../../context/AuthContext';
 import styles from './AuthPage.module.css';
-import { Music2, Mail, Lock, User, Headphones, Mic2, ArrowLeft } from 'lucide-react';
+import { Music2, Mail, Lock, User, Headphones } from 'lucide-react';
 
 const AuthPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { isAuthenticated, isLoading: contextLoading, login, register, user, error: authError, clearError } = useAuthContext();
+  const {
+    isAuthenticated,
+    isLoading: contextLoading,
+    login,
+    register,
+    user,
+    error: authError,
+    clearError,
+  } = useAuthContext();
 
   const [isLogin, setIsLogin] = useState(true);
-  const [registrationStep, setRegistrationStep] = useState(1);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
     username: '',
-    role: 'user',
-    bio: ''
+    role: 'user', // tetap dikirim 'user' ke backend
+    bio: '',
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState('');
 
-  // ✅ Auto redirect kalau sudah login
+  // Auto redirect kalau sudah login
   useEffect(() => {
     if (!contextLoading && isAuthenticated && user) {
-      console.log('✅ Already authenticated, redirecting...');
-      
-      // Get intended destination from ProtectedRoute or default
       const from = location.state?.from?.pathname;
       let redirectPath;
-      
+
       if (from && from !== '/auth') {
-        // Redirect to intended page
         redirectPath = from;
       } else {
-        // Default redirect based on role
-        redirectPath = user.accountType === 'ADMIN' ? '/admin/dashboard' : '/home';
+        redirectPath =
+          user.accountType === 'ADMIN' ? '/admin/dashboard' : '/home';
       }
-      
+
       navigate(redirectPath, { replace: true });
     }
   }, [contextLoading, isAuthenticated, user, navigate, location.state]);
 
-  // ✅ Sync auth error to local error state
+  // Sync auth error
   useEffect(() => {
     if (authError) {
       setError(authError);
@@ -56,88 +59,69 @@ const AuthPage = () => {
     e.preventDefault();
     setError('');
     setSuccess('');
-    clearError(); // Clear previous auth errors
-
-    // Step 1 validation - untuk artist perlu ke step 2
-    if (!isLogin && registrationStep === 1) {
-      if (formData.role === 'artist') {
-        setRegistrationStep(2);
-        return;
-      }
-    }
+    clearError();
 
     setLoading(true);
 
     try {
       if (isLogin) {
-        // ==================== LOGIN ====================
-        console.log('=== LOGIN ATTEMPT ===');
-        console.log('Username:', formData.username);
-        
+        // LOGIN
         const result = await login(formData.username, formData.password);
-        
+
         if (!result.success) {
           throw new Error(result.error || 'Login failed');
         }
 
-        console.log('✅ Login successful');
         setSuccess('Login successful! Redirecting...');
 
-        // Get intended destination
         const from = location.state?.from?.pathname;
         let redirectPath;
-        
+
         if (from && from !== '/auth') {
           redirectPath = from;
         } else {
-          redirectPath = result.user.accountType === 'ADMIN' ? '/admin/dashboard' : '/home';
+          redirectPath =
+            result.user.accountType === 'ADMIN'
+              ? '/admin/dashboard'
+              : '/home';
         }
 
-        // Navigate after short delay for UX
         setTimeout(() => {
           navigate(redirectPath, { replace: true });
         }, 500);
-
       } else {
-        // ==================== REGISTRATION ====================
-        console.log('=== REGISTRATION ATTEMPT ===');
-        console.log('Username:', formData.username);
-        console.log('Email:', formData.email);
-        console.log('Role:', formData.role);
-        
-        if (formData.role === 'artist') {
-          console.log('Bio length:', formData.bio.length);
-        }
-        
+        // REGISTRATION (hanya user/listener)
         const result = await register(
-          formData.username, 
-          formData.email, 
+          formData.username,
+          formData.email,
           formData.password,
-          formData.role,
-          formData.bio
+          'user', // paksa role user
+          '' // bio kosong
         );
-        
+
         if (!result.success) {
           throw new Error(result.error || 'Registration failed');
         }
-        
-        console.log('✅ Registration & auto-login successful');
+
         setSuccess('Registration successful! Redirecting...');
-        
-        // Auto-redirect after registration (karena sudah auto-login)
-        const redirectPath = result.user.accountType === 'ADMIN' ? '/admin/dashboard' : '/home';
-        
+
+        const redirectPath =
+          result.user.accountType === 'ADMIN'
+            ? '/admin/dashboard'
+            : '/home';
+
         setTimeout(() => {
           navigate(redirectPath, { replace: true });
         }, 800);
       }
     } catch (err) {
-      console.error('❌ Auth error:', err);
-      
+      console.error('Auth error:', err);
       let errorMessage = err.message || 'An error occurred';
-      
-      // Friendly error messages
-      if (errorMessage.includes('401') || errorMessage.includes('Invalid credentials')) {
+
+      if (
+        errorMessage.includes('401') ||
+        errorMessage.includes('Invalid credentials')
+      ) {
         errorMessage = 'Username atau password salah';
       } else if (errorMessage.includes('Username already exists')) {
         errorMessage = 'Username sudah digunakan';
@@ -146,17 +130,17 @@ const AuthPage = () => {
       } else if (errorMessage.includes('session has expired')) {
         errorMessage = 'Sesi telah berakhir, silakan login kembali';
       }
-      
+
       setError(errorMessage);
       setLoading(false);
     }
   };
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+    setFormData((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
     if (error) {
       setError('');
       clearError();
@@ -169,36 +153,38 @@ const AuthPage = () => {
     setError('');
     setSuccess('');
     clearError();
-    setRegistrationStep(1);
-    setFormData({ email: '', password: '', username: '', role: 'user', bio: '' });
+    setFormData({
+      email: '',
+      password: '',
+      username: '',
+      role: 'user',
+      bio: '',
+    });
   };
 
-  const handleBackToStep1 = () => {
-    setRegistrationStep(1);
-    setError('');
-    clearError();
-  };
-
-  // Loading state saat context masih inisialisasi
   if (contextLoading) {
     return (
       <div className={styles.authContainer}>
         <div className={styles.authCard}>
-          <div style={{ 
-            display: 'flex', 
-            flexDirection: 'column', 
-            alignItems: 'center', 
-            gap: '1rem',
-            padding: '2rem'
-          }}>
-            <div style={{
-              width: '40px',
-              height: '40px',
-              border: '4px solid #f3f3f3',
-              borderTop: '4px solid #3498db',
-              borderRadius: '50%',
-              animation: 'spin 1s linear infinite'
-            }}></div>
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '1rem',
+              padding: '2rem',
+            }}
+          >
+            <div
+              style={{
+                width: '40px',
+                height: '40px',
+                border: '4px solid #f3f3f3',
+                borderTop: '4px solid #3498db',
+                borderRadius: '50%',
+                animation: 'spin 1s linear infinite',
+              }}
+            ></div>
             <p>Loading authentication...</p>
             <style>{`
               @keyframes spin {
@@ -223,14 +209,18 @@ const AuthPage = () => {
 
         <div className={styles.toggleButtons}>
           <button
-            className={`${styles.toggleBtn} ${isLogin ? styles.active : ''}`}
+            className={`${styles.toggleBtn} ${
+              isLogin ? styles.active : ''
+            }`}
             onClick={() => handleToggle(true)}
             disabled={loading}
           >
             Login
           </button>
           <button
-            className={`${styles.toggleBtn} ${!isLogin ? styles.active : ''}`}
+            className={`${styles.toggleBtn} ${
+              !isLogin ? styles.active : ''
+            }`}
             onClick={() => handleToggle(false)}
             disabled={loading}
           >
@@ -238,168 +228,91 @@ const AuthPage = () => {
           </button>
         </div>
 
-        {error && (
-          <div className={styles.errorMessage}>
-            {error}
-          </div>
-        )}
-        
-        {success && (
-          <div className={styles.successMessage}>
-            {success}
-          </div>
-        )}
+        {error && <div className={styles.errorMessage}>{error}</div>}
+        {success && <div className={styles.successMessage}>{success}</div>}
 
         <form onSubmit={handleSubmit} className={styles.form}>
-          {((!isLogin && registrationStep === 1) || isLogin) && (
-            <>
-              <div className={styles.inputGroup}>
-                <User size={20} className={styles.icon} />
-                <input
-                  type="text"
-                  name="username"
-                  placeholder="Username"
-                  value={formData.username}
-                  onChange={handleChange}
-                  className={styles.input}
-                  required
-                  disabled={loading}
-                  autoComplete="username"
-                />
-              </div>
+          <div className={styles.inputGroup}>
+            <User size={20} className={styles.icon} />
+            <input
+              type="text"
+              name="username"
+              placeholder="Username"
+              value={formData.username}
+              onChange={handleChange}
+              className={styles.input}
+              required
+              disabled={loading}
+              autoComplete="username"
+            />
+          </div>
 
-              {!isLogin && (
-                <div className={styles.inputGroup}>
-                  <Mail size={20} className={styles.icon} />
-                  <input
-                    type="email"
-                    name="email"
-                    placeholder="Email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    className={styles.input}
-                    required
-                    disabled={loading}
-                    autoComplete="email"
-                  />
-                </div>
-              )}
-
-              <div className={styles.inputGroup}>
-                <Lock size={20} className={styles.icon} />
-                <input
-                  type="password"
-                  name="password"
-                  placeholder="Password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  className={styles.input}
-                  required
-                  minLength={6}
-                  disabled={loading}
-                  autoComplete={isLogin ? "current-password" : "new-password"}
-                />
-              </div>
-
-              {!isLogin && (
-                <div className={styles.roleSection}>
-                  <label className={styles.roleLabel}>Daftar sebagai:</label>
-                  <div className={styles.roleOptions}>
-                    <label className={`${styles.roleOption} ${formData.role === 'user' ? styles.roleActive : ''}`}>
-                      <input
-                        type="radio"
-                        name="role"
-                        value="user"
-                        checked={formData.role === 'user'}
-                        onChange={handleChange}
-                        className={styles.radioInput}
-                        disabled={loading}
-                      />
-                      <Headphones size={24} className={styles.roleIcon} />
-                      <div className={styles.roleText}>
-                        <span className={styles.roleName}>Pendengar</span>
-                        <span className={styles.roleDesc}>Nikmati musik favorit</span>
-                      </div>
-                    </label>
-
-                    <label className={`${styles.roleOption} ${formData.role === 'artist' ? styles.roleActive : ''}`}>
-                      <input
-                        type="radio"
-                        name="role"
-                        value="artist"
-                        checked={formData.role === 'artist'}
-                        onChange={handleChange}
-                        className={styles.radioInput}
-                        disabled={loading}
-                      />
-                      <Mic2 size={24} className={styles.roleIcon} />
-                      <div className={styles.roleText}>
-                        <span className={styles.roleName}>Musisi</span>
-                        <span className={styles.roleDesc}>Upload & bagikan karya</span>
-                      </div>
-                    </label>
-                  </div>
-                </div>
-              )}
-
-              <button 
-                type="submit" 
-                className={styles.submitBtn}
+          {!isLogin && (
+            <div className={styles.inputGroup}>
+              <Mail size={20} className={styles.icon} />
+              <input
+                type="email"
+                name="email"
+                placeholder="Email"
+                value={formData.email}
+                onChange={handleChange}
+                className={styles.input}
+                required
                 disabled={loading}
-              >
-                {loading ? (
-                  <span>⏳ Loading...</span>
-                ) : (
-                  isLogin ? 'Sign In' : (formData.role === 'artist' ? 'Lanjutkan' : 'Create Account')
-                )}
-              </button>
-            </>
-          )}
-
-          {!isLogin && registrationStep === 2 && formData.role === 'artist' && (
-            <div className={styles.artistBioSection}>
-              <button 
-                type="button"
-                onClick={handleBackToStep1}
-                className={styles.backButton}
-                disabled={loading}
-              >
-                <ArrowLeft size={20} />
-                Kembali
-              </button>
-
-              <div className={styles.stepTitle}>
-                <Mic2 size={32} className={styles.stepIcon} />
-                <h3>Ceritakan tentang diri Anda</h3>
-                <p className={styles.stepDesc}>Bantu pendengar mengenal musik Anda lebih dekat</p>
-              </div>
-
-              <div className={styles.inputGroup}>
-                <textarea
-                  name="bio"
-                  placeholder="Contoh: Musisi indie dari Jakarta yang fokus pada genre akustik dan folk. Sudah aktif bermusik sejak 2018..."
-                  value={formData.bio}
-                  onChange={handleChange}
-                  className={styles.textarea}
-                  rows={5}
-                  required
-                  minLength={20}
-                  disabled={loading}
-                />
-                <small className={styles.charCount}>
-                  {formData.bio.length} / 20 karakter minimum
-                </small>
-              </div>
-
-              <button 
-                type="submit" 
-                className={styles.submitBtn}
-                disabled={loading || formData.bio.length < 20}
-              >
-                {loading ? '⏳ Creating Account...' : 'Buat Akun Musisi'}
-              </button>
+                autoComplete="email"
+              />
             </div>
           )}
+
+          <div className={styles.inputGroup}>
+            <Lock size={20} className={styles.icon} />
+            <input
+              type="password"
+              name="password"
+              placeholder="Password"
+              value={formData.password}
+              onChange={handleChange}
+              className={styles.input}
+              required
+              minLength={6}
+              disabled={loading}
+              autoComplete={isLogin ? 'current-password' : 'new-password'}
+            />
+          </div>
+
+          {/* Role sekarang fixed user -> cukup informasi teks saja */}
+          {!isLogin && (
+            <div className={styles.roleSection}>
+              <label className={styles.roleLabel}>Account type:</label>
+              <div className={styles.roleOptions}>
+                <div
+                  className={`${styles.roleOption} ${styles.roleActive}`}
+                >
+                  <Headphones size={24} className={styles.roleIcon} />
+                  <div className={styles.roleText}>
+                    <span className={styles.roleName}>Listener</span>
+                    <span className={styles.roleDesc}>
+                      Nikmati musik favorit Anda
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <button
+            type="submit"
+            className={styles.submitBtn}
+            disabled={loading}
+          >
+            {loading ? (
+              <span>⏳ Loading...</span>
+            ) : isLogin ? (
+              'Sign In'
+            ) : (
+              'Create Account'
+            )}
+          </button>
         </form>
       </div>
     </div>

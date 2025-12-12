@@ -1,5 +1,5 @@
-// src/components/Layout/Sidebar.jsx (atau path kamu sekarang)
-import { Home, Music, ListMusic, Users, Plus } from 'lucide-react';
+// src/components/Layout/Sidebar.jsx
+import { Home, Music, ListMusic, Users, Plus, Mic2 } from 'lucide-react';
 import MelodiaLogo from '../../assets/melodia_logo.svg';
 import styles from './Sidebar.module.css';
 import { NavLink } from 'react-router-dom';
@@ -27,7 +27,9 @@ const Sidebar = ({ onCreatePlaylist }) => {
 
     const adminDetected =
       effectiveType === 'ADMIN' ||
-      (effectiveId && typeof effectiveId === 'string' && effectiveId.startsWith('ADM'));
+      (effectiveId &&
+        typeof effectiveId === 'string' &&
+        effectiveId.startsWith('ADM'));
 
     setUserId(effectiveId || null);
     setIsAdmin(adminDetected);
@@ -36,9 +38,7 @@ const Sidebar = ({ onCreatePlaylist }) => {
 
   // 2. Fetch playlists function dengan guard admin + initialized
   const fetchPlaylists = useCallback(async () => {
-    if (!initialized) {
-      return;
-    }
+    if (!initialized) return;
 
     if (isAdmin) {
       setPlaylists([]);
@@ -93,8 +93,9 @@ const Sidebar = ({ onCreatePlaylist }) => {
   const adminNavItems = [
     { icon: Home, label: 'Dashboard', path: '/admin/dashboard' },
     { icon: ListMusic, label: 'Manage Genres', path: '/admin/genres' },
-    { icon: Users, label: 'Manage Users', path: '/admin/users' },
+    { icon: Mic2, label: 'Manage Artists', path: '/admin/artists' }, // ✅ baru
     { icon: Music, label: 'Manage Songs', path: '/admin/songs' },
+    { icon: Users, label: 'Manage Users', path: '/admin/users' },
   ];
 
   const userNavItems = [{ icon: Home, label: 'Home', path: '/home' }];

@@ -11,7 +11,6 @@ import Home from './pages/user/Home';
 import PlaylistDetail from './pages/user/PlaylistDetail';
 import History from './pages/Settings/History';
 import Search from './pages/user/Search';
-import Upload from './pages/Settings/Upload';
 import Settings from './pages/Settings/Settings';
 
 // Admin Pages
@@ -19,15 +18,13 @@ import AdminDashboard from './pages/admin/AdminDashboard';
 import GenreManagement from './pages/admin/GenreManagement';
 import UserManagement from './pages/admin/UserManagement';
 import AdminSong from './pages/admin/AdminSong';
-
-// Artist Pages
-import ArtistSong from './pages/Settings/ArtistSong';
+import AdminUpload from './pages/admin/AdminUpload';
+import ArtistManagement from './pages/admin/ArtistManagement'; // ✅ new
 
 // Role-based Route Wrapper
 const RoleBasedRoutes = () => {
   const { user } = useUser();
 
-  // Fallback role dari localStorage biar stabil saat awal render
   const storedRole =
     localStorage.getItem('role') || localStorage.getItem('accountType');
   const effectiveAccountType = user?.accountType || storedRole;
@@ -70,11 +67,33 @@ const RoleBasedRoutes = () => {
         />
 
         <Route
+          path="/admin/artists"
+          element={ // ✅ new route
+            <ProtectedRoute>
+              <MainLayout>
+                <ArtistManagement />
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
           path="/admin/songs"
           element={
             <ProtectedRoute>
               <MainLayout>
                 <AdminSong />
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin/upload"
+          element={
+            <ProtectedRoute>
+              <MainLayout>
+                <AdminUpload />
               </MainLayout>
             </ProtectedRoute>
           }
@@ -91,12 +110,13 @@ const RoleBasedRoutes = () => {
           }
         />
 
+        <Route path="/" element={<Navigate to="/admin/dashboard" replace />} />
         <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
       </Routes>
     );
   }
 
-  // Jika USER atau ARTIST (atau belum ada role → anggap non-admin)
+  // Jika USER
   return (
     <Routes>
       <Route
@@ -110,7 +130,6 @@ const RoleBasedRoutes = () => {
         }
       />
 
-      {/* Playlist detail */}
       <Route
         path="/playlist/:playlistId"
         element={
@@ -122,7 +141,6 @@ const RoleBasedRoutes = () => {
         }
       />
 
-      {/* /playlist → redirect ke home */}
       <Route
         path="/playlist"
         element={
@@ -157,28 +175,6 @@ const RoleBasedRoutes = () => {
       />
 
       <Route
-        path="/upload"
-        element={
-          <ProtectedRoute>
-            <MainLayout>
-              <Upload />
-            </MainLayout>
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/settings/my-songs"
-        element={
-          <ProtectedRoute>
-            <MainLayout>
-              <ArtistSong />
-            </MainLayout>
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
         path="/settings"
         element={
           <ProtectedRoute>
@@ -200,14 +196,10 @@ const App = () => {
     <AuthProvider>
       <UserProvider>
         <MusicProvider>
-          {/* ✅ Session Timeout Warning - Global component */}
           <SessionTimeoutWarning />
-          
-          <Routes>
-            {/* Public Route - Auth (tanpa layout) */}
-            <Route path="/auth" element={<AuthPage />} />
 
-            {/* All other routes handled by RoleBasedRoutes */}
+          <Routes>
+            <Route path="/auth" element={<AuthPage />} />
             <Route path="*" element={<RoleBasedRoutes />} />
           </Routes>
         </MusicProvider>

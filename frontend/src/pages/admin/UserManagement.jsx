@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { adminService, handleApiError } from '../../services/api';
-import styles from './UserManagement.module.css'; // ✅ pakai CSS module
+import styles from './UserManagement.module.css';
 
 const UserManagement = () => {
   const [users, setUsers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [filter, setFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedUser, setSelectedUser] = useState(null);
   const [showBanModal, setShowBanModal] = useState(false);
@@ -32,12 +31,6 @@ const UserManagement = () => {
   };
 
   const filteredUsers = users.filter((user) => {
-    // Filter by type
-    if (filter === 'user' && user.accountType !== 'USER') return false;
-    if (filter === 'artist' && user.accountType !== 'ARTIST') return false;
-    if (filter === 'banned' && !user.banned) return false; // ✅ field boolean: banned
-
-    // Filter by search query
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       return (
@@ -45,7 +38,6 @@ const UserManagement = () => {
         user.email.toLowerCase().includes(query)
       );
     }
-
     return true;
   });
 
@@ -132,8 +124,8 @@ const UserManagement = () => {
     <div className={styles.userManagementContainer}>
       <div className={styles.userHeader}>
         <div>
-          <h1 className={styles.pageTitle}>User & Artist Management</h1>
-          <p className={styles.pageSubtitle}>Kelola akun user dan artist di Melodia</p>
+          <h1 className={styles.pageTitle}>User Management</h1>
+          <p className={styles.pageSubtitle}>Kelola akun user di Melodia</p>
         </div>
       </div>
 
@@ -144,41 +136,13 @@ const UserManagement = () => {
         </div>
       )}
 
-      {/* Filters and Search */}
+      {/* Search only */}
       <div className={styles.controlBar}>
         <div className={styles.filterTabs}>
-          <button
-            className={
-              filter === 'all' ? `${styles.filterTab} ${styles.active}` : styles.filterTab
-            }
-            onClick={() => setFilter('all')}
-          >
+          <button className={`${styles.filterTab} ${styles.active}`}>
             All ({users.length})
           </button>
-          <button
-            className={
-              filter === 'user' ? `${styles.filterTab} ${styles.active}` : styles.filterTab
-            }
-            onClick={() => setFilter('user')}
-          >
-            Users ({users.filter((u) => u.accountType === 'USER').length})
-          </button>
-          <button
-            className={
-              filter === 'artist' ? `${styles.filterTab} ${styles.active}` : styles.filterTab
-            }
-            onClick={() => setFilter('artist')}
-          >
-            Artists ({users.filter((u) => u.accountType === 'ARTIST').length})
-          </button>
-          <button
-            className={
-              filter === 'banned'
-                ? `${styles.filterTab} ${styles.alert} ${styles.active}`
-                : `${styles.filterTab} ${styles.alert}`
-            }
-            onClick={() => setFilter('banned')}
-          >
+          <button className={`${styles.filterTab} ${styles.alert}`}>
             Banned ({users.filter((u) => u.banned).length})
           </button>
         </div>
@@ -201,7 +165,6 @@ const UserManagement = () => {
             <tr>
               <th>Username</th>
               <th>Email</th>
-              <th>Type</th>
               <th>Status</th>
               <th>Joined</th>
               <th>Actions</th>
@@ -215,32 +178,22 @@ const UserManagement = () => {
               >
                 <td>
                   <div className={styles.userCell}>
-                    <div className={styles.userAvatar}>
-                      {user.accountType === 'ARTIST' ? '🎤' : '👤'}
-                    </div>
+                    <div className={styles.userAvatar}>👤</div>
                     <div>
                       <div className={styles.userName}>{user.username}</div>
-                      {user.accountType === 'ARTIST' && user.songCount != null && (
-                        <div className={styles.userMeta}>{user.songCount} songs</div>
-                      )}
                     </div>
                   </div>
                 </td>
                 <td>{user.email}</td>
                 <td>
-                  <span
-                    className={`${styles.badge} ${
-                      user.accountType === 'ARTIST' ? styles.artist : styles.user
-                    }`}
-                  >
-                    {user.accountType}
-                  </span>
-                </td>
-                <td>
                   {user.banned ? (
-                    <span className={`${styles.badge} ${styles.banned}`}>🚫 Banned</span>
+                    <span className={`${styles.badge} ${styles.banned}`}>
+                      🚫 Banned
+                    </span>
                   ) : (
-                    <span className={`${styles.badge} ${styles.active}`}>✅ Active</span>
+                    <span className={`${styles.badge} ${styles.active}`}>
+                      ✅ Active
+                    </span>
                   )}
                 </td>
                 <td>
@@ -253,7 +206,9 @@ const UserManagement = () => {
                     {user.banned ? (
                       <button
                         className={styles.unbanBtn}
-                        onClick={() => handleUnbanUser(user.accountId, user.username)}
+                        onClick={() =>
+                          handleUnbanUser(user.accountId, user.username)
+                        }
                         title="Unban user"
                       >
                         🔓
@@ -269,7 +224,9 @@ const UserManagement = () => {
                     )}
                     <button
                       className={styles.deleteBtn}
-                      onClick={() => handleDeleteUser(user.accountId, user.username)}
+                      onClick={() =>
+                        handleDeleteUser(user.accountId, user.username)
+                      }
                       title="Delete account"
                     >
                       🗑️

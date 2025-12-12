@@ -33,10 +33,6 @@ const saveAuthData = (data) => {
     localStorage.setItem('role', data.accountType);
     localStorage.setItem('accountType', data.accountType);
   }
-
-  if (data.bio) {
-    localStorage.setItem('bio', data.bio);
-  }
 };
 
 // ==================== HELPER: Sync ke STORAGE_KEYS.USER_DATA & AUTH_TOKEN ====================
@@ -46,7 +42,6 @@ const syncAuthToUseAuthStorage = (data) => {
     username: data.username,
     email: data.email,
     accountType: data.accountType,
-    bio: data.bio ?? null,
   };
 
   setStorageItem(STORAGE_KEYS.USER_DATA, userData);
@@ -64,7 +59,7 @@ const clearAuthData = () => {
   localStorage.removeItem('role');
   localStorage.removeItem('accountType');
   localStorage.removeItem('email');
-  localStorage.removeItem('bio');
+  localStorage.removeItem('bio'); // cleanup old data
 
   removeStorageItem(STORAGE_KEYS.AUTH_TOKEN);
   removeStorageItem(STORAGE_KEYS.USER_DATA);
@@ -120,29 +115,18 @@ export const authService = {
       else throw new Error('Account ID missing from response');
     }
 
-    // Save to storage
     saveAuthData(data);
     syncAuthToUseAuthStorage(data);
 
     return data;
   },
 
-  // ==================== REGISTER ====================
-  register: async (username, email, password, role, bio = '') => {
-    const endpoint =
-      role === 'artist'
-        ? `${API_BASE_URL}/auth/register/artist`
-        : `${API_BASE_URL}/auth/register/user`;
-
-    const body =
-      role === 'artist'
-        ? { username, email, password, bio }
-        : { username, email, password };
-
-    const response = await fetch(endpoint, {
+  // ==================== REGISTER USER ONLY ====================
+  register: async (username, email, password) => {
+    const response = await fetch(`${API_BASE_URL}/auth/register/user`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
+      body: JSON.stringify({ username, email, password }),
     });
 
     if (!response.ok) {
@@ -281,19 +265,12 @@ export const authService = {
     return data.exists;
   },
 
-  // ==================== UPDATE PROFILE ====================
-  updateProfile: async (profile, accountType) => {
-    const payload =
-      accountType === 'ARTIST'
-        ? {
-            username: profile.username,
-            email: profile.email,
-            bio: profile.bio ?? '',
-          }
-        : {
-            username: profile.username,
-            email: profile.email,
-          };
+  // ==================== UPDATE PROFILE (User/Admin only) ====================
+  updateProfile: async (profile) => {
+    const payload = {
+      username: profile.username,
+      email: profile.email,
+    };
 
     const response = await fetch(`${API_BASE_URL}/auth/profile`, {
       method: 'PUT',

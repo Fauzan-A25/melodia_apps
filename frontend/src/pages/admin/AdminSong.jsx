@@ -21,9 +21,9 @@ const AdminSong = () => {
       setLoading(true);
       const [songsData, genresData] = await Promise.all([
         musicService.getAllSongs(),
-        musicService.getAllGenres()
+        musicService.getAllGenres(),
       ]);
-      
+
       setSongs(songsData);
       setGenres(genresData);
       setError('');
@@ -40,11 +40,13 @@ const AdminSong = () => {
 
   const handleDeleteConfirm = async () => {
     if (!deleteModal.song) return;
-    
+
     const songToDelete = deleteModal.song;
     try {
       await musicService.adminDeleteSong(songToDelete.songId);
-      setSongs(prevSongs => prevSongs.filter(s => s.songId !== songToDelete.songId));
+      setSongs((prevSongs) =>
+        prevSongs.filter((s) => s.songId !== songToDelete.songId),
+      );
       setDeleteModal({ show: false, song: null });
     } catch (err) {
       alert('Failed to delete song: ' + err.message);
@@ -55,14 +57,20 @@ const AdminSong = () => {
     setDeleteModal({ show: false, song: null });
   };
 
-  const filteredSongs = songs.filter(song => {
-    const matchesSearch = 
+  const filteredSongs = songs.filter((song) => {
+    const artistName =
+      song.artistName ||
+      song.artist?.artistName ||
+      ''; // fallback ke relasi kalau perlu
+
+    const matchesSearch =
       song.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      song.artist?.username?.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    const matchesGenre = !filterGenre || 
-      (song.genres && song.genres.some(g => g.name === filterGenre));
-    
+      artistName.toLowerCase().includes(searchQuery.toLowerCase());
+
+    const matchesGenre =
+      !filterGenre ||
+      (song.genres && song.genres.some((g) => g.name === filterGenre));
+
     return matchesSearch && matchesGenre;
   });
 
@@ -101,7 +109,7 @@ const AdminSong = () => {
           onChange={(e) => setSearchQuery(e.target.value)}
           className={styles.searchInput}
         />
-        
+
         <select
           value={filterGenre}
           onChange={(e) => setFilterGenre(e.target.value)}
@@ -109,15 +117,15 @@ const AdminSong = () => {
         >
           <option value="">All Genres</option>
           {genres.map((genre) => (
-            <option 
-              key={genre.genreId || genre.id || `genre-${genre.name}`} 
+            <option
+              key={genre.genreId || genre.id || `genre-${genre.name}`}
               value={genre.name}
             >
               {genre.name}
             </option>
           ))}
         </select>
-        
+
         <div className={styles.stats}>
           Showing: <strong>{filteredSongs.length}</strong> / {songs.length} songs
         </div>
@@ -125,8 +133,8 @@ const AdminSong = () => {
 
       {filteredSongs.length === 0 ? (
         <div className={styles.empty}>
-          {searchQuery || filterGenre 
-            ? 'No songs found matching your criteria' 
+          {searchQuery || filterGenre
+            ? 'No songs found matching your criteria'
             : 'No songs available'}
         </div>
       ) : (
@@ -150,17 +158,20 @@ const AdminSong = () => {
                       <span className={styles.songTitle}>{song.title}</span>
                     </div>
                   </td>
-                  <td>{song.artist?.username || 'Unknown Artist'}</td>
+                  <td>{song.artistName || song.artist?.artistName || 'Unknown Artist'}</td>
                   <td>
                     {song.genres && song.genres.length > 0 ? (
                       <div className={styles.genresWrapper}>
                         {song.genres.map((genre, index) => {
-                          const genreKey = genre.genreId 
+                          const genreKey = genre.genreId
                             ? `${song.songId}-${genre.genreId}`
                             : `${song.songId}-${genre.name}-${index}`;
-                          
+
                           return (
-                            <span key={genreKey} className={styles.genreBadge}>
+                            <span
+                              key={genreKey}
+                              className={styles.genreBadge}
+                            >
                               {genre.name}
                             </span>
                           );
@@ -189,32 +200,38 @@ const AdminSong = () => {
       )}
 
       {deleteModal.show && deleteModal.song && (
-        <div 
-          className={styles.modalOverlay} 
+        <div
+          className={styles.modalOverlay}
           onClick={handleDeleteCancel}
         >
-          <div 
-            className={styles.modal} 
+          <div
+            className={styles.modal}
             onClick={(e) => e.stopPropagation()}
           >
             <h2>⚠️ Delete Song</h2>
             <p>
               Are you sure you want to delete{' '}
               <strong>"{deleteModal.song.title}"</strong> by{' '}
-              <strong>{deleteModal.song.artist?.username || 'Unknown'}</strong>?
+              <strong>
+                {deleteModal.song.artistName ||
+                  deleteModal.song.artist?.artistName ||
+                  'Unknown'}
+              </strong>
+              ?
             </p>
             <p className={styles.warning}>
-              ⚠️ This action is permanent and cannot be undone. The song will be removed from all playlists.
+              ⚠️ This action is permanent and cannot be undone. The song will
+              be removed from all playlists.
             </p>
             <div className={styles.modalActions}>
-              <button 
-                onClick={handleDeleteCancel} 
+              <button
+                onClick={handleDeleteCancel}
                 className={styles.cancelBtn}
               >
                 Cancel
               </button>
-              <button 
-                onClick={handleDeleteConfirm} 
+              <button
+                onClick={handleDeleteConfirm}
                 className={styles.confirmDeleteBtn}
               >
                 Delete Permanently
@@ -229,7 +246,7 @@ const AdminSong = () => {
 
 const formatDuration = (seconds) => {
   if (!seconds || seconds === 0) return '0:00';
-  
+
   const mins = Math.floor(seconds / 60);
   const secs = seconds % 60;
   return `${mins}:${secs.toString().padStart(2, '0')}`;

@@ -8,7 +8,7 @@ const AdminDashboard = () => {
     totalUsers: 0,
     totalArtists: 0,
     totalGenres: 0,
-    bannedAccounts: 0
+    bannedAccounts: 0,
   });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -21,19 +21,13 @@ const AdminDashboard = () => {
     setIsLoading(true);
     setError(null);
     try {
-      // ✅ PERUBAHAN LOGIC: Fetch users dan hitung manual
+      // Users & banned count
       const allUsers = await adminService.getAllUsers();
-      
-      // Filter USER murni (exclude ARTIST)
-      const pureUsers = allUsers.filter(u => u.accountType === 'USER');
-      
-      // Filter ARTIST saja
-      const artists = allUsers.filter(u => u.accountType === 'ARTIST');
-      
-      // Hitung banned accounts
-      const bannedCount = allUsers.filter(u => u.banned).length;
 
-      // Fetch genres count
+      const totalUsers = allUsers.length;
+      const bannedCount = allUsers.filter((u) => u.banned).length;
+
+      // Genres
       let genresCount = 0;
       try {
         const genres = await adminService.getAllGenres();
@@ -42,22 +36,29 @@ const AdminDashboard = () => {
         console.warn('Could not fetch genres:', err);
       }
 
-      setStats({
-        totalUsers: pureUsers.length,      // ✅ USER murni saja
-        totalArtists: artists.length,       // ✅ ARTIST saja
-        totalGenres: genresCount,
-        bannedAccounts: bannedCount
-      });
+      // Artists (metadata entity)
+      let artistsCount = 0;
+      try {
+        const artists = await adminService.getAllArtists();
+        artistsCount = artists.length;
+      } catch (err) {
+        console.warn('Could not fetch artists:', err);
+      }
 
+      setStats({
+        totalUsers,
+        totalArtists: artistsCount,
+        totalGenres: genresCount,
+        bannedAccounts: bannedCount,
+      });
     } catch (err) {
       console.error('Error fetching stats:', err);
       setError(handleApiError(err));
-      // Fallback to mock data if API fails
       setStats({
         totalUsers: 0,
         totalArtists: 0,
         totalGenres: 0,
-        bannedAccounts: 0
+        bannedAccounts: 0,
       });
     } finally {
       setIsLoading(false);
@@ -132,16 +133,22 @@ const AdminDashboard = () => {
             <p>Tambah, edit, atau hapus genre musik</p>
           </Link>
 
-          <Link to="/admin/users" className={styles.actionCard}>
-            <div className={styles.actionIcon}>👤</div>
-            <h3>Manage Users</h3>
-            <p>Kelola akun user dan artist</p>
+          <Link to="/admin/artists" className={styles.actionCard}>
+            <div className={styles.actionIcon}>🎤</div>
+            <h3>Manage Artists</h3>
+            <p>Kelola metadata artist (nama & bio)</p>
           </Link>
 
           <Link to="/admin/songs" className={styles.actionCard}>
             <div className={styles.actionIcon}>🎵</div>
             <h3>Manage Songs</h3>
             <p>Kelola lagu dan metadata</p>
+          </Link>
+
+          <Link to="/admin/upload" className={styles.actionCard}>
+            <div className={styles.actionIcon}>⬆️</div>
+            <h3>Upload Song</h3>
+            <p>Upload lagu baru ke platform</p>
           </Link>
         </div>
       </div>
