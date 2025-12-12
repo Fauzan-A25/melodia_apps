@@ -270,7 +270,9 @@ docker-compose up -d
 
 ## 🎨 Screenshots
 
-> _Screenshots akan ditambahkan setelah deployment final_
+<img width="1919" height="1027" alt="image" src="https://github.com/user-attachments/assets/095b198a-276a-46c6-8abc-7cb47a538225" />
+<img width="1919" height="970" alt="image" src="https://github.com/user-attachments/assets/164181e8-37fc-41de-8fef-4ccfb35b31c6" />
+<img width="1919" height="969" alt="image" src="https://github.com/user-attachments/assets/c05d841a-fa94-44ea-9a3f-418025594a1f" />
 
 ---
 
@@ -322,18 +324,6 @@ Contributions are welcome! Please follow these steps:
 4. Push to branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
----
-
-## 📞 Contact & Support
-
-Jika ada pertanyaan atau issue, silakan buka [GitHub Issues](https://github.com/your-username/melodia/issues).
-
----
-
 <div align="center">
-
-**⭐ Star this repo if you find it helpful!**
-
-Made with ❤️ by Melodia Team
 
 </div>
