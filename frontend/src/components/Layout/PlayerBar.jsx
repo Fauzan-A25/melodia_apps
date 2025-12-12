@@ -59,7 +59,6 @@ const PlayerBar = () => {
       : null;
 
     if (!streamUrl) {
-      console.log('[PlayerBar] no filePath', currentSong);
       return;
     }
 
@@ -70,7 +69,6 @@ const PlayerBar = () => {
     audio.load();
 
     const handleLoadStart = () => {
-      console.log('[PlayerBar] loadstart');
       setIsLoading(true);
       setCurrentTime(0);
       setDuration(0);
@@ -78,7 +76,6 @@ const PlayerBar = () => {
 
     const handleCanPlay = () => {
       if (!isLoadingRef.current) return;
-      console.log('[PlayerBar] canplay, auto play');
 
       setIsLoading(false);
       isLoadingRef.current = false;
@@ -94,22 +91,17 @@ const PlayerBar = () => {
           if (userId && songId) {
             musicService
               .addSongToHistory(userId, songId)
-              .then(() => console.log('[PlayerBar] added to history', songId))
-              .catch((err) =>
-                console.log('[PlayerBar] add history error', err),
-              );
+              .catch(() => {});
           }
         })
         .catch((err) => {
           if (err.name !== 'AbortError') {
-            console.log('[PlayerBar] play error on canplay', err);
             setGlobalIsPlaying(false);
           }
         });
     };
 
     const handleError = () => {
-      console.log('[PlayerBar] audio error');
       setIsLoading(false);
       isLoadingRef.current = false;
     };
@@ -119,7 +111,6 @@ const PlayerBar = () => {
     audio.addEventListener('error', handleError);
 
     return () => {
-      console.log('[PlayerBar] cleanup load listeners');
       audio.removeEventListener('loadstart', handleLoadStart);
       audio.removeEventListener('canplay', handleCanPlay);
       audio.removeEventListener('error', handleError);
@@ -129,7 +120,6 @@ const PlayerBar = () => {
 
   // Handle song end
   const handleSongEnd = useCallback(() => {
-    console.log('[PlayerBar] audio ended, repeatMode=', repeatMode);
     if (repeatMode === 'one') {
       // audio.loop akan meng-handle repeat one
       return;
@@ -150,20 +140,18 @@ const PlayerBar = () => {
       }
     };
 
-    console.log('[PlayerBar] attach audio listeners');
     audio.addEventListener('timeupdate', updateTime);
     audio.addEventListener('loadedmetadata', updateDuration);
     audio.addEventListener('ended', handleSongEnd);
 
     return () => {
-      console.log('[PlayerBar] cleanup audio listeners');
       audio.removeEventListener('timeupdate', updateTime);
       audio.removeEventListener('loadedmetadata', updateDuration);
       audio.removeEventListener('ended', handleSongEnd);
     };
   }, [handleSongEnd]);
 
-  // Sync play/pause with global state
+  // Sync play/pause dengan global state
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio || !currentSong || isLoadingRef.current) return;
@@ -171,7 +159,6 @@ const PlayerBar = () => {
     if (globalIsPlaying) {
       audio.play().catch((err) => {
         if (err.name !== 'AbortError') {
-          console.log('[PlayerBar] play error (sync)', err);
           setGlobalIsPlaying(false);
         }
       });
@@ -192,11 +179,9 @@ const PlayerBar = () => {
     if (!audio || !currentSong || isLoading) return;
 
     if (globalIsPlaying) {
-      console.log('[PlayerBar] pause click');
       audio.pause();
       setGlobalIsPlaying(false);
     } else {
-      console.log('[PlayerBar] play click');
       audio
         .play()
         .then(() => {
@@ -204,7 +189,6 @@ const PlayerBar = () => {
         })
         .catch((err) => {
           if (err.name !== 'AbortError') {
-            console.log('[PlayerBar] play error (click)', err);
             setGlobalIsPlaying(false);
           }
         });

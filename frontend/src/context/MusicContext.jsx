@@ -169,11 +169,6 @@ export const MusicProvider = ({ children }) => {
 
   const playSong = useCallback(
     (song, songList = [], index = 0) => {
-      console.log('[playSong]', {
-        songId: song?.id || song?.songId,
-        index,
-        listLength: songList.length,
-      });
       setCurrentSong(song);
       setQueue(songList);
       setCurrentIndex(index);
@@ -185,23 +180,12 @@ export const MusicProvider = ({ children }) => {
 
   const playNext = useCallback(
     () => {
-      console.log('[playNext] called', {
-        queueLength: queue?.length,
-        currentIndex,
-        repeatMode,
-        isShuffled,
-        currentSongId: queue[currentIndex]?.id || queue[currentIndex]?.songId,
-      });
-
       if (!queue || queue.length === 0) {
-        console.log('[playNext] queue empty, returning');
         return;
       }
 
       if (repeatMode === 'one') {
-        console.log('[playNext] repeatMode=one, replay same song');
-        setCurrentSong(queue[currentIndex]);
-        addToHistory(queue[currentIndex]);
+        // Dengan audio.loop di PlayerBar, tidak perlu berubah lagu
         return;
       }
 
@@ -213,22 +197,13 @@ export const MusicProvider = ({ children }) => {
           randomIndex = Math.floor(Math.random() * queue.length);
         }
         nextIndex = randomIndex;
-        console.log('[playNext] shuffled, nextIndex=', nextIndex);
       } else if (currentIndex < queue.length - 1) {
         nextIndex = currentIndex + 1;
-        console.log('[playNext] normal next, nextIndex=', nextIndex);
       } else if (repeatMode === 'all') {
         nextIndex = 0;
-        console.log('[playNext] repeat all, looping to index 0');
       } else {
-        console.log('[playNext] end of queue & repeat=off, stop');
         return;
       }
-
-      console.log('[playNext] setting currentIndex & currentSong', {
-        nextIndex,
-        nextSongId: queue[nextIndex]?.id || queue[nextIndex]?.songId,
-      });
 
       setCurrentIndex(nextIndex);
       setCurrentSong(queue[nextIndex]);
@@ -239,38 +214,26 @@ export const MusicProvider = ({ children }) => {
 
   const playPrevious = useCallback(
     () => {
-      console.log('[playPrevious] called', {
-        queueLength: queue?.length,
-        currentIndex,
-        repeatMode,
-      });
-
       if (!queue || queue.length === 0) {
-        console.log('[playPrevious] queue empty, returning');
         return;
       }
 
       if (currentIndex > 0) {
         const prevIndex = currentIndex - 1;
-        console.log('[playPrevious] normal prev, index=', prevIndex);
         setCurrentIndex(prevIndex);
         setCurrentSong(queue[prevIndex]);
         addToHistory(queue[prevIndex]);
       } else if (repeatMode === 'all') {
         const lastIndex = queue.length - 1;
-        console.log('[playPrevious] repeat all, jump to last index=', lastIndex);
         setCurrentIndex(lastIndex);
         setCurrentSong(queue[lastIndex]);
         addToHistory(queue[lastIndex]);
-      } else {
-        console.log('[playPrevious] at start & repeat=off, stop');
       }
     },
     [currentIndex, queue, repeatMode, addToHistory],
   );
 
   const stopMusic = useCallback(() => {
-    console.log('[stopMusic]');
     setCurrentSong(null);
     setIsPlaying(false);
   }, []);
@@ -290,36 +253,21 @@ export const MusicProvider = ({ children }) => {
 
   const toggleRepeat = useCallback(() => {
     setRepeatMode((prev) => {
-      const next =
-        prev === 'off' ? 'all' :
-        prev === 'all' ? 'one' :
-        'off';
-      console.log('[toggleRepeat]', { prev, next });
-      return next;
+      if (prev === 'off') return 'all';
+      if (prev === 'all') return 'one';
+      return 'off';
     });
   }, []);
 
   const toggleShuffle = useCallback(() => {
-    setIsShuffled((prev) => {
-      const next = !prev;
-      console.log('[toggleShuffle]', { prev, next });
-      return next;
-    });
+    setIsShuffled((prev) => !prev);
   }, []);
 
   const addToQueue = useCallback((song) => {
-    setQueue((prev) => {
-      const next = [...prev, song];
-      console.log('[addToQueue]', {
-        addedId: song?.id || song?.songId,
-        newLength: next.length,
-      });
-      return next;
-    });
+    setQueue((prev) => [...prev, song]);
   }, []);
 
   const clearQueue = useCallback(() => {
-    console.log('[clearQueue]');
     setQueue([]);
     setCurrentIndex(0);
   }, []);
