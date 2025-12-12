@@ -7,8 +7,8 @@ public class AuthResponse {
     private String email;
     private String accountType;
     private String token;
-    private String bio;   // optional, hanya terisi untuk ARTIST
 
+    // ✅ Single constructor - clean & simple
     public AuthResponse(String message, String accountId, String username,
                         String email, String accountType) {
         this.message = message;
@@ -18,13 +18,13 @@ public class AuthResponse {
         this.accountType = accountType;
     }
 
-    // Constructor untuk ARTIST (dengan bio)
     public AuthResponse(String message, String accountId, String username,
-                        String email, String accountType, String bio) {
+                        String email, String accountType, String token) {
         this(message, accountId, username, email, accountType);
-        this.bio = bio;
+        this.token = token;
     }
 
+    // Getters & Setters
     public String getMessage() { return message; }
     public void setMessage(String message) { this.message = message; }
 
@@ -42,7 +42,4 @@ public class AuthResponse {
 
     public String getToken() { return token; }
     public void setToken(String token) { this.token = token; }
-
-    public String getBio() { return bio; }
-    public void setBio(String bio) { this.bio = bio; }
 }

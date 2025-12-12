@@ -5,20 +5,27 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
 import melodia.model.dto.request.auth.ChangePasswordRequest;
 import melodia.model.dto.request.auth.LoginRequest;
 import melodia.model.dto.request.auth.RegisterAdminRequest;
-import melodia.model.dto.request.auth.RegisterArtistRequest;
 import melodia.model.dto.request.auth.RegisterRequest;
-import melodia.model.dto.request.auth.UpdateProfileRequest;
+import melodia.model.dto.request.auth.UpdateProfileRequest;       
 import melodia.model.dto.response.AuthResponse;
 import melodia.model.dto.response.ErrorResponse;
 import melodia.model.entity.Account;
 import melodia.model.entity.Admin;
-import melodia.model.entity.Artist;
 import melodia.model.entity.User;
 import melodia.model.repository.AccountRepository;
 import melodia.security.JwtUtil;
@@ -46,25 +53,17 @@ public class AuthController {
 
     // ==================== Helper ====================
 
+    /**
+     * Create AuthResponse tanpa Artist logic (Artist bukan Account lagi)
+     */
     private AuthResponse createAuthResponse(String message, Account account) {
-        if (account instanceof Artist artist) {
-            return new AuthResponse(
-                message,
-                artist.getAccountId(),
-                artist.getUsername(),
-                artist.getEmail(),
-                artist.getAccountType(),
-                artist.getBio()
-            );
-        } else {
-            return new AuthResponse(
+        return new AuthResponse(
                 message,
                 account.getAccountId(),
                 account.getUsername(),
                 account.getEmail(),
                 account.getAccountType()
-            );
-        }
+        );
     }
 
     private AuthResponse createAuthResponseWithToken(String message, Account account, String token) {
@@ -80,13 +79,12 @@ public class AuthController {
         logger.info("Login attempt for username: {}", request.getUsername());
 
         try {
-            // ✅ Satu-satunya tempat cek username/email + password
+            // ✅ Account (User/Admin) saja, Artist sudah bukan akun login
             Account account = authenticationService.login(
-                request.getUsername(),   // atau usernameOrEmail
-                request.getPassword()
+                    request.getUsername(),
+                    request.getPassword()
             );
 
-            // ✅ Generate JWT pakai username
             String token = jwtUtil.generateToken(account.getUsername());
 
             AuthResponse response = createAuthResponseWithToken("Login successful", account, token);
@@ -95,7 +93,6 @@ public class AuthController {
             return ResponseEntity.ok(response);
 
         } catch (IllegalArgumentException e) {
-            // Dari AuthenticationService: "Akun tidak ditemukan", "Password salah", dll.
             logger.error("❌ Login failed: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(new ErrorResponse(e.getMessage()));
@@ -111,7 +108,7 @@ public class AuthController {
     @PostMapping("/logout")
     public ResponseEntity<?> logout(@RequestHeader(value = "Authorization", required = false) String token) {
         logger.info("Logout attempt");
-        // JWT stateless: cukup clear di frontend, backend tidak simpan session
+        // JWT stateless: cukup clear di frontend
         logger.info("✅ Logout successful");
         return ResponseEntity.ok(new AuthMessageResponse("Logout berhasil. Token akan expired otomatis."));
     }
@@ -125,7 +122,7 @@ public class AuthController {
         try {
             if (authHeader == null || !authHeader.startsWith("Bearer ")) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new ErrorResponse("Token tidak ditemukan"));
+                        .body(new ErrorResponse("Token tidak ditemukan"));
             }
 
             String token = authHeader.substring(7);
@@ -133,7 +130,7 @@ public class AuthController {
 
             if (jwtUtil.validateToken(token, username)) {
                 Account account = accountRepository.findByUsername(username)
-                    .orElseThrow(() -> new IllegalArgumentException("Account not found"));
+                        .orElseThrow(() -> new IllegalArgumentException("Account not found"));
 
                 AuthResponse response = createAuthResponseWithToken("Token valid", account, token);
 
@@ -142,16 +139,16 @@ public class AuthController {
             }
 
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(new ErrorResponse("Token tidak valid atau expired"));
+                    .body(new ErrorResponse("Token tidak valid atau expired"));
 
         } catch (IllegalArgumentException e) {
             logger.error("❌ Token validation error: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(new ErrorResponse("Token tidak valid: " + e.getMessage()));
+                    .body(new ErrorResponse("Token tidak valid: " + e.getMessage()));
         } catch (Exception e) {
             logger.error("❌ Token validation error: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(new ErrorResponse("Token tidak valid"));
+                    .body(new ErrorResponse("Token tidak valid"));
         }
     }
 
@@ -164,14 +161,14 @@ public class AuthController {
         try {
             if (authHeader == null || !authHeader.startsWith("Bearer ")) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new ErrorResponse("Token tidak ditemukan"));
+                        .body(new ErrorResponse("Token tidak ditemukan"));
             }
 
             String oldToken = authHeader.substring(7);
             String username = jwtUtil.extractUsername(oldToken);
 
             Account account = accountRepository.findByUsername(username)
-                .orElseThrow(() -> new IllegalArgumentException("Account not found"));
+                    .orElseThrow(() -> new IllegalArgumentException("Account not found"));
 
             String newToken = jwtUtil.generateToken(username);
 
@@ -183,11 +180,11 @@ public class AuthController {
         } catch (IllegalArgumentException e) {
             logger.error("❌ Token refresh error: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(new ErrorResponse("Gagal refresh token: " + e.getMessage()));
+                    .body(new ErrorResponse("Gagal refresh token: " + e.getMessage()));
         } catch (Exception e) {
             logger.error("❌ Token refresh error: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(new ErrorResponse("Gagal refresh token"));
+                    .body(new ErrorResponse("Gagal refresh token"));
         }
     }
 
@@ -200,7 +197,7 @@ public class AuthController {
         try {
             if (authHeader == null || !authHeader.startsWith("Bearer ")) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new ErrorResponse("Token tidak ditemukan"));
+                        .body(new ErrorResponse("Token tidak ditemukan"));
             }
 
             String token = authHeader.substring(7);
@@ -208,11 +205,11 @@ public class AuthController {
 
             if (!jwtUtil.validateToken(token, username)) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new ErrorResponse("Token tidak valid"));
+                        .body(new ErrorResponse("Token tidak valid"));
             }
 
             Account account = accountRepository.findByUsername(username)
-                .orElseThrow(() -> new IllegalArgumentException("Account not found"));
+                    .orElseThrow(() -> new IllegalArgumentException("Account not found"));
 
             AuthResponse response = createAuthResponseWithToken("Current user retrieved", account, token);
 
@@ -222,11 +219,11 @@ public class AuthController {
         } catch (IllegalArgumentException e) {
             logger.error("❌ Get current user error: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(new ErrorResponse("User tidak terautentikasi: " + e.getMessage()));
+                    .body(new ErrorResponse("User tidak terautentikasi: " + e.getMessage()));
         } catch (Exception e) {
             logger.error("❌ Get current user error: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(new ErrorResponse("User tidak terautentikasi"));
+                    .body(new ErrorResponse("User tidak terautentikasi"));
         }
     }
 
@@ -238,65 +235,29 @@ public class AuthController {
 
         try {
             User newUser = registrationService.registerUser(
-                request.getUsername(),
-                request.getEmail(),
-                request.getPassword()
+                    request.getUsername(),
+                    request.getEmail(),
+                    request.getPassword()
             );
 
             logger.info("✅ User registered successfully: {}", newUser.getUsername());
             return ResponseEntity.status(HttpStatus.CREATED).body(
-                new AuthResponse(
-                    "User registered successfully",
-                    newUser.getAccountId(),
-                    newUser.getUsername(),
-                    newUser.getEmail(),
-                    "USER"
-                )
+                    new AuthResponse(
+                            "User registered successfully",
+                            newUser.getAccountId(),
+                            newUser.getUsername(),
+                            newUser.getEmail(),
+                            "USER"
+                    )
             );
         } catch (IllegalArgumentException e) {
             logger.error("❌ User registration failed: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(new ErrorResponse(e.getMessage()));
+                    .body(new ErrorResponse(e.getMessage()));
         } catch (Exception e) {
             logger.error("❌ User registration error: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ErrorResponse("Registration failed: " + e.getMessage()));
-        }
-    }
-
-    // ==================== REGISTER ARTIST ====================
-
-    @PostMapping("/register/artist")
-    public ResponseEntity<?> registerArtist(@Valid @RequestBody RegisterArtistRequest request) {
-        logger.info("Artist registration attempt for username: {}", request.getUsername());
-
-        try {
-            Artist newArtist = registrationService.registerArtist(
-                request.getUsername(),
-                request.getEmail(),
-                request.getPassword(),
-                request.getBio()
-            );
-
-            logger.info("✅ Artist registered successfully: {}", newArtist.getUsername());
-            return ResponseEntity.status(HttpStatus.CREATED).body(
-                new AuthResponse(
-                    "Artist registered successfully",
-                    newArtist.getAccountId(),
-                    newArtist.getUsername(),
-                    newArtist.getEmail(),
-                    "ARTIST",
-                    newArtist.getBio()
-                )
-            );
-        } catch (IllegalArgumentException e) {
-            logger.error("❌ Artist registration failed: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(new ErrorResponse(e.getMessage()));
-        } catch (Exception e) {
-            logger.error("❌ Artist registration error: {}", e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ErrorResponse("Registration failed: " + e.getMessage()));
+                    .body(new ErrorResponse("Registration failed: " + e.getMessage()));
         }
     }
 
@@ -308,34 +269,34 @@ public class AuthController {
 
         try {
             Admin newAdmin = registrationService.registerAdmin(
-                request.getUsername(),
-                request.getEmail(),
-                request.getPassword(),
-                request.getRequestedByAdminId()
+                    request.getUsername(),
+                    request.getEmail(),
+                    request.getPassword(),
+                    request.getRequestedByAdminId()
             );
 
             logger.info("✅ Admin registered successfully: {}", newAdmin.getUsername());
             return ResponseEntity.status(HttpStatus.CREATED).body(
-                new AuthResponse(
-                    "Admin registered successfully",
-                    newAdmin.getAccountId(),
-                    newAdmin.getUsername(),
-                    newAdmin.getEmail(),
-                    "ADMIN"
-                )
+                    new AuthResponse(
+                            "Admin registered successfully",
+                            newAdmin.getAccountId(),
+                            newAdmin.getUsername(),
+                            newAdmin.getEmail(),
+                            "ADMIN"
+                    )
             );
         } catch (SecurityException e) {
             logger.error("❌ Admin registration forbidden: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                .body(new ErrorResponse(e.getMessage()));
+                    .body(new ErrorResponse(e.getMessage()));
         } catch (IllegalArgumentException e) {
             logger.error("❌ Admin registration failed: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(new ErrorResponse(e.getMessage()));
+                    .body(new ErrorResponse(e.getMessage()));
         } catch (Exception e) {
             logger.error("❌ Admin registration error: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ErrorResponse("Registration failed: " + e.getMessage()));
+                    .body(new ErrorResponse("Registration failed: " + e.getMessage()));
         }
     }
 
@@ -359,10 +320,10 @@ public class AuthController {
                     .orElseThrow(() -> new IllegalArgumentException("Account not found"));
 
             Account updated = authenticationService.updateProfile(
-                account.getAccountId(),
-                request.getUsername(),
-                request.getEmail(),
-                request.getBio()
+                    account.getAccountId(),
+                    request.getUsername(),
+                    request.getEmail()
+                    // bio dihapus karena Artist bukan Account lagi
             );
 
             AuthResponse response = createAuthResponse("Profile updated successfully", updated);
@@ -372,11 +333,11 @@ public class AuthController {
         } catch (IllegalArgumentException e) {
             logger.error("❌ Profile update failed: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(new ErrorResponse(e.getMessage()));
+                    .body(new ErrorResponse(e.getMessage()));
         } catch (Exception e) {
             logger.error("❌ Profile update error: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ErrorResponse("Failed to update profile: " + e.getMessage()));
+                    .body(new ErrorResponse("Failed to update profile: " + e.getMessage()));
         }
     }
 
@@ -388,12 +349,12 @@ public class AuthController {
 
         try {
             Account account = accountRepository.findByUsername(request.getUsername())
-                .orElseThrow(() -> new IllegalArgumentException("Account not found"));
+                    .orElseThrow(() -> new IllegalArgumentException("Account not found"));
 
             authenticationService.changePassword(
-                account.getAccountId(),
-                request.getCurrentPassword(),
-                request.getNewPassword()
+                    account.getAccountId(),
+                    request.getCurrentPassword(),
+                    request.getNewPassword()
             );
 
             logger.info("✅ Password changed successfully for user: {}", account.getUsername());
@@ -401,11 +362,11 @@ public class AuthController {
         } catch (IllegalArgumentException e) {
             logger.error("❌ Password change failed: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(new ErrorResponse(e.getMessage()));
+                    .body(new ErrorResponse(e.getMessage()));
         } catch (Exception e) {
             logger.error("❌ Password change error: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ErrorResponse("Failed to change password: " + e.getMessage()));
+                    .body(new ErrorResponse("Failed to change password: " + e.getMessage()));
         }
     }
 
@@ -417,7 +378,7 @@ public class AuthController {
 
         try {
             Account account = accountRepository.findByUsername(username)
-                .orElseThrow(() -> new IllegalArgumentException("Account not found"));
+                    .orElseThrow(() -> new IllegalArgumentException("Account not found"));
 
             authenticationService.deleteCurrentAccount(account.getAccountId());
             logger.info("✅ Account deleted successfully for user: {}", username);
@@ -425,11 +386,11 @@ public class AuthController {
         } catch (IllegalArgumentException e) {
             logger.error("❌ Account deletion failed: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(new ErrorResponse(e.getMessage()));
+                    .body(new ErrorResponse(e.getMessage()));
         } catch (Exception e) {
             logger.error("❌ Account deletion error: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ErrorResponse("Failed to delete account: " + e.getMessage()));
+                    .body(new ErrorResponse("Failed to delete account: " + e.getMessage()));
         }
     }
 

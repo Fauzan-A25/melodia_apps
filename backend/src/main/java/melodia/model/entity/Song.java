@@ -27,21 +27,19 @@ public class Song {
     @Column(name = "title", nullable = false, length = 100, unique = true)
     private String title;
 
-    @Column(name = "artist_name", nullable = false, length = 100)
+    // Opsional: cache nama artist; bisa di-drop dari DB kalau tidak dibutuhkan
+    @Column(name = "artist_name", length = 100)
     private String artistName;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "artist_id")
+    @JoinColumn(name = "artist_id", nullable = false)
     @JsonIgnoreProperties({
-        "uploadedSongs",
-        "playlists",
-        "password",
+        "songs",
         "hibernateLazyInitializer",
         "handler"
-    }) // ⬅ batasi field Artist yang dikirim agar tidak loop
+    })
     private Artist artist;
 
-    // Relasi Many-to-Many ke Genre
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
         name = "song_genres",
@@ -52,10 +50,10 @@ public class Song {
         "songs",
         "hibernateLazyInitializer",
         "handler"
-    }) // ⬅ jangan serialize Genre.songs lagi
+    })
     private List<Genre> genres = new ArrayList<>();
 
-    @Column(name = "duration", nullable = false) // Dalam detik
+    @Column(name = "duration", nullable = false)
     private int duration;
 
     @Column(name = "file_path", nullable = false)
@@ -67,52 +65,119 @@ public class Song {
     @Column(name = "uploaded_at", nullable = false)
     private LocalDateTime uploadedAt;
 
-    // Constructors
-    public Song(String title, String artistName, String filePath, String genre) {
+    // ==================== Constructors ====================
+
+    public Song(String title, Artist artist, String filePath, int duration, int releaseYear) {
         this.title = title;
-        this.artistName = artistName;
+        this.artist = artist;
+        this.artistName = artist != null ? artist.getArtistName() : null;
         this.filePath = filePath;
+        this.duration = duration;
+        this.releaseYear = releaseYear;
         this.uploadedAt = LocalDateTime.now();
     }
 
-    public Song(String title, String artistName, String filePath, String genre, Genre genreEntity) {
-        this.title = title;
-        this.artistName = artistName;
-        this.filePath = filePath;
-        this.uploadedAt = LocalDateTime.now();
-        this.genres.add(genreEntity);
+    public Song(String title, Artist artist, String filePath, int duration, int releaseYear, Genre genreEntity) {
+        this(title, artist, filePath, duration, releaseYear);
+        if (genreEntity != null) {
+            this.genres.add(genreEntity);
+        }
     }
 
     public Song() {
         this.uploadedAt = LocalDateTime.now();
     }
 
-    // Getters
-    public String getSongId() { return this.songId; }
-    public String getTitle() { return this.title; }
-    public String getArtistName() { return this.artistName; }
-    public List<Genre> getGenres() { return this.genres; }
-    public int getDuration() { return this.duration; }
-    public String getFilePath() { return this.filePath; }
-    public int getReleaseYear() { return this.releaseYear; }
-    public LocalDateTime getUploadedAt() { return this.uploadedAt; }
-    public Artist getArtist() { return this.artist; }
+    // ==================== Getters ====================
 
-    // Setters
-    public void setSongId(String songId) { this.songId = songId; }
-    public void setTitle(String title) { this.title = title; }
-    public void setArtistName(String artistName) { this.artistName = artistName; }
+    public String getSongId() {
+        return songId;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public String getArtistName() {
+        return artistName;
+    }
+
+    public List<Genre> getGenres() {
+        return genres;
+    }
+
+    public int getDuration() {
+        return duration;
+    }
+
+    public String getFilePath() {
+        return filePath;
+    }
+
+    public int getReleaseYear() {
+        return releaseYear;
+    }
+
+    public LocalDateTime getUploadedAt() {
+        return uploadedAt;
+    }
+
+    public Artist getArtist() {
+        return artist;
+    }
+
+    // ==================== Setters ====================
+
+    public void setSongId(String songId) {
+        this.songId = songId;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    /**
+     * Jika mau keep cache nama artist di kolom artist_name.
+     * Kalau di DB kolomnya di-drop, hapus field + setter ini.
+     */
+    public void setArtistName(String artistName) {
+        this.artistName = artistName;
+    }
+
     public void setGenres(List<Genre> genres) {
         this.genres = genres != null ? genres : new ArrayList<>();
     }
-    public void setDuration(int duration) { this.duration = duration; }
-    public void setFilePath(String filePath) { this.filePath = filePath; }
-    public void setReleaseYear(int releaseYear) { this.releaseYear = releaseYear; }
-    public void setUploadedAt(LocalDateTime uploadedAt) { this.uploadedAt = uploadedAt; }
-    public void setArtist(Artist artist) { this.artist = artist; }
 
-    // Simple search by keyword in title or artist
+    public void setDuration(int duration) {
+        this.duration = duration;
+    }
+
+    public void setFilePath(String filePath) {
+        this.filePath = filePath;
+    }
+
+    public void setReleaseYear(int releaseYear) {
+        this.releaseYear = releaseYear;
+    }
+
+    public void setUploadedAt(LocalDateTime uploadedAt) {
+        this.uploadedAt = uploadedAt;
+    }
+
+    public void setArtist(Artist artist) {
+        this.artist = artist;
+        // Sync optional cache nama artist
+        if (artist != null) {
+            this.artistName = artist.getArtistName();
+        }
+    }
+
+    // ==================== Business Method ====================
+
     public boolean search(String keyword) {
+        if (keyword == null || keyword.isEmpty()) {
+            return false;
+        }
         return (this.title != null && this.title.contains(keyword)) ||
                (this.artistName != null && this.artistName.contains(keyword));
     }

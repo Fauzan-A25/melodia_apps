@@ -2,83 +2,94 @@ package melodia.model.entity;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
-import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.Table;
 
-/**
- * Artist - Extends User (multilevel inheritance)
- * Bisa konsumsi musik (via fitur User) & upload music sebagai content creator
- */
 @Entity
-@DiscriminatorValue("ARTIST")
-public class Artist extends User {
+@Table(name = "artists")
+public class Artist {
+
+    @Id
+    @Column(name = "artist_id", length = 36, nullable = false, updatable = false)
+    private String artistId;
+
+    @Column(name = "artist_name", nullable = false, unique = true, length = 100)
+    private String artistName;
 
     @Column(name = "bio", length = 1000)
     private String bio;
 
-    // Lagu yang di-upload oleh artist ini (bidirectional, one-to-many)
-    @OneToMany(mappedBy = "artist", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-    @JsonIgnore // ⬅ jangan kirim uploadedSongs ke JSON untuk hindari loop
-    private List<Song> uploadedSongs = new ArrayList<>();
+    @OneToMany(mappedBy = "artist", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<Song> songs = new ArrayList<>();
 
     // ==================== Constructors ====================
 
-    /**
-     * Constructor untuk registrasi artist baru
-     */
-    public Artist(String username, String email, String password, String bio) {
-        super(username, email, password);
+    public Artist(String artistName, String bio) {
+        this.artistName = artistName;
         this.bio = bio;
     }
 
-    /**
-     * Default constructor (required by JPA/Hibernate)
-     */
     protected Artist() {
-        super();
+    }
+
+    // ==================== Lifecycle Callback ====================
+
+    @PrePersist
+    protected void onCreate() {
+        if (this.artistId == null) {
+            this.artistId = UUID.randomUUID().toString();
+        }
     }
 
     // ==================== Business Methods ====================
 
-    /**
-     * Upload song baru oleh artist ini
-     */
-    public void uploadSong(Song song) {
-        if (song != null && !uploadedSongs.contains(song)) {
-            uploadedSongs.add(song);
-            song.setArtist(this);  // Sync bidirectional relationship
+    public void addSong(Song song) {
+        if (song != null && !songs.contains(song)) {
+            songs.add(song);
+            song.setArtist(this);
         }
     }
 
-    /**
-     * Delete song by songId
-     */
-    public void deleteSong(String songId) {
-        uploadedSongs.removeIf(song -> song != null && song.getSongId().equals(songId));
+    public void removeSong(Song song) {
+        if (song != null) {
+            songs.remove(song);
+            if (song.getArtist() == this) {
+                song.setArtist(null);
+            }
+        }
     }
 
-    /**
-     * Get total uploaded songs count
-     */
-    public int getUploadedSongsCount() {
-        return this.uploadedSongs.size();
+    public int getTotalSongs() {
+        return songs.size();
     }
 
     // ==================== Getters & Setters ====================
 
-    public List<Song> getUploadedSongs() {
-        return this.uploadedSongs;
+    public String getArtistId() {
+        return artistId;
     }
 
-    public void setUploadedSongs(List<Song> uploadedSongs) {
-        this.uploadedSongs = uploadedSongs != null ? uploadedSongs : new ArrayList<>();
+    public void setArtistId(String artistId) {
+        this.artistId = artistId;
+    }
+
+    public String getArtistName() {
+        return artistName;
+    }
+
+    public void setArtistName(String artistName) {
+        this.artistName = artistName;
     }
 
     public String getBio() {
@@ -89,33 +100,36 @@ public class Artist extends User {
         this.bio = bio;
     }
 
+    public List<Song> getSongs() {
+        return songs;
+    }
+
+    public void setSongs(List<Song> songs) {
+        this.songs = songs != null ? songs : new ArrayList<>();
+    }
+
     // ==================== Override Methods ====================
-
-    @Override
-    public void displayDashboard() {
-        System.out.println("=== Artist Dashboard ===");
-        System.out.println("Username: " + getUsername());
-        System.out.println("Email: " + getEmail());
-        System.out.println("Account ID: " + getAccountId());
-        System.out.println("Bio: " + (bio != null ? bio : "-"));
-        System.out.println("Total Uploaded Songs: " + uploadedSongs.size());
-        System.out.println("Playlists: " + getPlaylists().size());
-    }
-
-    @Override
-    public String getAccountType() {
-        return "ARTIST";
-    }
 
     @Override
     public String toString() {
         return "Artist{" +
-                "accountId='" + getAccountId() + '\'' +
-                ", username='" + getUsername() + '\'' +
-                ", email='" + getEmail() + '\'' +
+                "artistId='" + artistId + '\'' +
+                ", artistName='" + artistName + '\'' +
                 ", bio='" + (bio != null ? bio.substring(0, Math.min(bio.length(), 50)) : "none") + "...'" +
-                ", uploadedSongs=" + uploadedSongs.size() +
-                ", playlists=" + getPlaylists().size() +
+                ", totalSongs=" + songs.size() +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Artist)) return false;
+        Artist other = (Artist) o;
+        return artistId != null && artistId.equals(other.artistId);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
     }
 }

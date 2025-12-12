@@ -6,8 +6,10 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import melodia.model.entity.Artist;
 import melodia.model.entity.Genre;
 import melodia.model.entity.Song;
+import melodia.model.repository.ArtistRepository;
 import melodia.model.repository.GenreRepository;
 import melodia.model.repository.SongRepository;
 
@@ -20,6 +22,9 @@ public class MusicService {
     @Autowired
     private GenreRepository genreRepository;
 
+    @Autowired
+    private ArtistRepository artistRepository;
+
     // Ambil semua lagu
     public List<Song> getAllSongs() {
         return songRepository.findAll();
@@ -30,48 +35,82 @@ public class MusicService {
         return songRepository.findById(songId).orElse(null);
     }
 
-    // Upload/create lagu baru
-    public Song createSong(String title, String artistName, String filePath, List<String> genreNames, int duration, int releaseYear) {
+    /**
+     * Upload/create lagu baru (VERSI BARU, pakai artistId + genreIds).
+     * Catatan: sekarang upload utama ada di AdminSongController,
+     * method ini bisa dipakai internal kalau mau.
+     */
+    public Song createSong(
+            String title,
+            String artistId,
+            String filePath,
+            List<String> genreIds,
+            int duration,
+            int releaseYear
+    ) {
         if (songRepository.existsByTitle(title)) {
             throw new IllegalArgumentException("Lagu dengan judul ini sudah ada");
         }
 
-        Song song = new Song(title, artistName, filePath, null);
+        Artist artist = artistRepository.findById(artistId)
+                .orElseThrow(() -> new IllegalArgumentException("Artist tidak ditemukan: " + artistId));
+
+        Song song = new Song();
         song.setSongId("SNG" + System.currentTimeMillis());
+        song.setTitle(title);
+        song.setArtist(artist);
+        song.setFilePath(filePath);
         song.setDuration(duration);
         song.setReleaseYear(releaseYear);
         song.setUploadedAt(LocalDateTime.now());
 
-        // Tambahkan genre dari list nama genre
-        if (genreNames != null && !genreNames.isEmpty()) {
-            List<Genre> genres = genreNames.stream()
-                .map(name -> genreRepository.findByName(name).orElse(null))
-                .filter(genre -> genre != null)
-                .toList();
+        // Tambahkan genre dari list ID genre
+        if (genreIds != null && !genreIds.isEmpty()) {
+            List<Genre> genres = genreIds.stream()
+                    .map(id -> genreRepository.findById(id).orElse(null))
+                    .filter(g -> g != null)
+                    .toList();
             song.setGenres(genres);
         }
 
         return songRepository.save(song);
     }
 
-    // Update lagu
-    public Song updateSong(String songId, String newTitle, String newArtistName, Integer newDuration, Integer newReleaseYear) {
-        Song song = songRepository.findById(songId).orElseThrow(() -> new IllegalArgumentException("Lagu tidak ditemukan"));
-        
-        if (newTitle != null) song.setTitle(newTitle);
-        if (newArtistName != null) song.setArtistName(newArtistName);
-        if (newDuration != null) song.setDuration(newDuration);
-        if (newReleaseYear != null) song.setReleaseYear(newReleaseYear);
+    // Update lagu (tanpa artistName string lagi)
+    public Song updateSong(
+            String songId,
+            String newTitle,
+            String newArtistId,
+            Integer newDuration,
+            Integer newReleaseYear
+    ) {
+        Song song = songRepository.findById(songId)
+                .orElseThrow(() -> new IllegalArgumentException("Lagu tidak ditemukan"));
+
+        if (newTitle != null) {
+            song.setTitle(newTitle);
+        }
+
+        if (newArtistId != null) {
+            Artist artist = artistRepository.findById(newArtistId)
+                    .orElseThrow(() -> new IllegalArgumentException("Artist tidak ditemukan: " + newArtistId));
+            song.setArtist(artist);
+        }
+
+        if (newDuration != null) {
+            song.setDuration(newDuration);
+        }
+
+        if (newReleaseYear != null) {
+            song.setReleaseYear(newReleaseYear);
+        }
 
         return songRepository.save(song);
     }
 
     // Hapus lagu
     public void deleteSong(String songId) {
-        Song song = songRepository.findById(songId).orElse(null);
-        if (song != null) {
-            songRepository.delete(song);
-        }
+        songRepository.findById(songId).ifPresent(songRepository::delete);
     }
 
     // Search lagu berdasarkan judul
@@ -79,14 +118,18 @@ public class MusicService {
         return songRepository.findByTitleContainingIgnoreCase(title);
     }
 
-    // Search lagu berdasarkan artist
+    // Search lagu berdasarkan artist (pakai relasi Artist.name)
     public List<Song> searchByArtist(String artistName) {
-        return songRepository.findByArtistNameContainingIgnoreCase(artistName);
+        return songRepository.findByArtist_ArtistNameContainingIgnoreCase(artistName);
+        // pastikan di SongRepository sudah ada:
+        // List<Song> findByArtist_ArtistNameContainingIgnoreCase(String artistName);
     }
 
-    // Filter lagu berdasarkan genre
+    // Filter lagu berdasarkan genre (pakai relasi Genre.name)
     public List<Song> filterByGenre(String genreName) {
         return songRepository.findByGenres_NameIgnoreCase(genreName);
+        // pastikan di SongRepository sudah ada:
+        // List<Song> findByGenres_NameIgnoreCase(String name);
     }
 
     // Filter lagu berdasarkan tahun rilis

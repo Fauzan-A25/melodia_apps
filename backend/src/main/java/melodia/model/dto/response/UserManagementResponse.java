@@ -9,7 +9,6 @@ public class UserManagementResponse {
     private final boolean banned;
     private final String banReason;
     private final String createdAt;
-    private final Integer songCount;
 
     public UserManagementResponse(
             String accountId,
@@ -18,8 +17,7 @@ public class UserManagementResponse {
             String accountType,
             boolean banned,
             String banReason,
-            String createdAt,
-            Integer songCount
+            String createdAt
     ) {
         this.accountId = accountId;
         this.username = username;
@@ -28,7 +26,6 @@ public class UserManagementResponse {
         this.banned = banned;
         this.banReason = banReason;
         this.createdAt = createdAt;
-        this.songCount = songCount;
     }
 
     public String getAccountId() { return accountId; }
@@ -39,5 +36,4 @@ public class UserManagementResponse {
     public boolean getBanned() { return banned; } // untuk JSON field "banned"
     public String getBanReason() { return banReason; }
     public String getCreatedAt() { return createdAt; }
-    public Integer getSongCount() { return songCount; }
 }

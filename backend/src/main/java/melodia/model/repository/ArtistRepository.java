@@ -1,26 +1,32 @@
 package melodia.model.repository;
 
-import melodia.model.entity.Artist;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
-import java.util.Optional;
 import java.util.List;
+import java.util.Optional;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+
+import melodia.model.entity.Artist;
 
 @Repository
 public interface ArtistRepository extends JpaRepository<Artist, String> {
-    
-    // Cari artist berdasarkan username
-    Optional<Artist> findByUsername(String username);
 
-    // Cari artist berdasarkan email
-    Optional<Artist> findByEmail(String email);
+    // Cari artist berdasarkan nama (artistName)
+    Optional<Artist> findByArtistName(String artistName);
 
-    // Cari semua artist dengan bio mengandung keyword tertentu
+    // Cek apakah nama artist sudah dipakai
+    boolean existsByArtistName(String artistName);
+
+    // Cari semua artist dengan bio yang mengandung keyword (case-insensitive)
     List<Artist> findByBioContainingIgnoreCase(String keyword);
 
-    // Cek apakah username sudah dipakai oleh Artist
-    boolean existsByUsername(String username);
+    // Optional: search by name OR bio (kalau nanti mau dipakai)
+    List<Artist> findByArtistNameContainingIgnoreCase(String keyword);
 
-    // Cek apakah email sudah dipakai oleh Artist
-    boolean existsByEmail(String email);
+    @Query("SELECT a FROM Artist a " +
+           "WHERE LOWER(a.artistName) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
+           "   OR LOWER(a.bio) LIKE LOWER(CONCAT('%', :keyword, '%'))")
+    List<Artist> searchByName(@Param("keyword") String keyword);
 }

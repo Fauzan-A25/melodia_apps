@@ -11,8 +11,6 @@ import org.springframework.stereotype.Service;
 
 import melodia.model.dto.response.UserManagementResponse;
 import melodia.model.entity.Account;
-import melodia.model.entity.Artist;
-import melodia.model.entity.Song;
 import melodia.model.entity.User;
 import melodia.model.repository.AccountRepository;
 
@@ -29,36 +27,43 @@ public class UserManagementService {
 
     // ==================== GET USERS ====================
 
+    /**
+     * Get all users (excludes Admin accounts)
+     */
     public List<UserManagementResponse> getAllUsers() {
         logger.debug("Fetching all users (excluding admins)");
         List<UserManagementResponse> users = accountRepository.findAll().stream()
-                .filter(acc -> !(acc instanceof melodia.model.entity.Admin)) // exclude admin dari list
+                .filter(acc -> !(acc instanceof melodia.model.entity.Admin))
                 .map(this::mapAccountToResponse)
                 .collect(Collectors.toList());
         
-        logger.info("✅ Found {} users", users.size());
+        logger.info("Found {} users", users.size());
         return users;
     }
 
+    /**
+     * Get users by type (USER only, since Artist is no longer an Account)
+     */
     public List<UserManagementResponse> getUsersByType(String type) {
         logger.debug("Fetching users by type: {}", type);
+        
+        if (!"USER".equalsIgnoreCase(type)) {
+            logger.warn("Invalid user type requested: {}. Only 'USER' is supported.", type);
+            return List.of();
+        }
+
         List<UserManagementResponse> users = accountRepository.findAll().stream()
-                .filter(acc -> {
-                    if ("USER".equalsIgnoreCase(type)) {
-                        // Hanya User murni, bukan Artist atau Admin
-                        return acc.getClass().getSimpleName().equals("User");
-                    } else if ("ARTIST".equalsIgnoreCase(type)) {
-                        return acc instanceof Artist;
-                    }
-                    return false;
-                })
+                .filter(acc -> acc instanceof User && !(acc instanceof melodia.model.entity.Admin))
                 .map(this::mapAccountToResponse)
                 .collect(Collectors.toList());
         
-        logger.info("✅ Found {} users of type: {}", users.size(), type);
+        logger.info("Found {} users of type: USER", users.size());
         return users;
     }
 
+    /**
+     * Get banned users
+     */
     public List<UserManagementResponse> getBannedUsers() {
         logger.debug("Fetching banned users");
         List<UserManagementResponse> users = accountRepository.findAll().stream()
@@ -66,16 +71,21 @@ public class UserManagementService {
                 .map(this::mapAccountToResponse)
                 .collect(Collectors.toList());
         
-        logger.info("✅ Found {} banned users", users.size());
+        logger.info("Found {} banned users", users.size());
         return users;
     }
 
+    /**
+     * Search users by username or email
+     */
     public List<UserManagementResponse> searchUsers(String keyword) {
         logger.debug("Searching users with keyword: {}", keyword);
         String q = keyword == null ? "" : keyword.trim();
+        
         if (q.isEmpty()) {
             return getAllUsers();
         }
+        
         String lower = q.toLowerCase();
 
         List<UserManagementResponse> users = accountRepository.findAll().stream()
@@ -87,7 +97,7 @@ public class UserManagementService {
                 .map(this::mapAccountToResponse)
                 .collect(Collectors.toList());
         
-        logger.info("✅ Found {} users matching keyword: {}", users.size(), keyword);
+        logger.info("Found {} users matching keyword: {}", users.size(), keyword);
         return users;
     }
 
@@ -102,7 +112,7 @@ public class UserManagementService {
         acc.setBanReason(reason);
         accountRepository.save(acc);
         
-        logger.info("✅ User banned successfully: {} (reason: {})", acc.getUsername(), reason);
+        logger.info("User banned successfully: {} (reason: {})", acc.getUsername(), reason);
     }
 
     public void unbanUser(String accountId) {
@@ -114,7 +124,7 @@ public class UserManagementService {
         acc.setBanReason(null);
         accountRepository.save(acc);
         
-        logger.info("✅ User unbanned successfully: {}", acc.getUsername());
+        logger.info("User unbanned successfully: {}", acc.getUsername());
     }
 
     public void deleteUser(String accountId) {
@@ -123,31 +133,17 @@ public class UserManagementService {
             throw new IllegalArgumentException("Account not found");
         }
         accountRepository.deleteById(accountId);
-        logger.info("✅ User deleted successfully");
+        logger.info("User deleted successfully");
     }
 
-    // ==================== MAPPER UNIVERSAL ====================
+    // ==================== MAPPER ====================
 
     /**
-     * Map Account entity to UserManagementResponse DTO
-     * Uses instanceof pattern matching which is null-safe
+     * Map Account entity to UserManagementResponse DTO.
+     * Since Artist is no longer an Account, we only handle User type.
      */
-    @SuppressWarnings("null") // instanceof pattern matching is null-safe
     private UserManagementResponse mapAccountToResponse(Account account) {
-        String accountType;
-        Integer songCount = null;
-
-        // Pattern matching instanceof is null-safe (returns false for null)
-        if (account instanceof Artist artist) {
-            accountType = "ARTIST";
-            List<Song> uploadedSongs = artist.getUploadedSongs();
-            songCount = uploadedSongs != null ? uploadedSongs.size() : 0;
-        } else if (account instanceof User) {
-            accountType = "USER";
-        } else {
-            // Fallback - account should never be null due to stream filtering
-            accountType = account.getAccountType();
-        }
+        String accountType = account instanceof User ? "USER" : account.getAccountType();
 
         return new UserManagementResponse(
                 account.getAccountId(),
@@ -158,8 +154,7 @@ public class UserManagementService {
                 account.getBanReason(),
                 account.getCreatedAt() != null
                         ? account.getCreatedAt().format(DATE_TIME_FORMATTER)
-                        : null,
-                songCount
+                        : null
         );
     }
 }

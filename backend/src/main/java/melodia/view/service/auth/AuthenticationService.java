@@ -5,11 +5,9 @@ import org.springframework.stereotype.Service;
 
 import melodia.model.entity.Account;
 import melodia.model.entity.Admin;
-import melodia.model.entity.Artist;
 import melodia.model.entity.User;
 import melodia.model.repository.AccountRepository;
 import melodia.model.repository.AdminRepository;
-import melodia.model.repository.ArtistRepository;
 import melodia.model.repository.UserRepository;
 
 @Service
@@ -22,12 +20,9 @@ public class AuthenticationService {
     private UserRepository userRepository;
 
     @Autowired
-    private ArtistRepository artistRepository;
-
-    @Autowired
     private AdminRepository adminRepository;
 
-    // ==================== LOGIN ====================
+    // ==================== LOGIN GENERIC (Account) ====================
 
     public Account login(String usernameOrEmail, String password) {
         Account account = accountRepository.findByUsername(usernameOrEmail)
@@ -44,50 +39,51 @@ public class AuthenticationService {
         return account;
     }
 
+    // ==================== LOGIN SPESIFIK USER ====================
+
     public User loginUser(String usernameOrEmail, String password) {
         User user = userRepository.findByUsername(usernameOrEmail)
                 .orElse(userRepository.findByEmail(usernameOrEmail).orElse(null));
+
         if (user == null || !user.verifyPassword(password)) {
             throw new IllegalArgumentException("Username/email atau password salah");
         }
+
         return user;
     }
 
-    public Artist loginArtist(String usernameOrEmail, String password) {
-        Artist artist = artistRepository.findByUsername(usernameOrEmail)
-                .orElse(artistRepository.findByEmail(usernameOrEmail).orElse(null));
-        if (artist == null || !artist.verifyPassword(password)) {
-            throw new IllegalArgumentException("Username/email atau password salah");
-        }
-        return artist;
-    }
+    // ==================== LOGIN SPESIFIK ADMIN ====================
 
     public Admin loginAdmin(String usernameOrEmail, String password) {
         Admin admin = adminRepository.findByUsername(usernameOrEmail)
                 .orElse(adminRepository.findByEmail(usernameOrEmail).orElse(null));
+
         if (admin == null || !admin.verifyPassword(password)) {
             throw new IllegalArgumentException("Username/email atau password salah");
         }
+
         return admin;
     }
+
+    // ==================== HELPER: CHECK ACCOUNT EXISTS ====================
 
     public boolean isAccountExists(String usernameOrEmail) {
         return accountRepository.findByUsername(usernameOrEmail).isPresent()
                 || accountRepository.findByEmail(usernameOrEmail).isPresent();
     }
 
-    // ==================== SETTINGS ====================
+    // ==================== SETTINGS (PROFILE & PASSWORD) ====================
 
-    public Account updateProfile(String accountId, String username, String email, String bio) {
+    /**
+     * Update profile untuk Account (User/Admin).
+     * Artist tidak lagi menjadi turunan Account, jadi tidak di-handle di sini.
+     */
+    public Account updateProfile(String accountId, String username, String email) {
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new IllegalArgumentException("Account not found"));
 
         account.setUsername(username);
         account.setEmail(email);
-
-        if (account instanceof Artist artist) {
-            artist.setBio(bio != null ? bio : "");
-        }
 
         return accountRepository.save(account);
     }

@@ -1,9 +1,11 @@
 package melodia.model.repository;
 
-import melodia.model.entity.Song;
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import java.util.List;
+
+import melodia.model.entity.Song;
 
 @Repository
 public interface SongRepository extends JpaRepository<Song, String> {
@@ -11,8 +13,8 @@ public interface SongRepository extends JpaRepository<Song, String> {
     // Cari berdasarkan judul (case-insensitive)
     List<Song> findByTitleContainingIgnoreCase(String title);
 
-    // Cari berdasarkan artistName (search fitur, case-insensitive)
-    List<Song> findByArtistNameContainingIgnoreCase(String artistName);
+    // Cari berdasarkan nama artist (relasi ke Artist.artistName, case-insensitive)
+    List<Song> findByArtist_ArtistNameContainingIgnoreCase(String artistName);
 
     // Cari lagu berdasarkan genre (many-to-many ke Genre entity)
     List<Song> findByGenres_NameIgnoreCase(String genreName);
