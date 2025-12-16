@@ -1,4 +1,4 @@
-package melodia.view.service.strategy;
+package melodia.model.service.strategy;
 
 import melodia.model.entity.Song;
 import java.util.List;

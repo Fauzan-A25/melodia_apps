@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.*;
 
 import melodia.model.dto.response.AdminStatsResponse;
 import melodia.model.dto.response.ErrorResponse;
-import melodia.view.service.admin.AdminService;
+import melodia.model.service.admin.AdminService;
 
 @RestController
 @RequestMapping("/api/admin")

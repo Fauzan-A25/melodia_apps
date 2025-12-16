@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { adminService, handleApiError } from '../../services/api';
+import { musicService } from '../../services/musicService'; // ✅ Import musicService
 import styles from './AdminDashboard.module.css';
 
 const AdminDashboard = () => {
@@ -8,6 +9,7 @@ const AdminDashboard = () => {
     totalUsers: 0,
     totalArtists: 0,
     totalGenres: 0,
+    totalAlbums: 0, // ✅ NEW
     bannedAccounts: 0,
   });
   const [isLoading, setIsLoading] = useState(true);
@@ -45,10 +47,20 @@ const AdminDashboard = () => {
         console.warn('Could not fetch artists:', err);
       }
 
+      // ✅ Albums (NEW)
+      let albumsCount = 0;
+      try {
+        const albums = await musicService.getAllAlbums();
+        albumsCount = albums.length;
+      } catch (err) {
+        console.warn('Could not fetch albums:', err);
+      }
+
       setStats({
         totalUsers,
         totalArtists: artistsCount,
         totalGenres: genresCount,
+        totalAlbums: albumsCount, // ✅ NEW
         bannedAccounts: bannedCount,
       });
     } catch (err) {
@@ -58,6 +70,7 @@ const AdminDashboard = () => {
         totalUsers: 0,
         totalArtists: 0,
         totalGenres: 0,
+        totalAlbums: 0, // ✅ NEW
         bannedAccounts: 0,
       });
     } finally {
@@ -106,6 +119,15 @@ const AdminDashboard = () => {
           </div>
         </div>
 
+        {/* ✅ NEW: Albums Stat Card */}
+        <div className={styles.statCard}>
+          <div className={styles.statIcon}>💿</div>
+          <div className={styles.statInfo}>
+            <h3>{stats.totalAlbums}</h3>
+            <p>Total Albums</p>
+          </div>
+        </div>
+
         <div className={styles.statCard}>
           <div className={styles.statIcon}>🎵</div>
           <div className={styles.statInfo}>
@@ -137,6 +159,13 @@ const AdminDashboard = () => {
             <div className={styles.actionIcon}>🎤</div>
             <h3>Manage Artists</h3>
             <p>Kelola metadata artist (nama & bio)</p>
+          </Link>
+
+          {/* ✅ NEW: Albums Quick Action */}
+          <Link to="/admin/albums" className={styles.actionCard}>
+            <div className={styles.actionIcon}>💿</div>
+            <h3>Manage Albums</h3>
+            <p>Kelola album dan koleksi lagu</p>
           </Link>
 
           <Link to="/admin/songs" className={styles.actionCard}>

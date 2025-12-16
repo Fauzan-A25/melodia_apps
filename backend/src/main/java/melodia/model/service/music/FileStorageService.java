@@ -1,4 +1,4 @@
-package melodia.view.service.music;
+package melodia.model.service.music;
 
 import java.io.IOException;
 import java.net.MalformedURLException;

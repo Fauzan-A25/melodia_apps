@@ -29,8 +29,8 @@ import melodia.model.entity.Admin;
 import melodia.model.entity.User;
 import melodia.model.repository.AccountRepository;
 import melodia.security.JwtUtil;
-import melodia.view.service.auth.AuthenticationService;
-import melodia.view.service.auth.RegistrationService;
+import melodia.model.service.auth.AuthenticationService;
+import melodia.model.service.auth.RegistrationService;
 
 @RestController
 @RequestMapping("/api/auth")

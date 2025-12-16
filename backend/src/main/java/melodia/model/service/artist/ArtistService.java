@@ -1,4 +1,4 @@
-package melodia.view.service.artist;
+package melodia.model.service.artist;
 
 import java.util.List;
 

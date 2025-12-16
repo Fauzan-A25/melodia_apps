@@ -19,7 +19,8 @@ import GenreManagement from './pages/admin/GenreManagement';
 import UserManagement from './pages/admin/UserManagement';
 import AdminSong from './pages/admin/AdminSong';
 import AdminUpload from './pages/admin/AdminUpload';
-import ArtistManagement from './pages/admin/ArtistManagement'; // ✅ new
+import ArtistManagement from './pages/admin/ArtistManagement';
+import AlbumManagement from './pages/admin/AlbumManagement'; // ✅ NEW
 
 // Role-based Route Wrapper
 const RoleBasedRoutes = () => {
@@ -68,10 +69,22 @@ const RoleBasedRoutes = () => {
 
         <Route
           path="/admin/artists"
-          element={ // ✅ new route
+          element={
             <ProtectedRoute>
               <MainLayout>
                 <ArtistManagement />
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        {/* ✅ NEW: Album Management Route */}
+        <Route
+          path="/admin/albums"
+          element={
+            <ProtectedRoute>
+              <MainLayout>
+                <AlbumManagement />
               </MainLayout>
             </ProtectedRoute>
           }

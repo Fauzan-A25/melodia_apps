@@ -1,5 +1,6 @@
-// components/Music/AlbumCard.jsx - COMPLETE dengan TITIK 3 BESAR 52px
+// components/Music/AlbumCard.jsx
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import styles from './AlbumCard.module.css';
 import { Play, Pause, MoreVertical, Plus, Check } from 'lucide-react';
 import { useMusic } from '../../context/MusicContext';
@@ -11,35 +12,114 @@ const AlbumCard = ({ track, onPlay }) => {
   const [userPlaylists, setUserPlaylists] = useState([]);
   const [loadingPlaylists, setLoadingPlaylists] = useState(false);
   const [addingToPlaylist, setAddingToPlaylist] = useState(null);
-  const [menuPosition, setMenuPosition] = useState('right');
+  const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
   
   const menuRef = useRef(null);
-  const cardRef = useRef(null);
+  const buttonRef = useRef(null);
   
   const userId = localStorage.getItem('userId');
-  const isCurrentlyPlaying = currentSong?.songId === track.id && isPlaying;
+  const isCurrentlyPlaying = currentSong?.songId === track?.id && isPlaying;
 
+  // ✅ Validate track prop
+  useEffect(() => {
+    if (!track || !track.id) {
+      console.error('AlbumCard: Invalid track prop', track);
+    }
+  }, [track]);
+
+  // Fetch user playlists
   const fetchUserPlaylists = useCallback(async () => {
+    if (!userId) return;
+    
     try {
       setLoadingPlaylists(true);
       const data = await musicService.getUserPlaylists(userId);
       setUserPlaylists(data || []);
     } catch (err) {
       console.error('Error fetching playlists:', err);
+      setUserPlaylists([]);
     } finally {
       setLoadingPlaylists(false);
     }
   }, [userId]);
 
+  // Load playlists when menu opens
   useEffect(() => {
     if (showMenu && userId) {
       fetchUserPlaylists();
     }
   }, [showMenu, userId, fetchUserPlaylists]);
 
+  // Listen for playlist created event
+  useEffect(() => {
+    const handleRefresh = () => {
+      if (showMenu && userId) {
+        fetchUserPlaylists();
+      }
+    };
+
+    window.addEventListener('playlist:created', handleRefresh);
+    return () => window.removeEventListener('playlist:created', handleRefresh);
+  }, [showMenu, userId, fetchUserPlaylists]);
+
+  // Calculate menu position
+  useEffect(() => {
+    if (!showMenu || !buttonRef.current) return;
+
+    const calculatePosition = () => {
+      const buttonRect = buttonRef.current.getBoundingClientRect();
+      const menuWidth = 320;
+      const menuHeight = 420;
+      const spacing = 8;
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+
+      let top = buttonRect.bottom + spacing;
+      let left = buttonRect.right - menuWidth;
+
+      // Adjust if menu goes off left edge
+      if (left < spacing) {
+        left = buttonRect.left;
+      }
+
+      // Adjust if menu goes off right edge
+      if (left + menuWidth > viewportWidth - spacing) {
+        left = viewportWidth - menuWidth - spacing;
+      }
+
+      // Adjust if menu goes off bottom edge
+      if (top + menuHeight > viewportHeight - spacing) {
+        top = buttonRect.top - menuHeight - spacing;
+      }
+
+      // Adjust if menu goes off top edge
+      if (top < spacing) {
+        top = spacing;
+      }
+
+      setMenuPosition({ top, left });
+    };
+
+    calculatePosition();
+
+    window.addEventListener('scroll', calculatePosition, true);
+    window.addEventListener('resize', calculatePosition);
+
+    return () => {
+      window.removeEventListener('scroll', calculatePosition, true);
+      window.removeEventListener('resize', calculatePosition);
+    };
+  }, [showMenu]);
+
+  // Close menu on outside click
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (menuRef.current && !menuRef.current.contains(event.target)) {
+      if (
+        menuRef.current && 
+        !menuRef.current.contains(event.target) &&
+        buttonRef.current &&
+        !buttonRef.current.contains(event.target)
+      ) {
         setShowMenu(false);
       }
     };
@@ -53,36 +133,25 @@ const AlbumCard = ({ track, onPlay }) => {
     };
   }, [showMenu]);
 
-  const handlePlay = (e) => {
-    e.stopPropagation();
-    if (onPlay) {
+  // Handle play button click
+  const handlePlay = useCallback((e) => {
+    e?.stopPropagation();
+    if (onPlay && track) {
       onPlay(track);
     }
-  };
+  }, [onPlay, track]);
 
-  const handleMenuClick = (e) => {
+  // Handle menu button click
+  const handleMenuClick = useCallback((e) => {
     e.stopPropagation();
-    
-    if (cardRef.current) {
-      const rect = cardRef.current.getBoundingClientRect();
-      const viewportWidth = window.innerWidth;
-      
-      if (rect.left < 300) {
-        setMenuPosition('left');
-      } else if (viewportWidth - rect.right < 300) {
-        setMenuPosition('right');
-      } else {
-        setMenuPosition('right');
-      }
-    }
-    
-    setShowMenu(!showMenu);
-  };
+    setShowMenu(prev => !prev);
+  }, []);
 
+  // Handle add to playlist
   const handleAddToPlaylist = async (playlistId, e) => {
     e.stopPropagation();
     
-    if (!userId || !track.id) {
+    if (!userId || !track?.id) {
       alert('Cannot add song to playlist');
       return;
     }
@@ -91,6 +160,7 @@ const AlbumCard = ({ track, onPlay }) => {
       setAddingToPlaylist(playlistId);
       await musicService.addSongToPlaylist(playlistId, track.id, userId);
       
+      // Show success state briefly
       setTimeout(() => {
         setAddingToPlaylist(null);
         setShowMenu(false);
@@ -102,18 +172,95 @@ const AlbumCard = ({ track, onPlay }) => {
     }
   };
 
-  const isSongInPlaylist = (playlist) => {
-    return playlist.songs?.some(song => song.songId === track.id) || false;
+  // Check if song is in playlist
+  const isSongInPlaylist = useCallback((playlist) => {
+    if (!playlist?.songs || !track?.id) return false;
+    return playlist.songs.some(song => song.songId === track.id);
+  }, [track?.id]);
+
+  // Render dropdown menu
+  const renderDropdownMenu = () => {
+    if (!showMenu) return null;
+
+    const menuContent = (
+      <div 
+        className={styles.dropdownMenu}
+        ref={menuRef}
+        style={{
+          position: 'fixed',
+          top: `${menuPosition.top}px`,
+          left: `${menuPosition.left}px`,
+          zIndex: 9999,
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className={styles.menuHeader}>
+          <span>Add to playlist</span>
+        </div>
+
+        {loadingPlaylists ? (
+          <div className={styles.menuLoading}>
+            <div className={styles.spinner}>⏳</div>
+            <p>Loading playlists...</p>
+          </div>
+        ) : userPlaylists.length === 0 ? (
+          <div className={styles.menuEmpty}>
+            <p>No playlists available</p>
+            <span className={styles.emptyHint}>Create a playlist first</span>
+          </div>
+        ) : (
+          <div className={styles.menuList}>
+            {/* ✅ FIXED: Added key prop to each playlist item */}
+            {userPlaylists.map((playlist) => {
+              const inPlaylist = isSongInPlaylist(playlist);
+              const isAdding = addingToPlaylist === playlist.playlistId;
+
+              return (
+                <button
+                  key={playlist.playlistId} // ✅ KEY PROP ADDED
+                  className={`${styles.menuItem} ${inPlaylist ? styles.inPlaylist : ''}`}
+                  onClick={(e) => !inPlaylist && handleAddToPlaylist(playlist.playlistId, e)}
+                  disabled={inPlaylist || isAdding}
+                  aria-label={inPlaylist ? `${playlist.name} (already added)` : `Add to ${playlist.name}`}
+                >
+                  <span className={styles.playlistIcon}>
+                    {playlist.cover || '🎵'}
+                  </span>
+                  <span className={styles.playlistName}>
+                    {playlist.name}
+                  </span>
+                  {inPlaylist ? (
+                    <Check size={16} className={styles.checkIcon} />
+                  ) : isAdding ? (
+                    <span className={styles.loadingDot}>...</span>
+                  ) : (
+                    <Plus size={16} className={styles.plusIcon} />
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    );
+
+    return createPortal(menuContent, document.body);
   };
+
+  // ✅ Handle missing track prop
+  if (!track || !track.id) {
+    return null;
+  }
 
   return (
     <div 
-      ref={cardRef}
       className={`${styles.albumCard} ${isCurrentlyPlaying ? styles.playing : ''}`} 
       onClick={handlePlay}
     >
       <div className={styles.coverWrapper}>
-        <div className={styles.cover}>{track.cover}</div>
+        <div className={styles.cover}>
+          {track.cover || track.coverEmoji || '💿'}
+        </div>
         
         <button 
           className={`${styles.playButton} ${isCurrentlyPlaying ? styles.active : ''}`}
@@ -127,9 +274,9 @@ const AlbumCard = ({ track, onPlay }) => {
           )}
         </button>
 
-        {/* ✅ TITIK 3 BESAR 52px */}
         <div className={styles.menuContainer}>
           <button 
+            ref={buttonRef}
             className={`${styles.menuButton} ${isCurrentlyPlaying ? styles.playingMenu : ''}`}
             onClick={handleMenuClick}
             aria-label="More options"
@@ -140,66 +287,11 @@ const AlbumCard = ({ track, onPlay }) => {
       </div>
 
       <div className={styles.info}>
-        <h3 className={styles.title}>{track.title}</h3>
-        <p className={styles.artist}>{track.artist}</p>
+        <h3 className={styles.title}>{track.title || 'Untitled'}</h3>
+        <p className={styles.artist}>{track.artist || 'Unknown Artist'}</p>
       </div>
 
-      {/* ✅ DROPDOWN MENU */}
-      {showMenu && (
-        <div 
-          className={`${styles.dropdownMenu} ${styles[menuPosition]}`}
-          ref={menuRef} 
-          onClick={(e) => e.stopPropagation()}
-        >
-          <div className={styles.menuHeader}>
-            <span>Add to playlist</span>
-          </div>
-
-          {loadingPlaylists ? (
-            <div className={styles.menuLoading}>Loading playlists...</div>
-          ) : userPlaylists.length === 0 ? (
-            <div className={styles.menuEmpty}>
-              <p>No playlists yet</p>
-              <button 
-                className={styles.createPlaylistBtn}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowMenu(false);
-                  window.location.href = '/playlist';
-                }}
-              >
-                Create Playlist
-              </button>
-            </div>
-          ) : (
-            <div className={styles.menuList}>
-              {userPlaylists.map((playlist) => {
-                const inPlaylist = isSongInPlaylist(playlist);
-                const isAdding = addingToPlaylist === playlist.playlistId;
-
-                return (
-                  <button
-                    key={playlist.playlistId}
-                    className={`${styles.menuItem} ${inPlaylist ? styles.inPlaylist : ''}`}
-                    onClick={(e) => !inPlaylist && handleAddToPlaylist(playlist.playlistId, e)}
-                    disabled={inPlaylist || isAdding}
-                  >
-                    <span className={styles.playlistIcon}>{playlist.cover || '🎵'}</span>
-                    <span className={styles.playlistName}>{playlist.name}</span>
-                    {inPlaylist ? (
-                      <Check size={16} className={styles.checkIcon} />
-                    ) : isAdding ? (
-                      <span className={styles.loadingDot}>...</span>
-                    ) : (
-                      <Plus size={16} className={styles.plusIcon} />
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      )}
+      {renderDropdownMenu()}
     </div>
   );
 };

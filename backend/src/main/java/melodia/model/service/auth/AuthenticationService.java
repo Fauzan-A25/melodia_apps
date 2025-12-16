@@ -1,4 +1,4 @@
-package melodia.view.service.auth;
+package melodia.model.service.auth;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

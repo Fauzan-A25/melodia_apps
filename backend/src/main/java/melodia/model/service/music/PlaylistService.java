@@ -1,4 +1,4 @@
-package melodia.view.service.music;
+package melodia.model.service.music;
 
 import java.time.LocalDateTime;
 import java.util.List;

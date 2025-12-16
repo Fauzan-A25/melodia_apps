@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import melodia.model.dto.request.admin.BanUserRequest;
 import melodia.model.dto.response.ErrorResponse;
 import melodia.model.dto.response.UserManagementResponse;
-import melodia.view.service.admin.UserManagementService;
+import melodia.model.service.admin.UserManagementService;
 
 import java.util.List;
 

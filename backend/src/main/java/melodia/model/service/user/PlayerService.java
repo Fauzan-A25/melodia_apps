@@ -1,9 +1,9 @@
-package melodia.view.service.user;
+package melodia.model.service.user;
 
 import melodia.model.entity.Song;
 import melodia.model.repository.SongRepository;
-import melodia.view.service.strategy.PlaybackStrategy;
-import melodia.view.service.strategy.SequentialPlayback;
+import melodia.model.service.strategy.PlaybackStrategy;
+import melodia.model.service.strategy.SequentialPlayback;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;

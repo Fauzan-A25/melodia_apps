@@ -21,8 +21,8 @@ import org.springframework.web.bind.annotation.RestController;
 import melodia.model.entity.Genre;
 import melodia.model.entity.Song;
 import melodia.model.repository.GenreRepository;
-import melodia.view.service.music.FileStorageService;
-import melodia.view.service.music.MusicService;
+import melodia.model.service.music.FileStorageService;
+import melodia.model.service.music.MusicService;
 
 @RestController
 @RequestMapping("/api")
@@ -42,6 +42,7 @@ public class MusicController {
 
     // ==================== GENRE ENDPOINTS (PUBLIC) ====================
     
+
     @GetMapping("/genres")
     public ResponseEntity<List<Genre>> getAllGenres() {
         logger.debug("Fetching all genres");

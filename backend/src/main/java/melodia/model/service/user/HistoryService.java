@@ -1,4 +1,4 @@
-package melodia.view.service.user;
+package melodia.model.service.user;
 
 import java.util.Collections;
 import java.util.List;

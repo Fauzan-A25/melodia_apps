@@ -1,5 +1,5 @@
 // src/components/Layout/Sidebar.jsx
-import { Home, Music, ListMusic, Users, Plus, Mic2 } from 'lucide-react';
+import { Home, Music, ListMusic, Users, Plus, Mic2, Disc3 } from 'lucide-react'; // ✅ Import Disc3
 import MelodiaLogo from '../../assets/melodia_logo.svg';
 import styles from './Sidebar.module.css';
 import { NavLink } from 'react-router-dom';
@@ -90,10 +90,12 @@ const Sidebar = ({ onCreatePlaylist }) => {
     };
   }, [fetchPlaylists, isAdmin, initialized]);
 
+  // ✅ Admin Navigation Items (Updated dengan Albums)
   const adminNavItems = [
     { icon: Home, label: 'Dashboard', path: '/admin/dashboard' },
     { icon: ListMusic, label: 'Manage Genres', path: '/admin/genres' },
-    { icon: Mic2, label: 'Manage Artists', path: '/admin/artists' }, // ✅ baru
+    { icon: Mic2, label: 'Manage Artists', path: '/admin/artists' },
+    { icon: Disc3, label: 'Manage Albums', path: '/admin/albums' }, // ✅ NEW
     { icon: Music, label: 'Manage Songs', path: '/admin/songs' },
     { icon: Users, label: 'Manage Users', path: '/admin/users' },
   ];

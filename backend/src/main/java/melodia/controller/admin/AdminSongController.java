@@ -27,7 +27,7 @@ import melodia.model.entity.Song;
 import melodia.model.repository.ArtistRepository;
 import melodia.model.repository.GenreRepository;
 import melodia.model.repository.SongRepository;
-import melodia.view.service.music.FileStorageService;
+import melodia.model.service.music.FileStorageService;
 
 @RestController
 @RequestMapping("/api/admin/songs")

@@ -1,4 +1,4 @@
-package melodia.view.service.admin;
+package melodia.model.service.admin;
 
 import java.util.List;
 import java.util.UUID;

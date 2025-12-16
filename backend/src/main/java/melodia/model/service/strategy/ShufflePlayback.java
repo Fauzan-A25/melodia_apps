@@ -1,4 +1,4 @@
-package melodia.view.service.strategy;
+package melodia.model.service.strategy;
 
 import java.util.List;
 import java.util.Random;

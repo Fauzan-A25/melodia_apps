@@ -23,7 +23,7 @@ import melodia.model.dto.response.history.PlayedSongsResponseDTO;
 import melodia.model.dto.response.history.SongPlayedCheckResponseDTO;
 import melodia.model.entity.Song;
 import melodia.model.repository.SongRepository;
-import melodia.view.service.user.HistoryService;
+import melodia.model.service.user.HistoryService;
 
 @RestController
 @RequestMapping("/api/history")

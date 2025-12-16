@@ -9,7 +9,7 @@ import jakarta.validation.Valid;
 import melodia.model.dto.request.admin.GenreRequest;
 import melodia.model.dto.response.ErrorResponse;
 import melodia.model.dto.response.GenreResponse;
-import melodia.view.service.admin.GenreService;
+import melodia.model.service.admin.GenreService;
 
 import java.util.List;
 

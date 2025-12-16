@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import melodia.model.entity.Playlist;
 import melodia.model.entity.Song;
-import melodia.view.service.music.PlaylistService;
+import melodia.model.service.music.PlaylistService;
 
 @RestController
 @RequestMapping("/api/playlists")
