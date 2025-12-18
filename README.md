@@ -226,48 +226,6 @@ docker-compose up -d
 
 ---
 
-## 🔌 API Overview
-
-### Authentication
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/auth/register` | Register user baru |
-| POST | `/api/auth/login` | Login dan dapatkan JWT token |
-| POST | `/api/auth/logout` | Logout user |
-
-### Music Management
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/music/songs` | Get all songs |
-| GET | `/api/music/songs/{id}` | Get song by ID |
-| POST | `/api/music/songs` | Upload new song (artist/admin) |
-| DELETE | `/api/music/songs/{id}` | Delete song (admin) |
-
-### Playlist
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/user/playlists` | Get user playlists |
-| POST | `/api/user/playlists` | Create new playlist |
-| PUT | `/api/user/playlists/{id}` | Update playlist |
-| DELETE | `/api/user/playlists/{id}` | Delete playlist |
-| POST | `/api/user/playlists/{id}/songs` | Add song to playlist |
-
-### User & History
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/user/profile` | Get user profile |
-| PUT | `/api/user/profile` | Update user profile |
-| GET | `/api/user/history` | Get listening history |
-
-> 📝 **Note**: Semua endpoint (kecuali `/auth`) memerlukan JWT token di header:  
-> `Authorization: Bearer <your-jwt-token>`
-
----
-
 ## 🎨 Screenshots
 
 <img width="1919" height="1027" alt="image" src="https://github.com/user-attachments/assets/095b198a-276a-46c6-8abc-7cb47a538225" />
