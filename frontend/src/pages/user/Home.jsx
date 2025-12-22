@@ -1,14 +1,15 @@
 // pages/Home.jsx
-import { useState, useEffect, useCallback } from 'react'; // ✅ Import useCallback
-import { Play, Pause, Loader } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { Loader } from 'lucide-react';
 import styles from './Home.module.css';
+import SongCard from '../../components/Music/SongCard';
 import AlbumCard from '../../components/Music/AlbumCard';
 import { musicService } from '../../services/musicService';
 import { useMusic } from '../../context/MusicContext';
 import { useUser } from '../../context/UserContext';
 
 const Home = () => {
-  const { playSong, currentSong, isPlaying } = useMusic();
+  const { playSong } = useMusic();
   const { user, loading: authLoading } = useUser();
 
   const [recentlyPlayed, setRecentlyPlayed] = useState([]);
@@ -22,23 +23,35 @@ const Home = () => {
   const [albumsLoading, setAlbumsLoading] = useState(true);
   const [error, setError] = useState('');
 
-  // ✅ Wrap loadData dengan useCallback
   const loadData = useCallback(async () => {
     try {
       setLoading(true);
       setError('');
 
-      // 1) Ambil semua lagu (untuk "Latest Songs")
+      // Latest Songs
       const allSongs = await musicService.getAllSongs();
       const sortedLatest = [...allSongs].reverse();
       setLatestSongs(sortedLatest);
 
-      // 2) Ambil semua albums
+      // Albums
       try {
         setAlbumsLoading(true);
         const allAlbums = await musicService.getAllAlbums();
-        const sortedAlbums = [...allAlbums].sort(
-          (a, b) => b.releaseYear - a.releaseYear
+
+        const mappedAlbums = allAlbums.map((album) => ({
+          ...album,
+          artistName:
+            album.artist?.name ||
+            album.artistName ||
+            album.artistUsername ||
+            album.artist?.username ||
+            'Unknown Artist',
+          artistId: album.artist?.artistId || album.artistId || null,
+          songCount: album.songCount || album.songs?.length || 0,
+        }));
+
+        const sortedAlbums = [...mappedAlbums].sort(
+          (a, b) => (b.releaseYear || 0) - (a.releaseYear || 0)
         );
         setAlbums(sortedAlbums);
       } catch (e) {
@@ -48,7 +61,7 @@ const Home = () => {
         setAlbumsLoading(false);
       }
 
-      // 3) Ambil Recently Played dari history
+      // Recently Played
       const effectiveUserId =
         user?.accountId ||
         localStorage.getItem('userId') ||
@@ -82,44 +95,19 @@ const Home = () => {
     } finally {
       setLoading(false);
     }
-  }, [user]); // ✅ Dependency: user
+  }, [user]);
 
   useEffect(() => {
     if (authLoading) return;
     loadData();
-  }, [authLoading, loadData]); // ✅ Tambahkan loadData ke dependency
+  }, [authLoading, loadData]);
 
-  const handlePlay = (track, playlist, index) => {
-    playSong(track, playlist, index);
-  };
-
-  const handlePlayAlbum = async (album) => {
-    try {
-      const albumSongs = await musicService.getAlbumSongs(album.albumId);
-      if (albumSongs && albumSongs.length > 0) {
-        playSong(albumSongs[0], albumSongs, 0);
-      }
-    } catch (err) {
-      console.error('Failed to load album songs:', err);
-    }
-  };
-
-  const handleCreatePlaylist = () => {
-    window.dispatchEvent(new Event('open:createPlaylist'));
-  };
-
-  const isCurrentlyPlaying = (trackId) => {
-    const id = currentSong?.songId || currentSong?.id;
-    return id === trackId && isPlaying;
-  };
-
-  const formatDuration = (seconds) => {
-    if (!seconds && seconds !== 0) return '0:00';
-    const total = Math.floor(seconds);
-    const mins = Math.floor(total / 60);
-    const secs = total % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
+  const handlePlay = useCallback(
+    (track, playlist, index) => {
+      playSong(track, playlist, index);
+    },
+    [playSong]
+  );
 
   if (authLoading || loading) {
     return (
@@ -142,25 +130,18 @@ const Home = () => {
   }
 
   return (
-    <>
-      {/* Recently Played Section */}
-      <section className={styles.section}>
-        <h2 className={styles.sectionTitle}>Recently Played</h2>
-
-        {historyLoading ? (
-          <div className={styles.loadingInline}>
-            <Loader size={20} className={styles.spinnerSmall} />
-            <span>Loading history...</span>
-          </div>
-        ) : recentlyPlayed.length === 0 ? (
-          <p className={styles.emptyText}>No recently played songs yet.</p>
-        ) : (
+    <div className={styles.homeContainer}>
+      {/* Recently Played */}
+      {!historyLoading && recentlyPlayed.length > 0 && (
+        <section className={styles.section}>
+          <h2 className={styles.sectionTitle}>Recently Played</h2>
           <div className={styles.cardGrid}>
             {recentlyPlayed.slice(0, 8).map((track, index) => (
-              <AlbumCard
+              <SongCard
                 key={track.songId || track.id}
                 track={{
                   id: track.songId || track.id,
+                  songId: track.songId || track.id,
                   title: track.title,
                   artist:
                     track.artist?.name ||
@@ -168,17 +149,20 @@ const Home = () => {
                     track.artistName ||
                     'Unknown Artist',
                   cover: track.coverEmoji || '🎵',
-                  duration: formatDuration(track.duration),
+                  coverEmoji: track.coverEmoji || '🎵',
+                  duration: track.duration,
+                  audioUrl: musicService.getStreamUrl(
+                    track.songId || track.id
+                  ),
                 }}
                 onPlay={() => handlePlay(track, recentlyPlayed, index)}
-                onCreatePlaylist={handleCreatePlaylist}
               />
             ))}
           </div>
-        )}
-      </section>
+        </section>
+      )}
 
-      {/* Albums Section */}
+      {/* Albums */}
       <section className={styles.section}>
         <div className={styles.sectionHeader}>
           <h2 className={styles.sectionTitle}>Albums</h2>
@@ -204,25 +188,27 @@ const Home = () => {
             {(showAllAlbums ? albums : albums.slice(0, 8)).map((album) => (
               <AlbumCard
                 key={album.albumId}
-                track={{
+                album={{
+                  albumId: album.albumId,
                   id: album.albumId,
                   title: album.title,
-                  artist:
-                    album.artist?.name ||
-                    album.artist?.username ||
-                    'Unknown Artist',
+                  artistName: album.artistName,
+                  artistId: album.artistId,
+                  coverEmoji: album.coverEmoji || '💿',
                   cover: album.coverEmoji || '💿',
-                  duration: `${album.releaseYear || 'Unknown'}`,
+                  releaseDate: album.releaseDate,
+                  year: album.releaseYear,
+                  songs: album.songs || [],
+                  songCount: album.songCount,
+                  genres: album.genres || [],
                 }}
-                onPlay={() => handlePlayAlbum(album)}
-                onCreatePlaylist={handleCreatePlaylist}
               />
             ))}
           </div>
         )}
       </section>
 
-      {/* Latest Songs Section */}
+      {/* Latest Songs */}
       <section className={styles.section}>
         <div className={styles.sectionHeader}>
           <h2 className={styles.sectionTitle}>Latest Songs</h2>
@@ -239,65 +225,41 @@ const Home = () => {
         {latestSongs.length === 0 ? (
           <p className={styles.emptyText}>No songs available.</p>
         ) : (
-          <div className={styles.trackList}>
+          <div className={styles.cardGrid}>
             {(showAllLatest ? latestSongs : latestSongs.slice(0, 8)).map(
-              (track, index) => {
-                const playing = isCurrentlyPlaying(
-                  track.songId || track.id
-                );
-
-                return (
-                  <div
-                    key={track.songId || track.id}
-                    className={`${styles.trackItem} ${
-                      playing ? styles.playing : ''
-                    }`}
-                  >
-                    <span className={styles.trackNumber}>
-                      {index + 1}
-                    </span>
-                    <div className={styles.trackCover}>
-                      {track.coverEmoji || '🎵'}
-                    </div>
-                    <div className={styles.trackInfo}>
-                      <h4>{track.title}</h4>
-                      <p>
-                        {track.artist?.name ||
-                          track.artist?.username ||
-                          track.artistName ||
-                          'Unknown Artist'}
-                      </p>
-                    </div>
-                    <span className={styles.trackDuration}>
-                      {formatDuration(track.duration)}
-                    </span>
-                    <button
-                      className={`${styles.playBtn} ${
-                        playing ? styles.playing : ''
-                      }`}
-                      onClick={() =>
-                        handlePlay(
-                          track,
-                          showAllLatest ? latestSongs : latestSongs,
-                          index
-                        )
-                      }
-                      aria-label={playing ? 'Playing' : 'Play'}
-                    >
-                      {playing ? (
-                        <Pause size={16} />
-                      ) : (
-                        <Play size={16} />
-                      )}
-                    </button>
-                  </div>
-                );
-              }
+              (track, index) => (
+                <SongCard
+                  key={track.songId || track.id}
+                  track={{
+                    id: track.songId || track.id,
+                    songId: track.songId || track.id,
+                    title: track.title,
+                    artist:
+                      track.artist?.name ||
+                      track.artist?.username ||
+                      track.artistName ||
+                      'Unknown Artist',
+                    cover: track.coverEmoji || '🎵',
+                    coverEmoji: track.coverEmoji || '🎵',
+                    duration: track.duration,
+                    audioUrl: musicService.getStreamUrl(
+                      track.songId || track.id
+                    ),
+                  }}
+                  onPlay={() =>
+                    handlePlay(
+                      track,
+                      showAllLatest ? latestSongs : latestSongs.slice(0, 8),
+                      index
+                    )
+                  }
+                />
+              )
             )}
           </div>
         )}
       </section>
-    </>
+    </div>
   );
 };
 

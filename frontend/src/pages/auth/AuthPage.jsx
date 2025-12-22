@@ -2,10 +2,12 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuthContext } from '../../context/AuthContext';
+// eslint-disable-next-line no-unused-vars
+import { motion, AnimatePresence } from 'framer-motion';
 import styles from './AuthPage.module.css';
 import { Music2, Mail, Lock, User } from 'lucide-react';
 
-const USERNAME_REGEX = /^[^\s]+$/; // username tidak boleh mengandung spasi
+const USERNAME_REGEX = /^[^\s]+$/;
 
 const AuthPage = () => {
   const navigate = useNavigate();
@@ -32,7 +34,6 @@ const AuthPage = () => {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState('');
 
-  // Auto redirect kalau sudah login
   useEffect(() => {
     if (!contextLoading && isAuthenticated && user) {
       const from = location.state?.from?.pathname;
@@ -49,7 +50,6 @@ const AuthPage = () => {
     }
   }, [contextLoading, isAuthenticated, user, navigate, location.state]);
 
-  // Sync auth error
   useEffect(() => {
     if (authError) {
       setError(authError);
@@ -62,17 +62,14 @@ const AuthPage = () => {
     setError('');
     setSuccess('');
     clearError();
-
     setLoading(true);
 
     try {
-      // Validasi username: tidak boleh mengandung spasi
       if (!USERNAME_REGEX.test(formData.username)) {
         throw new Error('Username tidak boleh mengandung spasi');
       }
 
       if (isLogin) {
-        // LOGIN
         const result = await login(formData.username, formData.password);
 
         if (!result.success) {
@@ -95,9 +92,8 @@ const AuthPage = () => {
 
         setTimeout(() => {
           navigate(redirectPath, { replace: true });
-        }, 500);
+        }, 800);
       } else {
-        // REGISTRATION (hanya user/listener)
         const result = await register(
           formData.username,
           formData.email,
@@ -125,9 +121,7 @@ const AuthPage = () => {
       console.error('Auth error:', err);
       let errorMessage = err.message || 'An error occurred';
 
-      if (
-        errorMessage.includes('Username tidak boleh mengandung spasi')
-      ) {
+      if (errorMessage.includes('Username tidak boleh mengandung spasi')) {
         errorMessage = 'Username tidak boleh mengandung spasi';
       } else if (
         errorMessage.includes('401') ||
@@ -173,36 +167,42 @@ const AuthPage = () => {
     });
   };
 
+  // Loading Screen
   if (contextLoading) {
     return (
       <div className={styles.authContainer}>
-        <div className={styles.authCard}>
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: '1rem',
-              padding: '2rem',
-            }}
-          >
-            <div
-              style={{
-                width: '40px',
-                height: '40px',
-                border: '4px solid #f3f3f3',
-                borderTop: '4px solid #3498db',
-                borderRadius: '50%',
-                animation: 'spin 1s linear infinite',
-              }}
-            ></div>
-            <p>Loading authentication...</p>
-            <style>{`
-              @keyframes spin {
-                0% { transform: rotate(0deg); }
-                100% { transform: rotate(360deg); }
-              }
-            `}</style>
+        <div className={styles.blob1}></div>
+        <div className={styles.blob2}></div>
+        <div className={styles.blob3}></div>
+
+        <div className={styles.loadingCard}>
+          <div className={styles.musicNotesContainer}>
+            <Music2 size={64} className={styles.loadingLogo} />
+            <div className={styles.musicNote}>♪</div>
+            <div className={styles.musicNote}>♫</div>
+            <div className={styles.musicNote}>♪</div>
+            <div className={styles.musicNote}>♫</div>
+          </div>
+
+          <div className={styles.spinnerContainer}>
+            <div className={styles.spinner}></div>
+            <div className={styles.spinnerPulse}></div>
+          </div>
+
+          <div className={styles.loadingTextContainer}>
+            <h2 className={styles.loadingTitle}>MELODIA</h2>
+            <p className={styles.loadingText}>
+              <span className={styles.loadingDot}>.</span>
+              <span className={styles.loadingDot}>.</span>
+              <span className={styles.loadingDot}>.</span>
+            </p>
+            <p className={styles.loadingSubtext}>
+              Preparing your music experience
+            </p>
+          </div>
+
+          <div className={styles.progressBar}>
+            <div className={styles.progressFill}></div>
           </div>
         </div>
       </div>
@@ -211,7 +211,17 @@ const AuthPage = () => {
 
   return (
     <div className={styles.authContainer}>
-      <div className={styles.authCard}>
+      <div className={styles.blob1}></div>
+      <div className={styles.blob2}></div>
+      <div className={styles.blob3}></div>
+
+      <motion.div
+        className={styles.authCard}
+        layout
+        transition={{
+          layout: { duration: 0.45, ease: [0.4, 0, 0.2, 1] },
+        }}
+      >
         <div className={styles.logoSection}>
           <Music2 size={48} className={styles.logo} />
           <h1 className={styles.title}>MELODIA</h1>
@@ -239,11 +249,47 @@ const AuthPage = () => {
           </button>
         </div>
 
-        {error && <div className={styles.errorMessage}>{error}</div>}
-        {success && <div className={styles.successMessage}>{success}</div>}
+        <AnimatePresence mode="wait">
+          {error && (
+            <motion.div
+              key="error"
+              className={styles.errorMessage}
+              initial={{ opacity: 0, height: 0, marginBottom: 0 }}
+              animate={{ opacity: 1, height: 'auto', marginBottom: 16 }}
+              exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+              transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+              style={{ overflow: 'hidden' }}
+            >
+              {error}
+            </motion.div>
+          )}
+        </AnimatePresence>
 
+        <AnimatePresence mode="wait">
+          {success && (
+            <motion.div
+              key="success"
+              className={styles.successMessage}
+              initial={{ opacity: 0, height: 0, marginBottom: 0 }}
+              animate={{ opacity: 1, height: 'auto', marginBottom: 16 }}
+              exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+              transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+              style={{ overflow: 'hidden' }}
+            >
+              {success}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Form */}
         <form onSubmit={handleSubmit} className={styles.form}>
-          <div className={styles.inputGroup}>
+          {/* Username */}
+          <motion.div
+            className={styles.inputGroup}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.25 }}
+          >
             <User size={20} className={styles.icon} />
             <input
               type="text"
@@ -256,26 +302,43 @@ const AuthPage = () => {
               disabled={loading}
               autoComplete="username"
             />
-          </div>
+          </motion.div>
 
-          {!isLogin && (
-            <div className={styles.inputGroup}>
-              <Mail size={20} className={styles.icon} />
-              <input
-                type="email"
-                name="email"
-                placeholder="Email"
-                value={formData.email}
-                onChange={handleChange}
-                className={styles.input}
-                required
-                disabled={loading}
-                autoComplete="email"
-              />
-            </div>
-          )}
+          {/* Email (Register only) */}
+          <AnimatePresence initial={false}>
+            {!isLogin && (
+              <motion.div
+                key="email"
+                className={styles.inputGroup}
+                initial={{ opacity: 0, height: 0, y: -4 }}
+                animate={{ opacity: 1, height: 'auto', y: 0 }}
+                exit={{ opacity: 0, height: 0, y: -4 }}
+                transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
+                style={{ overflow: 'hidden' }}
+              >
+                <Mail size={20} className={styles.icon} />
+                <input
+                  type="email"
+                  name="email"
+                  placeholder="Email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  className={styles.input}
+                  required
+                  disabled={loading}
+                  autoComplete="email"
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-          <div className={styles.inputGroup}>
+          {/* Password */}
+          <motion.div
+            className={styles.inputGroup}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.25, delay: 0.05 }}
+          >
             <Lock size={20} className={styles.icon} />
             <input
               type="password"
@@ -289,23 +352,61 @@ const AuthPage = () => {
               disabled={loading}
               autoComplete={isLogin ? 'current-password' : 'new-password'}
             />
-          </div>
+          </motion.div>
 
-          <button
+          {/* Submit Button dengan smooth text transition */}
+          <motion.button
             type="submit"
             className={styles.submitBtn}
             disabled={loading}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.25, delay: 0.1 }}
+            whileHover={{
+              scale: loading ? 1 : 1.02,
+              y: loading ? 0 : -2,
+            }}
+            whileTap={{ scale: loading ? 1 : 0.98 }}
           >
-            {loading ? (
-              <span>⏳ Loading...</span>
-            ) : isLogin ? (
-              'Sign In'
-            ) : (
-              'Create Account'
-            )}
-          </button>
+            <AnimatePresence mode="wait" initial={false}>
+              {loading ? (
+                <motion.span
+                  key="loading"
+                  className={styles.submitText}
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  transition={{ duration: 0.18, ease: [0.4, 0, 0.2, 1] }}
+                >
+                  ⏳ Loading...
+                </motion.span>
+              ) : isLogin ? (
+                <motion.span
+                  key="signin"
+                  className={styles.submitText}
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  transition={{ duration: 0.18, ease: [0.4, 0, 0.2, 1] }}
+                >
+                  Sign In
+                </motion.span>
+              ) : (
+                <motion.span
+                  key="register"
+                  className={styles.submitText}
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  transition={{ duration: 0.18, ease: [0.4, 0, 0.2, 1] }}
+                >
+                  Create Account
+                </motion.span>
+              )}
+            </AnimatePresence>
+          </motion.button>
         </form>
-      </div>
+      </motion.div>
     </div>
   );
 };

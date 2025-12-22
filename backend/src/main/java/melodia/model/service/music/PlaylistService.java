@@ -8,6 +8,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import melodia.controller.exception.music.PlaylistNotFoundException;
+import melodia.controller.exception.music.SongNotFoundException;
+import melodia.controller.exception.user.UnauthorizedAccessException;
+import melodia.controller.exception.user.UserNotFoundException;
 import melodia.model.entity.Playlist;
 import melodia.model.entity.Song;
 import melodia.model.entity.User;
@@ -33,7 +37,7 @@ public class PlaylistService {
     @Transactional
     public Playlist createPlaylist(String userId, String name, String description) {
         User owner = userRepository.findById(userId)
-            .orElseThrow(() -> new RuntimeException("User not found"));
+            .orElseThrow(() -> new UserNotFoundException("User tidak ditemukan"));
 
         Playlist playlist = new Playlist(name, owner);
         playlist.setPlaylistId("PL-" + UUID.randomUUID().toString());
@@ -48,7 +52,7 @@ public class PlaylistService {
      */
     public List<Playlist> getUserPlaylists(String userId) {
         User owner = userRepository.findById(userId)
-            .orElseThrow(() -> new RuntimeException("User not found"));
+            .orElseThrow(() -> new UserNotFoundException("User tidak ditemukan"));
         return playlistRepository.findByOwner(owner);
     }
 
@@ -57,7 +61,7 @@ public class PlaylistService {
      */
     public Playlist getPlaylistById(String playlistId) {
         return playlistRepository.findById(playlistId)
-            .orElseThrow(() -> new RuntimeException("Playlist not found"));
+            .orElseThrow(() -> new PlaylistNotFoundException("Playlist tidak ditemukan"));
     }
 
     /**
@@ -66,11 +70,11 @@ public class PlaylistService {
     @Transactional
     public Playlist updatePlaylist(String playlistId, String userId, String name, String description) {
         Playlist playlist = playlistRepository.findById(playlistId)
-            .orElseThrow(() -> new RuntimeException("Playlist not found"));
+            .orElseThrow(() -> new PlaylistNotFoundException("Playlist tidak ditemukan"));
 
         // Check ownership
         if (!playlist.getOwner().getAccountId().equals(userId)) {
-            throw new RuntimeException("Unauthorized: You can only update your own playlists");
+            throw new UnauthorizedAccessException("Anda hanya dapat mengupdate playlist milik Anda sendiri");
         }
 
         if (name != null && !name.isEmpty()) {
@@ -89,11 +93,11 @@ public class PlaylistService {
     @Transactional
     public void deletePlaylist(String playlistId, String userId) {
         Playlist playlist = playlistRepository.findById(playlistId)
-            .orElseThrow(() -> new RuntimeException("Playlist not found"));
+            .orElseThrow(() -> new PlaylistNotFoundException("Playlist tidak ditemukan"));
 
         // Check ownership
         if (!playlist.getOwner().getAccountId().equals(userId)) {
-            throw new RuntimeException("Unauthorized: You can only delete your own playlists");
+            throw new UnauthorizedAccessException("Anda hanya dapat menghapus playlist milik Anda sendiri");
         }
 
         playlistRepository.delete(playlist);
@@ -105,15 +109,15 @@ public class PlaylistService {
     @Transactional
     public Playlist addSongToPlaylist(String playlistId, String songId, String userId) {
         Playlist playlist = playlistRepository.findById(playlistId)
-            .orElseThrow(() -> new RuntimeException("Playlist not found"));
+            .orElseThrow(() -> new PlaylistNotFoundException("Playlist tidak ditemukan"));
 
         // Check ownership
         if (!playlist.getOwner().getAccountId().equals(userId)) {
-            throw new RuntimeException("Unauthorized: You can only modify your own playlists");
+            throw new UnauthorizedAccessException("Anda hanya dapat mengubah playlist milik Anda sendiri");
         }
 
         Song song = songRepository.findById(songId)
-            .orElseThrow(() -> new RuntimeException("Song not found"));
+            .orElseThrow(() -> new SongNotFoundException("Lagu tidak ditemukan"));
 
         playlist.addSong(song);
         return playlistRepository.save(playlist);
@@ -125,15 +129,15 @@ public class PlaylistService {
     @Transactional
     public Playlist removeSongFromPlaylist(String playlistId, String songId, String userId) {
         Playlist playlist = playlistRepository.findById(playlistId)
-            .orElseThrow(() -> new RuntimeException("Playlist not found"));
+            .orElseThrow(() -> new PlaylistNotFoundException("Playlist tidak ditemukan"));
 
         // Check ownership
         if (!playlist.getOwner().getAccountId().equals(userId)) {
-            throw new RuntimeException("Unauthorized: You can only modify your own playlists");
+            throw new UnauthorizedAccessException("Anda hanya dapat mengubah playlist milik Anda sendiri");
         }
 
         Song song = songRepository.findById(songId)
-            .orElseThrow(() -> new RuntimeException("Song not found"));
+            .orElseThrow(() -> new SongNotFoundException("Lagu tidak ditemukan"));
 
         playlist.removeSong(song);
         return playlistRepository.save(playlist);

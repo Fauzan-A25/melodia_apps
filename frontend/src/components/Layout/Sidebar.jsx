@@ -1,5 +1,13 @@
 // src/components/Layout/Sidebar.jsx
-import { Home, Music, ListMusic, Users, Plus, Mic2, Disc3 } from 'lucide-react'; // ✅ Import Disc3
+import {
+  Home,
+  Music,
+  ListMusic,
+  Users,
+  Plus,
+  Mic2,
+  Disc3,
+} from 'lucide-react';
 import MelodiaLogo from '../../assets/melodia_logo.svg';
 import styles from './Sidebar.module.css';
 import { NavLink } from 'react-router-dom';
@@ -15,7 +23,7 @@ const Sidebar = ({ onCreatePlaylist }) => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [initialized, setInitialized] = useState(false);
 
-  // 1. Ambil userId & role dari localStorage + context
+  // ambil userId & role
   useEffect(() => {
     const storedId =
       localStorage.getItem('userId') || localStorage.getItem('accountId');
@@ -36,17 +44,11 @@ const Sidebar = ({ onCreatePlaylist }) => {
     setInitialized(true);
   }, [user]);
 
-  // 2. Fetch playlists function dengan guard admin + initialized
+  // fetch playlists
   const fetchPlaylists = useCallback(async () => {
     if (!initialized) return;
 
-    if (isAdmin) {
-      setPlaylists([]);
-      setLoadingPlaylists(false);
-      return;
-    }
-
-    if (!userId) {
+    if (isAdmin || !userId) {
       setPlaylists([]);
       setLoadingPlaylists(false);
       return;
@@ -63,14 +65,13 @@ const Sidebar = ({ onCreatePlaylist }) => {
     }
   }, [userId, isAdmin, initialized]);
 
-  // 3. Auto-run fetch hanya kalau sudah initialized
   useEffect(() => {
     if (initialized) {
       fetchPlaylists();
     }
   }, [fetchPlaylists, initialized]);
 
-  // 4. GLOBAL EVENT LISTENER - Auto refresh setelah delete/create (non-admin saja)
+  // global event listener
   useEffect(() => {
     const handlePlaylistChange = () => {
       if (!initialized) return;
@@ -90,12 +91,11 @@ const Sidebar = ({ onCreatePlaylist }) => {
     };
   }, [fetchPlaylists, isAdmin, initialized]);
 
-  // ✅ Admin Navigation Items (Updated dengan Albums)
   const adminNavItems = [
     { icon: Home, label: 'Dashboard', path: '/admin/dashboard' },
     { icon: ListMusic, label: 'Manage Genres', path: '/admin/genres' },
     { icon: Mic2, label: 'Manage Artists', path: '/admin/artists' },
-    { icon: Disc3, label: 'Manage Albums', path: '/admin/albums' }, // ✅ NEW
+    { icon: Disc3, label: 'Manage Albums', path: '/admin/albums' },
     { icon: Music, label: 'Manage Songs', path: '/admin/songs' },
     { icon: Users, label: 'Manage Users', path: '/admin/users' },
   ];
@@ -106,83 +106,106 @@ const Sidebar = ({ onCreatePlaylist }) => {
 
   return (
     <aside className={styles.sidebar}>
-      <div className={styles.logoSection}>
-        <MelodiaLogo className={styles.melodiaLogo} />
-      </div>
+      <div className={styles.sidebarInner}>
+        {/* Logo */}
+        <div className={styles.logoSection}>
+          <MelodiaLogo className={styles.melodiaLogo} />
+          <span className={styles.logoText}>Melodia</span>
+        </div>
 
-      <nav className={styles.nav}>
-        {menuItems.map((item) => (
-          <NavLink
-            key={item.path}
-            to={item.path}
-            className={({ isActive }) =>
-              `${styles.navItem} ${isActive ? styles.active : ''}`
-            }
-          >
-            <item.icon size={22} />
-            <span>{item.label}</span>
-          </NavLink>
-        ))}
+        {/* Main nav */}
+        <nav className={styles.nav}>
+          <div className={styles.navGroup}>
+            {menuItems.map((item) => (
+              <NavLink
+                key={item.path}
+                to={item.path}
+                className={({ isActive }) =>
+                  `${styles.navItem} ${isActive ? styles.navItemActive : ''}`
+                }
+              >
+                <span className={styles.navIconWrapper}>
+                  <item.icon size={20} />
+                </span>
+                <span className={styles.navLabel}>{item.label}</span>
+              </NavLink>
+            ))}
+          </div>
 
-        {!isAdmin && (
-          <>
-            <button
-              className={`${styles.navItem} ${styles.createPlaylistBtn}`}
-              onClick={onCreatePlaylist}
-              disabled={!initialized || loadingPlaylists || !userId}
-            >
-              <Plus size={22} />
-              <span>Create Playlist</span>
-            </button>
+          {/* User playlist area */}
+          {!isAdmin && (
+            <>
+              <button
+                className={styles.createPlaylistBtn}
+                onClick={onCreatePlaylist}
+                disabled={!initialized || loadingPlaylists || !userId}
+              >
+                <span className={styles.navIconWrapper}>
+                  <Plus size={20} />
+                </span>
+                <span className={styles.navLabel}>Create Playlist</span>
+              </button>
 
-            {!initialized ? (
-              <div className={styles.playlistSection}>
-                <div className={styles.playlistLoading}>
-                  <span>⏳</span>
-                  <span>Loading sidebar...</span>
+              <div className={styles.sectionDivider} />
+
+              {!initialized ? (
+                <div className={styles.playlistInfoBox}>
+                  <span className={styles.playlistEmoji}>⏳</span>
+                  <span className={styles.playlistInfoText}>
+                    Loading sidebar...
+                  </span>
                 </div>
-              </div>
-            ) : (
-              <>
-                {playlists.length > 0 && (
-                  <div className={styles.divider}></div>
-                )}
+              ) : (
+                <div className={styles.playlistBlock}>
+                  <div className={styles.playlistHeader}>
+                    <span className={styles.playlistHeaderLabel}>
+                      Your Playlists
+                    </span>
+                  </div>
 
-                <div className={styles.playlistSection}>
                   {loadingPlaylists ? (
-                    <div className={styles.playlistLoading}>
-                      <span>⏳</span>
-                      <span>Loading playlists...</span>
+                    <div className={styles.playlistInfoBox}>
+                      <span className={styles.playlistEmoji}>⏳</span>
+                      <span className={styles.playlistInfoText}>
+                        Loading playlists...
+                      </span>
                     </div>
                   ) : playlists.length === 0 ? (
-                    <div className={styles.playlistEmpty}>
-                      <span>📭</span>
-                      <span>No playlists yet</span>
+                    <div className={styles.playlistInfoBox}>
+                      <span className={styles.playlistEmoji}>📭</span>
+                      <span className={styles.playlistInfoText}>
+                        No playlists yet
+                      </span>
+                      <span className={styles.playlistInfoSub}>
+                        Create one to start organizing your music
+                      </span>
                     </div>
                   ) : (
-                    playlists.map((playlist) => (
-                      <NavLink
-                        key={playlist.playlistId}
-                        to={`/playlist/${playlist.playlistId}`}
-                        className={({ isActive }) =>
-                          `${styles.playlistItem} ${
-                            isActive ? styles.active : ''
-                          }`
-                        }
-                      >
-                        <span className={styles.playlistIcon}>🎵</span>
-                        <span className={styles.playlistName}>
-                          {playlist.name}
-                        </span>
-                      </NavLink>
-                    ))
+                    <div className={styles.playlistList}>
+                      {playlists.map((playlist) => (
+                        <NavLink
+                          key={playlist.playlistId}
+                          to={`/playlist/${playlist.playlistId}`}
+                          className={({ isActive }) =>
+                            `${styles.playlistItem} ${
+                              isActive ? styles.playlistItemActive : ''
+                            }`
+                          }
+                        >
+                          <span className={styles.playlistAvatar}>🎵</span>
+                          <span className={styles.playlistName}>
+                            {playlist.name}
+                          </span>
+                        </NavLink>
+                      ))}
+                    </div>
                   )}
                 </div>
-              </>
-            )}
-          </>
-        )}
-      </nav>
+              )}
+            </>
+          )}
+        </nav>
+      </div>
     </aside>
   );
 };

@@ -3,6 +3,7 @@ package melodia.model.service.auth;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import melodia.controller.exception.auth.InvalidCredentialsException;
 import melodia.model.entity.Account;
 import melodia.model.entity.Admin;
 import melodia.model.entity.User;
@@ -29,11 +30,11 @@ public class AuthenticationService {
                 .orElse(accountRepository.findByEmail(usernameOrEmail).orElse(null));
 
         if (account == null) {
-            throw new IllegalArgumentException("Akun tidak ditemukan");
+            throw new InvalidCredentialsException();
         }
 
         if (!account.verifyPassword(password)) {
-            throw new IllegalArgumentException("Password salah");
+            throw new InvalidCredentialsException();
         }
 
         return account;
@@ -46,7 +47,7 @@ public class AuthenticationService {
                 .orElse(userRepository.findByEmail(usernameOrEmail).orElse(null));
 
         if (user == null || !user.verifyPassword(password)) {
-            throw new IllegalArgumentException("Username/email atau password salah");
+            throw new InvalidCredentialsException();
         }
 
         return user;
@@ -59,7 +60,7 @@ public class AuthenticationService {
                 .orElse(adminRepository.findByEmail(usernameOrEmail).orElse(null));
 
         if (admin == null || !admin.verifyPassword(password)) {
-            throw new IllegalArgumentException("Username/email atau password salah");
+            throw new InvalidCredentialsException();
         }
 
         return admin;
@@ -80,7 +81,7 @@ public class AuthenticationService {
      */
     public Account updateProfile(String accountId, String username, String email) {
         Account account = accountRepository.findById(accountId)
-                .orElseThrow(() -> new IllegalArgumentException("Account not found"));
+                .orElseThrow(InvalidCredentialsException::new);
 
         account.setUsername(username);
         account.setEmail(email);
@@ -90,10 +91,10 @@ public class AuthenticationService {
 
     public void changePassword(String accountId, String currentPassword, String newPassword) {
         Account account = accountRepository.findById(accountId)
-                .orElseThrow(() -> new IllegalArgumentException("Account not found"));
+                .orElseThrow(InvalidCredentialsException::new);
 
         if (!account.verifyPassword(currentPassword)) {
-            throw new IllegalArgumentException("Current password is incorrect");
+            throw new InvalidCredentialsException();
         }
 
         account.updatePassword(newPassword);
@@ -102,7 +103,7 @@ public class AuthenticationService {
 
     public void deleteCurrentAccount(String accountId) {
         if (!accountRepository.existsById(accountId)) {
-            throw new IllegalArgumentException("Account not found");
+            throw new InvalidCredentialsException();
         }
         accountRepository.deleteById(accountId);
     }

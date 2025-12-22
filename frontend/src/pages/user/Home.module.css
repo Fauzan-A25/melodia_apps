@@ -1,3 +1,11 @@
+/* Container utama */
+.homeContainer {
+  width: 100%;
+  max-width: 100%;
+  padding: 0 0 120px 0; /* Space untuk fixed player bar */
+  box-sizing: border-box;
+}
+
 /* Loading & Error States */
 .loadingContainer,
 .errorContainer {
@@ -22,8 +30,12 @@
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .errorText {
@@ -52,6 +64,7 @@
 .emptyText {
   color: #94a3b8;
   font-size: 14px;
+  margin: 0;
 }
 
 .loadingInline {
@@ -65,52 +78,139 @@
 /* Music Sections */
 .section {
   margin-bottom: 48px;
+  width: 100%;
+  overflow: hidden;
+}
+
+.section:last-child {
+  margin-bottom: 0;
 }
 
 .sectionTitle {
   font-size: 24px;
   font-weight: 700;
   color: white;
-  margin-bottom: 20px;
+  margin: 0 0 20px 0;
   background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
-/* Header untuk section + tombol "Lihat Semua" */
+/* Header untuk section + tombol "View All" */
 .sectionHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 }
 
 .moreBtn {
-  padding: 6px 14px;
+  padding: 8px 16px;
   font-size: 13px;
+  font-weight: 500;
   border-radius: 999px;
-  border: 1px solid rgba(148, 163, 184, 0.7);
-  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  background: rgba(15, 23, 42, 0.6);
   color: #e5e7eb;
   cursor: pointer;
   transition: all 0.2s ease;
+  white-space: nowrap;
 }
 
 .moreBtn:hover {
-  background: rgba(148, 163, 184, 0.12);
-  border-color: #a5b4fc;
+  background: rgba(59, 130, 246, 0.1);
+  border-color: #3b82f6;
   color: #f9fafb;
 }
 
-/* Grid untuk AlbumCard (Recently Played) */
-.cardGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 20px;
+.moreBtn:active {
+  transform: scale(0.98);
 }
 
-/* Track List (Latest Songs) */
+/* Grid untuk Card - balanced, tidak terlalu besar */
+.cardGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 20px;
+  width: 100%;
+  align-items: start;
+}
+
+/* Desktop besar */
+@media (min-width: 1600px) {
+  .cardGrid {
+    grid-template-columns: repeat(6, 1fr);
+    gap: 24px;
+  }
+}
+
+/* Desktop wide */
+@media (min-width: 1400px) and (max-width: 1599px) {
+  .cardGrid {
+    grid-template-columns: repeat(5, 1fr);
+    gap: 22px;
+  }
+}
+
+/* Desktop normal */
+@media (min-width: 1200px) and (max-width: 1399px) {
+  .cardGrid {
+    grid-template-columns: repeat(5, 1fr);
+    gap: 20px;
+  }
+}
+
+/* Laptop */
+@media (min-width: 1024px) and (max-width: 1199px) {
+  .cardGrid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+  }
+}
+
+/* Tablet landscape */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .cardGrid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+  }
+}
+
+/* Tablet potrait kecil */
+@media (min-width: 600px) and (max-width: 767px) {
+  .cardGrid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+}
+
+/* Mobile medium */
+@media (min-width: 480px) and (max-width: 599px) {
+  .cardGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+  }
+}
+
+/* Mobile kecil */
+@media (max-width: 479px) {
+  .cardGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .section {
+    margin-bottom: 32px;
+  }
+
+  .sectionTitle {
+    font-size: 20px;
+    margin-bottom: 16px;
+  }
+}
+
+/* Track List (jika ingin menggunakan list view) */
 .trackList {
   display: flex;
   flex-direction: column;
@@ -160,10 +260,12 @@
   align-items: center;
   justify-content: center;
   font-size: 24px;
+  flex-shrink: 0;
 }
 
 .trackInfo {
   flex: 1;
+  min-width: 0;
 }
 
 .trackInfo h4 {
@@ -171,18 +273,25 @@
   font-size: 15px;
   font-weight: 600;
   margin: 0 0 4px 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .trackInfo p {
   color: #94a3b8;
   font-size: 13px;
   margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .trackDuration {
   color: #64748b;
   font-size: 13px;
   font-weight: 500;
+  flex-shrink: 0;
 }
 
 /* Play button styles (list) */
@@ -197,6 +306,7 @@
   align-items: center;
   justify-content: center;
   transition: all 0.2s ease;
+  flex-shrink: 0;
 }
 
 .playBtn:hover {

@@ -15,12 +15,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
+import melodia.model.dto.common.ApiResponse;
 import melodia.model.dto.request.user.AddSongToHistoryRequestDTO;
-import melodia.model.dto.response.history.ApiResponseDTO;
-import melodia.model.dto.response.history.HistoryResponseDTO;
-import melodia.model.dto.response.history.HistorySummaryResponseDTO;
-import melodia.model.dto.response.history.PlayedSongsResponseDTO;
-import melodia.model.dto.response.history.SongPlayedCheckResponseDTO;
+import melodia.model.dto.response.music.HistoryResponseDTO;
+import melodia.model.dto.response.music.HistorySummaryResponseDTO;
+import melodia.model.dto.response.music.PlayedSongsResponseDTO;
+import melodia.model.dto.response.music.SongPlayedCheckResponseDTO;
 import melodia.model.entity.Song;
 import melodia.model.repository.SongRepository;
 import melodia.model.service.user.HistoryService;
@@ -42,15 +42,14 @@ public class HistoryController {
      * Mendapatkan informasi history user
      */
     @GetMapping("/{userId}")
-    public ResponseEntity<HistoryResponseDTO> getUserHistory(@PathVariable String userId) {
-        // ✅ Return summary walaupun history kosong (bukan 404)
+    public ResponseEntity<ApiResponse<HistoryResponseDTO>> getUserHistory(@PathVariable String userId) {
         HistoryResponseDTO response = new HistoryResponseDTO(
             userId,
             historyService.getPlayedSongsCount(userId),
             historyService.hasHistory(userId)
         );
         
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(ApiResponse.success("User history retrieved", response));
     }
 
     // ==================== Get Played Songs ====================
@@ -60,12 +59,11 @@ public class HistoryController {
      * Mendapatkan semua lagu yang pernah diputar user (urutan terbaru dulu)
      */
     @GetMapping("/{userId}/songs")
-    public ResponseEntity<PlayedSongsResponseDTO> getPlayedSongs(@PathVariable String userId) {
-        // ✅ Return empty list kalau tidak ada, bukan 404
+    public ResponseEntity<ApiResponse<PlayedSongsResponseDTO>> getPlayedSongs(@PathVariable String userId) {
         List<Song> songs = historyService.getPlayedSongs(userId);
         PlayedSongsResponseDTO response = new PlayedSongsResponseDTO(userId, songs);
         
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(ApiResponse.success("Played songs retrieved", response));
     }
 
     /**
@@ -73,19 +71,19 @@ public class HistoryController {
      * Mendapatkan lagu yang baru-baru ini diputar (N terbaru)
      */
     @GetMapping("/{userId}/songs/recent")
-    public ResponseEntity<PlayedSongsResponseDTO> getRecentlyPlayedSongs(
+    public ResponseEntity<ApiResponse<PlayedSongsResponseDTO>> getRecentlyPlayedSongs(
             @PathVariable String userId,
             @RequestParam(defaultValue = "10") int limit) {
         
         if (limit <= 0) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.error("Limit must be greater than 0"));
         }
 
-        // ✅ Return empty list kalau tidak ada, bukan 404
         List<Song> recentSongs = historyService.getRecentlyPlayedSongs(userId, limit);
         PlayedSongsResponseDTO response = new PlayedSongsResponseDTO(userId, recentSongs);
         
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(ApiResponse.success("Recently played songs retrieved", response));
     }
 
     // ==================== Add Song to History ====================
@@ -97,7 +95,7 @@ public class HistoryController {
      * ✅ Move to front kalau lagu sudah pernah diputar
      */
     @PostMapping("/{userId}/songs")
-    public ResponseEntity<ApiResponseDTO> addSongToHistory(
+    public ResponseEntity<ApiResponse<?>> addSongToHistory(
             @PathVariable String userId,
             @Valid @RequestBody AddSongToHistoryRequestDTO request) {
         
@@ -105,24 +103,17 @@ public class HistoryController {
             Song song = songRepository.findById(request.getSongId())
                 .orElseThrow(() -> new IllegalArgumentException("Song tidak ditemukan"));
 
-            // Service akan auto-create history kalau belum ada
             historyService.addSongToHistory(userId, song);
             
-            ApiResponseDTO response = new ApiResponseDTO(
-                true,
-                "Song berhasil ditambahkan ke history"
-            );
-            
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(ApiResponse.success("Song berhasil ditambahkan ke history"));
             
         } catch (IllegalArgumentException e) {
-            // User tidak ditemukan atau song tidak ada
-            ApiResponseDTO response = new ApiResponseDTO(false, e.getMessage());
-            return ResponseEntity.badRequest().body(response);
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.error(e.getMessage()));
         } catch (Exception e) {
-            // Unexpected error
-            ApiResponseDTO response = new ApiResponseDTO(false, "Gagal menambahkan song ke history");
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error("Gagal menambahkan song ke history"));
         }
     }
 
@@ -133,7 +124,7 @@ public class HistoryController {
      * Menghapus satu lagu dari history
      */
     @DeleteMapping("/{userId}/songs/{songId}")
-    public ResponseEntity<ApiResponseDTO> removeSongFromHistory(
+    public ResponseEntity<ApiResponse<?>> removeSongFromHistory(
             @PathVariable String userId,
             @PathVariable String songId) {
         
@@ -143,20 +134,14 @@ public class HistoryController {
 
             historyService.removeSongFromHistory(userId, song);
             
-            ApiResponseDTO response = new ApiResponseDTO(
-                true,
-                "Song berhasil dihapus dari history"
-            );
-            
-            return ResponseEntity.ok(response);
+            return ResponseEntity.ok(ApiResponse.success("Song berhasil dihapus dari history"));
             
         } catch (IllegalArgumentException e) {
-            // History tidak ada atau song tidak ada di history
-            ApiResponseDTO response = new ApiResponseDTO(false, e.getMessage());
-            return ResponseEntity.badRequest().body(response);
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.error(e.getMessage()));
         } catch (Exception e) {
-            ApiResponseDTO response = new ApiResponseDTO(false, "Gagal menghapus song dari history");
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error("Gagal menghapus song dari history"));
         }
     }
 
@@ -167,16 +152,9 @@ public class HistoryController {
      * Menghapus semua history user
      */
     @DeleteMapping("/{userId}")
-    public ResponseEntity<ApiResponseDTO> clearUserHistory(@PathVariable String userId) {
-        // ✅ Success walaupun history tidak ada (idempotent)
+    public ResponseEntity<ApiResponse<?>> clearUserHistory(@PathVariable String userId) {
         historyService.clearUserHistory(userId);
-        
-        ApiResponseDTO response = new ApiResponseDTO(
-            true,
-            "History berhasil dihapus"
-        );
-        
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(ApiResponse.success("History berhasil dihapus"));
     }
 
     // ==================== Check if Song Played ====================
@@ -186,7 +164,7 @@ public class HistoryController {
      * Mengecek apakah lagu pernah diputar oleh user
      */
     @GetMapping("/{userId}/songs/{songId}/played")
-    public ResponseEntity<SongPlayedCheckResponseDTO> checkIfSongPlayed(
+    public ResponseEntity<ApiResponse<SongPlayedCheckResponseDTO>> checkIfSongPlayed(
             @PathVariable String userId,
             @PathVariable String songId) {
         
@@ -199,7 +177,7 @@ public class HistoryController {
             hasPlayed
         );
         
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(ApiResponse.success("Song play status retrieved", response));
     }
 
     // ==================== Get History Summary ====================
@@ -209,7 +187,7 @@ public class HistoryController {
      * Mendapatkan ringkasan history untuk dashboard
      */
     @GetMapping("/{userId}/summary")
-    public ResponseEntity<HistorySummaryResponseDTO> getHistorySummary(@PathVariable String userId) {
+    public ResponseEntity<ApiResponse<HistorySummaryResponseDTO>> getHistorySummary(@PathVariable String userId) {
         HistoryService.HistorySummary summary = historyService.getHistorySummary(userId);
         
         HistorySummaryResponseDTO response = new HistorySummaryResponseDTO(
@@ -218,6 +196,6 @@ public class HistoryController {
             summary.isExists()
         );
         
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(ApiResponse.success("History summary retrieved", response));
     }
 }

@@ -102,7 +102,8 @@ export const authService = {
       throw new Error(errorMessage);
     }
 
-    const data = await response.json();
+    const response_body = await response.json();
+    const data = response_body.data || response_body; // Handle ApiResponse wrapper
 
     if (!data.token) {
       throw new Error('Authentication token missing');
@@ -140,8 +141,8 @@ export const authService = {
       throw new Error(errorMessage);
     }
 
-    const data = await response.json();
-    return data;
+    const response_body = await response.json();
+    return response_body.data || response_body; // Handle ApiResponse wrapper
   },
 
   // ==================== LOGOUT ====================
@@ -190,7 +191,8 @@ export const authService = {
         return false;
       }
 
-      const data = await response.json();
+      const response_body = await response.json();
+      const data = response_body.data || response_body; // Handle ApiResponse wrapper
 
       saveAuthData(data);
       syncAuthToUseAuthStorage(data);
@@ -218,7 +220,8 @@ export const authService = {
         throw new Error('Token refresh failed');
       }
 
-      const data = await response.json();
+      const response_body = await response.json();
+      const data = response_body.data || response_body; // Handle ApiResponse wrapper
 
       saveAuthData(data);
       syncAuthToUseAuthStorage(data);
@@ -246,7 +249,8 @@ export const authService = {
         return null;
       }
 
-      const data = await response.json();
+      const response_body = await response.json();
+      const data = response_body.data || response_body; // Handle ApiResponse wrapper
 
       saveAuthData(data);
       syncAuthToUseAuthStorage(data);
@@ -261,7 +265,8 @@ export const authService = {
   // ==================== CHECK EXISTS ====================
   checkExists: async (usernameOrEmail) => {
     const response = await fetch(`${API_BASE_URL}/auth/check/${usernameOrEmail}`);
-    const data = await response.json();
+    const response_body = await response.json();
+    const data = response_body.data || response_body; // Handle ApiResponse wrapper
     return data.exists;
   },
 
@@ -292,7 +297,8 @@ export const authService = {
       throw new Error(msg);
     }
 
-    const data = await response.json();
+    const response_body = await response.json();
+    const data = response_body.data || response_body; // Handle ApiResponse wrapper
 
     saveAuthData(data);
     syncAuthToUseAuthStorage(data);

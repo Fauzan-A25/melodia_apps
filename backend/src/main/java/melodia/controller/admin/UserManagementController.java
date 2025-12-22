@@ -1,138 +1,73 @@
 package melodia.controller.admin;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import melodia.model.dto.request.admin.BanUserRequest;
-import melodia.model.dto.response.ErrorResponse;
-import melodia.model.dto.response.UserManagementResponse;
+import melodia.model.dto.common.ApiResponse;
+import melodia.model.dto.response.admin.UserManagementResponse;
 import melodia.model.service.admin.UserManagementService;
-
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/admin/users")
-@CrossOrigin(origins = "http://localhost:3000")
 public class UserManagementController {
 
     @Autowired
     private UserManagementService userManagementService;
 
-    // ==================== GET ALL USERS ====================
+    // ==================== GET OPERATIONS ====================
+
     @GetMapping
-    public ResponseEntity<?> getAllUsers(@RequestParam(required = false) String type) {
-        try {
-            List<UserManagementResponse> users;
-            
-            if (type != null && !type.isEmpty()) {
-                users = userManagementService.getUsersByType(type);
-            } else {
-                users = userManagementService.getAllUsers();
-            }
-            
-            return ResponseEntity.ok(users);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(new ErrorResponse(e.getMessage()));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ErrorResponse("Failed to fetch users: " + e.getMessage()));
-        }
+    public ResponseEntity<ApiResponse<List<UserManagementResponse>>> getAllUsers() {
+        List<UserManagementResponse> users = userManagementService.getAllUsers();
+        return ResponseEntity.ok(ApiResponse.success("Users fetched successfully", users));
     }
 
-    // ==================== GET BANNED USERS ====================
-    @GetMapping("/banned")
-    public ResponseEntity<?> getBannedUsers() {
-        try {
-            List<UserManagementResponse> bannedUsers = userManagementService.getBannedUsers();
-            return ResponseEntity.ok(bannedUsers);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ErrorResponse("Failed to fetch banned users: " + e.getMessage()));
-        }
+    @GetMapping("/{userId}")
+    public ResponseEntity<ApiResponse<UserManagementResponse>> getUserById(@PathVariable String userId) {
+        UserManagementResponse user = userManagementService.getUserDetailsById(userId);
+        return ResponseEntity.ok(ApiResponse.success("User details fetched successfully", user));
     }
 
-    // ==================== SEARCH USERS ====================
     @GetMapping("/search")
-    public ResponseEntity<?> searchUsers(@RequestParam String q) {
-        try {
-            if (q == null || q.trim().isEmpty()) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new ErrorResponse("Search query cannot be empty"));
-            }
-            
-            List<UserManagementResponse> users = userManagementService.searchUsers(q);
-            return ResponseEntity.ok(users);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ErrorResponse("Failed to search users: " + e.getMessage()));
-        }
+    public ResponseEntity<ApiResponse<List<UserManagementResponse>>> searchUsers(@RequestParam String keyword) {
+        List<UserManagementResponse> users = userManagementService.searchUsers(keyword);
+        return ResponseEntity.ok(ApiResponse.success("Users searched successfully", users));
     }
 
-    // ==================== BAN USER ====================
-    @PostMapping("/{accountId}/ban")
-    public ResponseEntity<?> banUser(
-            @PathVariable String accountId,
-            @RequestBody BanUserRequest request) {
-        try {
-            if (request.getReason() == null || request.getReason().trim().isEmpty()) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new ErrorResponse("Ban reason is required"));
-            }
-            
-            userManagementService.banUser(accountId, request.getReason());
-            return ResponseEntity.ok(new SuccessResponse("User banned successfully"));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(new ErrorResponse(e.getMessage()));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ErrorResponse("Failed to ban user: " + e.getMessage()));
-        }
+    // ==================== DELETE OPERATIONS ====================
+
+    @DeleteMapping("/{userId}")
+    public ResponseEntity<ApiResponse<?>> deleteUser(@PathVariable String userId) {
+        userManagementService.deleteUser(userId);
+        return ResponseEntity.ok(ApiResponse.success("User deleted successfully"));
     }
 
-    // ==================== UNBAN USER ====================
-    @PostMapping("/{accountId}/unban")
-    public ResponseEntity<?> unbanUser(@PathVariable String accountId) {
-        try {
-            userManagementService.unbanUser(accountId);
-            return ResponseEntity.ok(new SuccessResponse("User unbanned successfully"));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(new ErrorResponse(e.getMessage()));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ErrorResponse("Failed to unban user: " + e.getMessage()));
-        }
+    @PutMapping("/{userId}/ban")
+    public ResponseEntity<ApiResponse<?>> banUser(@PathVariable String userId, @RequestParam String reason) {
+        userManagementService.banUser(userId, reason);
+        return ResponseEntity.ok(ApiResponse.success("User banned successfully"));
     }
 
-    // ==================== DELETE USER ====================
-    @DeleteMapping("/{accountId}")
-    public ResponseEntity<?> deleteUser(@PathVariable String accountId) {
-        try {
-            userManagementService.deleteUser(accountId);
-            return ResponseEntity.ok(new SuccessResponse("User deleted successfully"));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(new ErrorResponse(e.getMessage()));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ErrorResponse("Failed to delete user: " + e.getMessage()));
-        }
+    @PutMapping("/{userId}/unban")
+    public ResponseEntity<ApiResponse<?>> unbanUser(@PathVariable String userId) {
+        userManagementService.unbanUser(userId);
+        return ResponseEntity.ok(ApiResponse.success("User unbanned successfully"));
     }
 
-    // ==================== Inner Class: Success Response ====================
-    static class SuccessResponse {
-        private final String message;
+    // ==================== STATISTICS ====================
 
-        public SuccessResponse(String message) {
-            this.message = message;
-        }
+    @GetMapping("/{userId}/stats")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getUserStats(@PathVariable String userId) {
+        Map<String, Object> stats = userManagementService.getUserStats(userId);
+        return ResponseEntity.ok(ApiResponse.success("User statistics retrieved successfully", stats));
+    }
 
-        public String getMessage() {
-            return message;
-        }
+    @GetMapping("/stats/total")
+    public ResponseEntity<ApiResponse<Long>> getTotalUsers() {
+        long total = userManagementService.getTotalUsersCount();
+        return ResponseEntity.ok(ApiResponse.success("Total users count retrieved", total));
     }
 }

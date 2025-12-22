@@ -4,6 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import melodia.controller.exception.auth.AccountAlreadyExistsException;
+import melodia.controller.exception.auth.UnauthorizedException;
 import melodia.model.entity.Admin;
 import melodia.model.entity.History;
 import melodia.model.entity.User;
@@ -33,10 +35,10 @@ public class RegistrationService {
     public User registerUser(String username, String email, String password) {
         // Validasi duplikasi
         if (accountRepository.existsByUsername(username)) {
-            throw new IllegalArgumentException("Username sudah digunakan");
+            throw new AccountAlreadyExistsException("Username", username);
         }
         if (accountRepository.existsByEmail(email)) {
-            throw new IllegalArgumentException("Email sudah digunakan");
+            throw new AccountAlreadyExistsException("Email", email);
         }
 
         // 1. Buat dan save User
@@ -58,14 +60,14 @@ public class RegistrationService {
     public Admin registerAdmin(String username, String email, String password, String requestedByAdminId) {
         // Validasi requester adalah admin
         adminRepository.findById(requestedByAdminId)
-            .orElseThrow(() -> new SecurityException("Hanya admin yang bisa membuat admin baru"));
+            .orElseThrow(UnauthorizedException::new);
 
         // Validasi duplikasi
         if (accountRepository.existsByUsername(username)) {
-            throw new IllegalArgumentException("Username sudah digunakan");
+            throw new AccountAlreadyExistsException("Username", username);
         }
         if (accountRepository.existsByEmail(email)) {
-            throw new IllegalArgumentException("Email sudah digunakan");
+            throw new AccountAlreadyExistsException("Email", email);
         }
 
         // Buat dan save Admin

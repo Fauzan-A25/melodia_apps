@@ -2,7 +2,6 @@ package melodia.model.entity;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -48,9 +47,19 @@ public class Artist {
     @PrePersist
     protected void onCreate() {
         if (this.artistId == null) {
-            this.artistId = UUID.randomUUID().toString();
+            this.artistId = generateArtistId();
         }
     }
+
+    private String generateArtistId() {
+        String prefix = "ART";
+        String timePart = String.valueOf(System.currentTimeMillis());
+        // ambil 11 digit terakhir → ART + 11 digit = 14, tambahkan 1 random = 15
+        timePart = timePart.substring(timePart.length() - 11);
+        int random = (int) (Math.random() * 10); // 0–9
+        return prefix + timePart + random;
+    }
+
 
     // ==================== Business Methods ====================
 

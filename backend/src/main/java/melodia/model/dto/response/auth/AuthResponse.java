@@ -1,0 +1,71 @@
+package melodia.model.dto.response.auth;
+
+public class AuthResponse {
+    private String token;
+    private String accountId;
+    private String username;
+    private String email;
+    private String accountType;
+    private long expiresIn;
+
+    public AuthResponse() {
+    }
+
+    public AuthResponse(String token, String accountId, String username, String email, String accountType, long expiresIn) {
+        this.token = token;
+        this.accountId = accountId;
+        this.username = username;
+        this.email = email;
+        this.accountType = accountType;
+        this.expiresIn = expiresIn;
+    }
+
+    // Getters and Setters
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
+
+    public String getAccountId() {
+        return accountId;
+    }
+
+    public void setAccountId(String accountId) {
+        this.accountId = accountId;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getAccountType() {
+        return accountType;
+    }
+
+    public void setAccountType(String accountType) {
+        this.accountType = accountType;
+    }
+
+    public long getExpiresIn() {
+        return expiresIn;
+    }
+
+    public void setExpiresIn(long expiresIn) {
+        this.expiresIn = expiresIn;
+    }
+}

@@ -1,3 +1,4 @@
+// components/Player/PlayerBar.jsx
 import { useState, useRef, useEffect, useCallback } from 'react';
 import styles from './PlayerBar.module.css';
 import {
@@ -9,10 +10,12 @@ import {
   Repeat,
   Volume2,
   X,
+  List, // ✅ Import icon List
 } from 'lucide-react';
 import { useMusic } from '../../context/MusicContext';
 import { musicService } from '../../services/musicService';
 import { useUser } from '../../context/UserContext';
+import QueueModal from './QueueModal'; // ✅ Import QueueModal
 
 const SUPABASE_URL = 'https://byqxamggdqsnikvkkivr.supabase.co';
 
@@ -40,6 +43,7 @@ const PlayerBar = () => {
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
+  const [showQueue, setShowQueue] = useState(false); // ✅ State untuk Queue Modal
 
   useEffect(() => {
     userIdRef.current =
@@ -119,13 +123,26 @@ const PlayerBar = () => {
   }, [currentSong, setGlobalIsPlaying]);
 
   // Handle song end
-  const handleSongEnd = useCallback(() => {
+  const handleSongEnd = useCallback(async () => {
     if (repeatMode === 'one') {
-      // audio.loop akan meng-handle repeat one
       return;
     }
-    playNext();
-  }, [playNext, repeatMode]);
+
+    const audio = audioRef.current;
+    const prevId = currentSong?.songId || currentSong?.id || null;
+
+    await playNext();
+
+    const nextId = currentSong?.songId || currentSong?.id || null;
+
+    if (!nextId || nextId === prevId) {
+      if (audio) {
+        audio.pause();
+        audio.currentTime = 0;
+      }
+      setGlobalIsPlaying(false);
+    }
+  }, [playNext, repeatMode, currentSong, setGlobalIsPlaying]);
 
   // Time & ended listeners
   useEffect(() => {
@@ -228,124 +245,140 @@ const PlayerBar = () => {
   if (!currentSong) return null;
 
   return (
-    <div className={styles.playerBar}>
-      <audio
-        ref={audioRef}
-        preload="metadata"
-        crossOrigin="anonymous"
-        loop={repeatMode === 'one'}
-      />
+    <>
+      <div className={styles.playerBar}>
+        <audio
+          ref={audioRef}
+          preload="metadata"
+          crossOrigin="anonymous"
+          loop={repeatMode === 'one'}
+        />
 
-      {/* Track Info */}
-      <div className={styles.trackInfo}>
-        <div className={styles.albumCover}>
-          {currentSong.coverEmoji || '🎵'}
-        </div>
-        <div className={styles.trackDetails}>
-          <h4>{currentSong.title}</h4>
-          <p>
-            {currentSong.artist?.username ||
-              currentSong.artistName ||
-              'Unknown Artist'}
-          </p>
-        </div>
-      </div>
-
-      {/* Player Controls */}
-      <div className={styles.playerControls}>
-        <div className={styles.controlButtons}>
-          <button
-            className={`${styles.controlBtn} ${
-              isShuffled ? styles.active : ''
-            }`}
-            onClick={toggleShuffle}
-            title="Shuffle"
-          >
-            <Shuffle size={18} />
-          </button>
-          <button
-            className={styles.controlBtn}
-            onClick={playPrevious}
-            title="Previous"
-          >
-            <SkipBack size={20} />
-          </button>
-          <button
-            className={styles.playPauseBtn}
-            onClick={togglePlayPause}
-            disabled={isLoading}
-            title={
-              isLoading
-                ? 'Loading...'
-                : globalIsPlaying
-                ? 'Pause'
-                : 'Play'
-            }
-          >
-            {isLoading ? (
-              <div className={styles.spinner} />
-            ) : globalIsPlaying ? (
-              <Pause size={24} />
-            ) : (
-              <Play size={24} />
-            )}
-          </button>
-          <button
-            className={styles.controlBtn}
-            onClick={playNext}
-            title="Next"
-          >
-            <SkipForward size={20} />
-          </button>
-          <button
-            className={`${styles.controlBtn} ${
-              repeatMode !== 'off' ? styles.active : ''
-            }`}
-            onClick={toggleRepeat}
-            title={`Repeat: ${repeatMode}`}
-          >
-            <Repeat size={18} />
-            {repeatMode === 'one' && (
-              <span className={styles.repeatBadge}>1</span>
-            )}
-          </button>
+        {/* Track Info */}
+        <div className={styles.trackInfo}>
+          <div className={styles.albumCover}>
+            {currentSong.coverEmoji || currentSong.cover || '🎵'}
+          </div>
+          <div className={styles.trackDetails}>
+            <h4>{currentSong.title}</h4>
+            <p>
+              {currentSong.artist?.username ||
+                currentSong.artist?.name ||
+                currentSong.artistName ||
+                currentSong.artist ||
+                'Unknown Artist'}
+            </p>
+          </div>
         </div>
 
-        <div className={styles.progressSection}>
-          <span className={styles.time}>{formatTime(currentTime)}</span>
+        {/* Player Controls */}
+        <div className={styles.playerControls}>
+          <div className={styles.controlButtons}>
+            <button
+              className={`${styles.controlBtn} ${
+                isShuffled ? styles.active : ''
+              }`}
+              onClick={toggleShuffle}
+              title="Shuffle"
+            >
+              <Shuffle size={18} />
+            </button>
+            <button
+              className={styles.controlBtn}
+              onClick={playPrevious}
+              title="Previous"
+            >
+              <SkipBack size={20} />
+            </button>
+            <button
+              className={styles.playPauseBtn}
+              onClick={togglePlayPause}
+              disabled={isLoading}
+              title={
+                isLoading
+                  ? 'Loading...'
+                  : globalIsPlaying
+                  ? 'Pause'
+                  : 'Play'
+              }
+            >
+              {isLoading ? (
+                <div className={styles.spinner} />
+              ) : globalIsPlaying ? (
+                <Pause size={24} />
+              ) : (
+                <Play size={24} />
+              )}
+            </button>
+            <button
+              className={styles.controlBtn}
+              onClick={playNext}
+              title="Next"
+            >
+              <SkipForward size={20} />
+            </button>
+            <button
+              className={`${styles.controlBtn} ${
+                repeatMode !== 'off' ? styles.active : ''
+              }`}
+              onClick={toggleRepeat}
+              title={`Repeat: ${repeatMode}`}
+            >
+              <Repeat size={18} />
+              {repeatMode === 'one' && (
+                <span className={styles.repeatBadge}>1</span>
+              )}
+            </button>
+          </div>
+
+          <div className={styles.progressSection}>
+            <span className={styles.time}>{formatTime(currentTime)}</span>
+            <input
+              className={styles.progressInput}
+              type="range"
+              min={0}
+              max={duration || 0}
+              value={currentTime}
+              onChange={handleProgressChange}
+              disabled={!duration}
+            />
+            <span className={styles.time}>{formatTime(duration)}</span>
+          </div>
+        </div>
+
+        {/* Volume Section */}
+        <div className={styles.volumeSection}>
+          {/* ✅ Queue Button */}
+          <button
+            className={styles.queueBtn}
+            onClick={() => setShowQueue(true)}
+            title="View Queue"
+          >
+            <List size={20} />
+          </button>
+
+          <Volume2 size={20} />
           <input
-            className={styles.progressInput}
+            className={styles.volumeInput}
             type="range"
             min={0}
-            max={duration || 0}
-            value={currentTime}
-            onChange={handleProgressChange}
-            disabled={!duration}
+            max={100}
+            value={globalVolume}
+            onChange={handleVolumeChange}
           />
-          <span className={styles.time}>{formatTime(duration)}</span>
+          <button
+            className={styles.closeBtn}
+            onClick={handleClose}
+            title="Close player"
+          >
+            <X size={18} />
+          </button>
         </div>
       </div>
 
-      {/* Volume Section */}
-      <div className={styles.volumeSection}>
-        <Volume2 size={20} />
-        <input
-          className={styles.volumeInput}
-          type="range"
-          min={0}
-          max={100}
-          value={globalVolume}
-          onChange={handleVolumeChange}
-        />
-        <button
-          className={styles.closeBtn}
-          onClick={handleClose}
-          title="Close player"
-        >
-          <X size={18} />
-        </button>
-      </div>
-    </div>
+      {/* ✅ Queue Modal */}
+      <QueueModal isOpen={showQueue} onClose={() => setShowQueue(false)} />
+    </>
   );
 };
 

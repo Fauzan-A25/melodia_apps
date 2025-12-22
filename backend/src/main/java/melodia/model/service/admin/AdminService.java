@@ -5,7 +5,8 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import melodia.model.dto.response.AdminStatsResponse;
+import melodia.controller.exception.admin.InvalidOperationException;
+import melodia.model.dto.response.admin.AdminStatsResponse;
 import melodia.model.entity.Admin;
 import melodia.model.entity.Album;
 import melodia.model.entity.Artist;
@@ -89,7 +90,7 @@ public class AdminService {
      */
     public Admin getAdminById(String adminId) {
         return adminRepository.findById(adminId)
-            .orElseThrow(() -> new IllegalArgumentException("Admin tidak ditemukan"));
+            .orElseThrow(() -> new InvalidOperationException("Admin tidak ditemukan"));
     }
 
     /**
@@ -113,7 +114,7 @@ public class AdminService {
      */
     public void deleteAdmin(String adminId) {
         if (!adminRepository.existsById(adminId)) {
-            throw new IllegalArgumentException("Admin tidak ditemukan");
+            throw new InvalidOperationException("Admin tidak ditemukan");
         }
         adminRepository.deleteById(adminId);
     }
@@ -125,7 +126,7 @@ public class AdminService {
      */
     public void deleteSongByAdmin(String songId) {
         Song song = songRepository.findById(songId)
-            .orElseThrow(() -> new IllegalArgumentException("Song tidak ditemukan"));
+            .orElseThrow(() -> new InvalidOperationException("Song tidak ditemukan"));
         songRepository.delete(song);
     }
 
@@ -134,7 +135,7 @@ public class AdminService {
      */
     public void deleteAlbumByAdmin(String albumId) {
         Album album = albumRepository.findById(albumId)
-            .orElseThrow(() -> new IllegalArgumentException("Album tidak ditemukan"));
+            .orElseThrow(() -> new InvalidOperationException("Album tidak ditemukan"));
         albumRepository.delete(album);
     }
 
@@ -143,7 +144,7 @@ public class AdminService {
      */
     public void deletePlaylistByAdmin(String playlistId) {
         Playlist playlist = playlistRepository.findById(playlistId)
-            .orElseThrow(() -> new IllegalArgumentException("Playlist tidak ditemukan"));
+            .orElseThrow(() -> new InvalidOperationException("Playlist tidak ditemukan"));
         playlistRepository.delete(playlist);
     }
 
@@ -154,7 +155,7 @@ public class AdminService {
      */
     public void deleteUserByAdmin(String userId) {
         if (!userRepository.existsById(userId)) {
-            throw new IllegalArgumentException("User tidak ditemukan");
+            throw new InvalidOperationException("User tidak ditemukan");
         }
         userRepository.deleteById(userId);
     }
@@ -164,7 +165,7 @@ public class AdminService {
      */
     public void deleteArtistByAdmin(String artistId) {
         if (!artistRepository.existsById(artistId)) {
-            throw new IllegalArgumentException("Artist tidak ditemukan");
+            throw new InvalidOperationException("Artist tidak ditemukan");
         }
         artistRepository.deleteById(artistId);
     }

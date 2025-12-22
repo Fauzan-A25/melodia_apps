@@ -56,6 +56,10 @@ public class JwtUtil {
         return extractClaim(token, Claims::getExpiration);
     }
     
+    public Long getExpirationTimeInSeconds() {
+        return expiration / 1000; // Convert milliseconds to seconds
+    }
+    
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = extractAllClaims(token);
         return claimsResolver.apply(claims);

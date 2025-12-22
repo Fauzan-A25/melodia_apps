@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import melodia.model.dto.common.ApiResponse;
 import melodia.model.entity.Album;
 import melodia.model.entity.Song;
 import melodia.model.service.music.AlbumService;
@@ -24,6 +27,8 @@ import melodia.model.service.music.AlbumService;
 @RestController
 @RequestMapping("/api/albums")
 public class AlbumController {
+
+    private static final Logger logger = LoggerFactory.getLogger(AlbumController.class);
 
     @Autowired
     private AlbumService albumService;
@@ -35,7 +40,7 @@ public class AlbumController {
      * GET /api/albums
      */
     @GetMapping
-    public ResponseEntity<List<Map<String, Object>>> getAllAlbums() {
+    public ResponseEntity<ApiResponse<List<Map<String, Object>>>> getAllAlbums() {
         try {
             List<Album> albums = albumService.getAllAlbums();
             
@@ -83,10 +88,11 @@ public class AlbumController {
                 })
                 .collect(Collectors.toList());
                 
-            return ResponseEntity.ok(albumList);
+            return ResponseEntity.ok(ApiResponse.success("Albums retrieved successfully", albumList));
         } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            logger.error("Error fetching all albums: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error("Failed to fetch albums"));
         }
     }
 
@@ -95,7 +101,7 @@ public class AlbumController {
      * GET /api/albums/{albumId}
      */
     @GetMapping("/{albumId}")
-    public ResponseEntity<?> getAlbumById(@PathVariable String albumId) {
+    public ResponseEntity<ApiResponse<?>> getAlbumById(@PathVariable String albumId) {
         try {
             Album album = albumService.getAlbumById(albumId);
             
@@ -150,13 +156,14 @@ public class AlbumController {
             }
             dto.put("songs", songs);
             
-            return ResponseEntity.ok(dto);
+            return ResponseEntity.ok(ApiResponse.success("Album retrieved successfully", dto));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(Map.of("message", e.getMessage()));
+                .body(ApiResponse.error(e.getMessage()));
         } catch (Exception e) {
+            logger.error("Error fetching album: ", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("message", "Failed to fetch album"));
+                .body(ApiResponse.error("Failed to fetch album"));
         }
     }
 
@@ -165,16 +172,16 @@ public class AlbumController {
      * GET /api/albums/{albumId}/songs
      */
     @GetMapping("/{albumId}/songs")
-    public ResponseEntity<?> getAlbumSongs(@PathVariable String albumId) {
+    public ResponseEntity<ApiResponse<List<Song>>> getAlbumSongs(@PathVariable String albumId) {
         try {
             List<Song> songs = albumService.getAlbumSongs(albumId);
-            return ResponseEntity.ok(songs);
+            return ResponseEntity.ok(ApiResponse.success("Album songs retrieved successfully", songs));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(Map.of("message", e.getMessage()));
+                .body(ApiResponse.error(e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("message", "Failed to fetch album songs"));
+                .body(ApiResponse.error("Failed to fetch album songs"));
         }
     }
 
@@ -183,7 +190,7 @@ public class AlbumController {
      * GET /api/albums/artist/{artistId}
      */
     @GetMapping("/artist/{artistId}")
-    public ResponseEntity<?> getAlbumsByArtist(@PathVariable String artistId) {
+    public ResponseEntity<ApiResponse<List<Map<String, Object>>>> getAlbumsByArtist(@PathVariable String artistId) {
         try {
             List<Album> albums = albumService.getAlbumsByArtist(artistId);
             
@@ -202,13 +209,13 @@ public class AlbumController {
                 })
                 .collect(Collectors.toList());
                 
-            return ResponseEntity.ok(albumList);
+            return ResponseEntity.ok(ApiResponse.success("Albums by artist retrieved successfully", albumList));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(Map.of("message", e.getMessage()));
+                .body(ApiResponse.error(e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("message", "Failed to fetch artist albums"));
+                .body(ApiResponse.error("Failed to fetch artist albums"));
         }
     }
 
@@ -219,11 +226,11 @@ public class AlbumController {
      * GET /api/albums/search?title={query}
      */
     @GetMapping("/search")
-    public ResponseEntity<?> searchAlbums(@RequestParam String title) {
+    public ResponseEntity<ApiResponse<?>> searchAlbums(@RequestParam String title) {
         try {
             if (title == null || title.trim().isEmpty()) {
                 return ResponseEntity.badRequest()
-                    .body(Map.of("message", "Search query cannot be empty"));
+                    .body(ApiResponse.error("Search query cannot be empty"));
             }
             List<Album> albums = albumService.searchByTitle(title);
             
@@ -240,10 +247,10 @@ public class AlbumController {
                 })
                 .collect(Collectors.toList());
                 
-            return ResponseEntity.ok(albumList);
+            return ResponseEntity.ok(ApiResponse.success("Albums searched successfully", albumList));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("message", "Search failed"));
+                .body(ApiResponse.error("Search failed"));
         }
     }
 
@@ -252,7 +259,7 @@ public class AlbumController {
      * GET /api/albums/genre/{genreName}
      */
     @GetMapping("/genre/{genreName}")
-    public ResponseEntity<?> filterByGenre(@PathVariable String genreName) {
+    public ResponseEntity<ApiResponse<?>> filterByGenre(@PathVariable String genreName) {
         try {
             List<Album> albums = albumService.filterByGenre(genreName);
             
@@ -268,10 +275,10 @@ public class AlbumController {
                 })
                 .collect(Collectors.toList());
                 
-            return ResponseEntity.ok(albumList);
+            return ResponseEntity.ok(ApiResponse.success("Albums filtered by genre", albumList));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("message", "Filter failed"));
+                .body(ApiResponse.error("Filter failed"));
         }
     }
 
@@ -280,7 +287,7 @@ public class AlbumController {
      * GET /api/albums/year/{year}
      */
     @GetMapping("/year/{year}")
-    public ResponseEntity<?> filterByYear(@PathVariable int year) {
+    public ResponseEntity<ApiResponse<?>> filterByYear(@PathVariable int year) {
         try {
             List<Album> albums = albumService.filterByReleaseYear(year);
             
@@ -296,13 +303,13 @@ public class AlbumController {
                 })
                 .collect(Collectors.toList());
                 
-            return ResponseEntity.ok(albumList);
+            return ResponseEntity.ok(ApiResponse.success("Albums filtered by year", albumList));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest()
-                .body(Map.of("message", e.getMessage()));
+                .body(ApiResponse.error(e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("message", "Filter failed"));
+                .body(ApiResponse.error("Filter failed"));
         }
     }
 
@@ -313,7 +320,7 @@ public class AlbumController {
      * POST /api/albums?title={title}&artistId={artistId}&releaseYear={year}&genreNames={genres}
      */
     @PostMapping
-    public ResponseEntity<?> createAlbum(
+    public ResponseEntity<ApiResponse<Map<String, Object>>> createAlbum(
             @RequestParam String title,
             @RequestParam String artistId,
             @RequestParam int releaseYear,
@@ -322,15 +329,15 @@ public class AlbumController {
             // Validation
             if (title == null || title.trim().isEmpty()) {
                 return ResponseEntity.badRequest()
-                    .body(Map.of("message", "Album title is required"));
+                    .body(ApiResponse.error("Album title is required"));
             }
             if (artistId == null || artistId.trim().isEmpty()) {
                 return ResponseEntity.badRequest()
-                    .body(Map.of("message", "Artist ID is required"));
+                    .body(ApiResponse.error("Artist ID is required"));
             }
             if (releaseYear < 1900 || releaseYear > 2100) {
                 return ResponseEntity.badRequest()
-                    .body(Map.of("message", "Invalid release year"));
+                    .body(ApiResponse.error("Invalid release year"));
             }
 
             Album album = albumService.createAlbum(title, artistId, releaseYear, genreNames);
@@ -341,13 +348,13 @@ public class AlbumController {
             response.put("albumId", album.getAlbumId());
             response.put("title", album.getTitle());
             
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+            return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success("Album created successfully", response));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest()
-                .body(Map.of("message", e.getMessage()));
+                .body(ApiResponse.error(e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("message", "Failed to create album: " + e.getMessage()));
+                .body(ApiResponse.error("Failed to create album: " + e.getMessage()));
         }
     }
 
@@ -393,16 +400,16 @@ public class AlbumController {
      * DELETE /api/albums/{albumId}
      */
     @DeleteMapping("/{albumId}")
-    public ResponseEntity<?> deleteAlbum(@PathVariable String albumId) {
+    public ResponseEntity<ApiResponse<?>> deleteAlbum(@PathVariable String albumId) {
         try {
             albumService.deleteAlbum(albumId);
-            return ResponseEntity.noContent().build();
+            return ResponseEntity.ok(ApiResponse.success("Album deleted successfully"));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(Map.of("message", e.getMessage()));
+                .body(ApiResponse.error(e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("message", "Failed to delete album"));
+                .body(ApiResponse.error("Failed to delete album"));
         }
     }
 
@@ -413,24 +420,23 @@ public class AlbumController {
      * POST /api/albums/{albumId}/songs/{songId}
      */
     @PostMapping("/{albumId}/songs/{songId}")
-    public ResponseEntity<?> addSongToAlbum(
+    public ResponseEntity<ApiResponse<?>> addSongToAlbum(
             @PathVariable String albumId,
             @PathVariable String songId) {
         try {
             Album updatedAlbum = albumService.addSongToAlbum(albumId, songId);
             
             Map<String, Object> response = new HashMap<>();
-            response.put("message", "Song added to album successfully");
             response.put("albumId", updatedAlbum.getAlbumId());
             response.put("songCount", updatedAlbum.getTotalSongs());
             
-            return ResponseEntity.ok(response);
+            return ResponseEntity.ok(ApiResponse.success("Song added to album successfully", response));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(Map.of("message", e.getMessage()));
+                .body(ApiResponse.error(e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("message", "Failed to add song to album"));
+                .body(ApiResponse.error("Failed to add song to album"));
         }
     }
 
@@ -439,24 +445,23 @@ public class AlbumController {
      * DELETE /api/albums/{albumId}/songs/{songId}
      */
     @DeleteMapping("/{albumId}/songs/{songId}")
-    public ResponseEntity<?> removeSongFromAlbum(
+    public ResponseEntity<ApiResponse<?>> removeSongFromAlbum(
             @PathVariable String albumId,
             @PathVariable String songId) {
         try {
             Album updatedAlbum = albumService.removeSongFromAlbum(albumId, songId);
             
             Map<String, Object> response = new HashMap<>();
-            response.put("message", "Song removed from album successfully");
             response.put("albumId", updatedAlbum.getAlbumId());
             response.put("songCount", updatedAlbum.getTotalSongs());
             
-            return ResponseEntity.ok(response);
+            return ResponseEntity.ok(ApiResponse.success("Song removed from album successfully", response));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(Map.of("message", e.getMessage()));
+                .body(ApiResponse.error(e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("message", "Failed to remove song from album"));
+                .body(ApiResponse.error("Failed to remove song from album"));
         }
     }
 

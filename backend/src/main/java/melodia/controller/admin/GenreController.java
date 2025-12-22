@@ -5,116 +5,78 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.validation.Valid;
-import melodia.model.dto.request.admin.GenreRequest;
-import melodia.model.dto.response.ErrorResponse;
-import melodia.model.dto.response.GenreResponse;
-import melodia.model.service.admin.GenreService;
-
+import melodia.model.dto.common.ApiResponse;
+import melodia.model.entity.Genre;
+import melodia.model.repository.GenreRepository;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/admin/genres")
-@CrossOrigin(origins = "http://localhost:3000")
 public class GenreController {
 
     @Autowired
-    private GenreService genreService;
+    private GenreRepository genreRepository;
 
-    // ==================== GET ALL GENRES ====================
+    // ==================== GET OPERATIONS ====================
+
     @GetMapping
-    public ResponseEntity<?> getAllGenres() {
-        try {
-            List<GenreResponse> genres = genreService.getAllGenres();
-            return ResponseEntity.ok(genres);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ErrorResponse("Failed to fetch genres: " + e.getMessage()));
-        }
+    public ResponseEntity<ApiResponse<List<Genre>>> getAllGenres() {
+        List<Genre> genres = genreRepository.findAll();
+        return ResponseEntity.ok(ApiResponse.success("Genres fetched successfully", genres));
     }
 
-    // ==================== GET GENRE BY ID ====================
-    @GetMapping("/{id}")  // ✅ Changed from {genreId} to {id}
-    public ResponseEntity<?> getGenreById(@PathVariable String id) {
-        try {
-            GenreResponse genre = genreService.getGenreById(id);
-            return ResponseEntity.ok(genre);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(new ErrorResponse(e.getMessage()));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ErrorResponse("Failed to fetch genre: " + e.getMessage()));
-        }
+    @GetMapping("/{genreId}")
+    public ResponseEntity<ApiResponse<Genre>> getGenreById(@PathVariable String genreId) {
+        Genre genre = genreRepository.findById(genreId)
+            .orElseThrow(() -> new melodia.controller.exception.music.GenreNotFoundException(genreId));
+        return ResponseEntity.ok(ApiResponse.success("Genre fetched successfully", genre));
     }
 
-    // ==================== CREATE GENRE ====================
+    @GetMapping("/search")
+    public ResponseEntity<ApiResponse<List<Genre>>> searchGenres(@RequestParam String keyword) {
+        List<Genre> genres = genreRepository.findByNameContainingIgnoreCase(keyword);
+        return ResponseEntity.ok(ApiResponse.success("Genres searched successfully", genres));
+    }
+
+    // ==================== CREATE OPERATION ====================
+
     @PostMapping
-    public ResponseEntity<?> createGenre(@Valid @RequestBody GenreRequest request) {
-        try {
-            GenreResponse newGenre = genreService.createGenre(
-                request.getName(),
-                request.getDescription()
-            );
-            return ResponseEntity.status(HttpStatus.CREATED).body(newGenre);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(new ErrorResponse(e.getMessage()));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ErrorResponse("Failed to create genre: " + e.getMessage()));
+    public ResponseEntity<ApiResponse<Genre>> createGenre(@RequestParam String name) {
+        if (genreRepository.existsByName(name)) {
+            throw new melodia.controller.exception.music.GenreAlreadyExistsException(name);
         }
+        Genre genre = new Genre();
+        genre.setName(name);
+        genre = genreRepository.save(genre);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success("Genre created successfully", genre));
     }
 
-    // ==================== UPDATE GENRE ====================
-    @PutMapping("/{id}")  // ✅ Changed from {genreId} to {id}
-    public ResponseEntity<?> updateGenre(
-            @PathVariable String id,
-            @Valid @RequestBody GenreRequest request) {
-        try {
-            GenreResponse updatedGenre = genreService.updateGenre(
-                id,
-                request.getName(),
-                request.getDescription()
-            );
-            return ResponseEntity.ok(updatedGenre);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(new ErrorResponse(e.getMessage()));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ErrorResponse("Failed to update genre: " + e.getMessage()));
-        }
+    // ==================== UPDATE OPERATION ====================
+
+    @PutMapping("/{genreId}")
+    public ResponseEntity<ApiResponse<Genre>> updateGenre(@PathVariable String genreId, @RequestParam String newName) {
+        Genre genre = genreRepository.findById(genreId)
+            .orElseThrow(() -> new melodia.controller.exception.music.GenreNotFoundException(genreId));
+        genre.setName(newName);
+        genre = genreRepository.save(genre);
+        return ResponseEntity.ok(ApiResponse.success("Genre updated successfully", genre));
     }
 
-    // ==================== DELETE GENRE ====================
-    @DeleteMapping("/{id}")  // ✅ Changed from {genreId} to {id}
-    public ResponseEntity<?> deleteGenre(@PathVariable String id) {
-        try {
-            genreService.deleteGenre(id);
-            return ResponseEntity.ok(new SuccessResponse("Genre deleted successfully"));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(new ErrorResponse(e.getMessage()));
-        } catch (IllegalStateException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT)
-                .body(new ErrorResponse(e.getMessage()));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ErrorResponse("Failed to delete genre: " + e.getMessage()));
-        }
+    // ==================== DELETE OPERATION ====================
+
+    @DeleteMapping("/{genreId}")
+    public ResponseEntity<ApiResponse<?>> deleteGenre(@PathVariable String genreId) {
+        Genre genre = genreRepository.findById(genreId)
+            .orElseThrow(() -> new melodia.controller.exception.music.GenreNotFoundException(genreId));
+        genreRepository.delete(genre);
+        return ResponseEntity.ok(ApiResponse.success("Genre deleted successfully"));
     }
 
-    // ==================== Inner Class: Success Response ====================
-    static class SuccessResponse {
-        private final String message;
+    // ==================== STATISTICS ====================
 
-        public SuccessResponse(String message) {
-            this.message = message;
-        }
-
-        public String getMessage() {
-            return message;
-        }
+    @GetMapping("/stats/total")
+    public ResponseEntity<ApiResponse<Long>> getTotalGenres() {
+        long total = genreRepository.count();
+        return ResponseEntity.ok(ApiResponse.success("Total genres retrieved", total));
     }
 }

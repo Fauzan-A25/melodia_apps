@@ -1,82 +1,494 @@
+/* AuthPage.module.css - Enhanced with Smooth Height Transitions */
+
 .authContainer {
   min-height: 100vh;
   width: 100vw;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #0f1729 100%);
+  background: linear-gradient(135deg, #56ccf2 0%, #2f80ed 100%);
+  position: relative;
+  overflow: hidden;
 }
 
-/* Kartu login/register selalu center dan tidak nempel kiri */
-.authCard {
-  background: rgba(15, 23, 42, 0.92);
+/* ✨ Animated gradient background */
+.authContainer::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    45deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.1) 50%,
+    transparent 70%
+  );
+  animation: shimmer 15s linear infinite;
+  z-index: 0;
+  pointer-events: none;
+}
+
+@keyframes shimmer {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* ✨ Decorative blurred blobs */
+.blob1, .blob2, .blob3 {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(100px);
+  opacity: 0.5;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.blob1 {
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.8) 0%, transparent 70%);
+  top: -200px;
+  left: -100px;
+  animation: float 25s ease-in-out infinite, breathe 8s ease-in-out infinite;
+}
+
+.blob2 {
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(147, 197, 253, 0.6) 0%, transparent 70%);
+  bottom: -150px;
+  right: -100px;
+  animation: float 20s ease-in-out infinite reverse, breathe 6s ease-in-out infinite;
+  animation-delay: 0s, -2s;
+}
+
+.blob3 {
+  width: 350px;
+  height: 350px;
+  background: radial-gradient(circle, rgba(96, 165, 250, 0.5) 0%, transparent 70%);
+  top: 50%;
+  right: -200px;
+  animation: float 30s ease-in-out infinite, breathe 10s ease-in-out infinite;
+  animation-delay: -5s, -4s;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(30px, -50px) scale(1.1);
+  }
+  66% {
+    transform: translate(-20px, 30px) scale(0.9);
+  }
+}
+
+@keyframes breathe {
+  0%, 100% {
+    filter: blur(100px);
+    opacity: 0.5;
+  }
+  50% {
+    filter: blur(120px);
+    opacity: 0.3;
+  }
+}
+
+/* ✨ LOADING CARD */
+.loadingCard {
+  background: rgba(255, 255, 255, 0.25);
   backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 24px;
+  padding: 60px 40px;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 
+    0 8px 32px 0 rgba(31, 38, 135, 0.37),
+    0 0 1px 0 rgba(255, 255, 255, 0.5),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 30px;
+  position: relative;
+  z-index: 10;
+  animation: loadingCardEntrance 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes loadingCardEntrance {
+  0% {
+    opacity: 0;
+    transform: scale(0.8) translateY(40px);
+  }
+  60% {
+    transform: scale(1.05) translateY(-10px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Music Notes Animation */
+.musicNotesContainer {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loadingLogo {
+  color: #2f80ed;
+  filter: drop-shadow(0 0 30px rgba(47, 128, 237, 0.6));
+  animation: logoSpin 3s ease-in-out infinite;
+  z-index: 2;
+}
+
+@keyframes logoSpin {
+  0%, 100% {
+    transform: scale(1) rotate(0deg);
+  }
+  25% {
+    transform: scale(1.1) rotate(-10deg);
+  }
+  50% {
+    transform: scale(1.2) rotate(0deg);
+  }
+  75% {
+    transform: scale(1.1) rotate(10deg);
+  }
+}
+
+.musicNote {
+  position: absolute;
+  font-size: 28px;
+  color: #3b82f6;
+  opacity: 0;
+  animation: floatNote 3s ease-in-out infinite;
+}
+
+.musicNote:nth-child(2) { animation-delay: 0s; }
+.musicNote:nth-child(3) { animation-delay: 0.75s; }
+.musicNote:nth-child(4) { animation-delay: 1.5s; }
+.musicNote:nth-child(5) { animation-delay: 2.25s; }
+
+@keyframes floatNote {
+  0%, 100% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.5) rotate(0deg);
+  }
+  20% { opacity: 0.8; }
+  50% {
+    opacity: 1;
+    transform: translate(var(--x, 40px), var(--y, -60px)) scale(1) rotate(15deg);
+  }
+  80% { opacity: 0.5; }
+}
+
+.musicNote:nth-child(2) { --x: 50px; --y: -70px; }
+.musicNote:nth-child(3) { --x: -50px; --y: -70px; }
+.musicNote:nth-child(4) { --x: 60px; --y: 40px; }
+.musicNote:nth-child(5) { --x: -60px; --y: 40px; }
+
+/* Spinner */
+.spinnerContainer {
+  position: relative;
+  width: 60px;
+  height: 60px;
+}
+
+.spinner {
+  width: 60px;
+  height: 60px;
+  border: 4px solid rgba(47, 128, 237, 0.2);
+  border-top: 4px solid #2f80ed;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  position: relative;
+  z-index: 2;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.spinnerPulse {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: rgba(47, 128, 237, 0.2);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+
+/* Loading Text */
+.loadingTextContainer {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.loadingTitle {
+  font-size: 32px;
+  font-weight: 800;
+  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #60a5fa 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gradientFlow 3s ease infinite;
+  letter-spacing: 3px;
+  margin: 0;
+}
+
+@keyframes gradientFlow {
+  0%, 100% { background-position: 0% center; }
+  50% { background-position: 100% center; }
+}
+
+.loadingText {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1e3a8a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  margin: 8px 0;
+}
+
+.loadingDot {
+  animation: dotBounce 1.4s ease-in-out infinite;
+  font-size: 24px;
+  color: #2f80ed;
+}
+
+.loadingDot:nth-child(1) { animation-delay: 0s; }
+.loadingDot:nth-child(2) { animation-delay: 0.2s; }
+.loadingDot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes dotBounce {
+  0%, 60%, 100% {
+    transform: translateY(0);
+    opacity: 0.5;
+  }
+  30% {
+    transform: translateY(-15px);
+    opacity: 1;
+  }
+}
+
+.loadingSubtext {
+  font-size: 13px;
+  color: #475569;
+  font-weight: 400;
+  animation: fadeInOut 2s ease-in-out infinite;
+}
+
+@keyframes fadeInOut {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+/* Progress Bar */
+.progressBar {
+  width: 100%;
+  height: 4px;
+  background: rgba(47, 128, 237, 0.2);
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, #2f80ed 0%, #60a5fa 50%, #2f80ed 100%);
+  background-size: 200% 100%;
+  border-radius: 10px;
+  animation: progressMove 2s ease-in-out infinite;
+}
+
+@keyframes progressMove {
+  0% {
+    width: 0%;
+    background-position: 0% 50%;
+  }
+  50% {
+    width: 70%;
+    background-position: 100% 50%;
+  }
+  100% {
+    width: 100%;
+    background-position: 0% 50%;
+  }
+}
+
+/* ✨ AUTH CARD - Smooth height via Framer Motion layout */
+.authCard {
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border-radius: 24px;
   padding: 48px 36px;
   max-width: 440px;
-  width: 90%; /* ✅ Ditambah agar tidak terlalu lebar di mobile */
-  max-height: 90vh; /* ✅ Batasi tinggi maksimal */
-  overflow-y: auto; /* ✅ Scroll jika konten terlalu panjang */
-  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.42),
-              0 0 80px rgba(59, 130, 246, 0.13);
-  border: 1px solid rgba(59, 130, 246, 0.19);
+  width: 90%;
+  max-height: 90vh;
+  /* penting: biarkan tinggi bebas, jangan scroll internal saat animasi */
+  overflow-y: visible;
+  box-shadow: 
+    0 8px 32px 0 rgba(31, 38, 135, 0.37),
+    0 0 1px 0 rgba(255, 255, 255, 0.5),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   display: flex;
   flex-direction: column;
+  position: relative;
+  z-index: 10;
+  animation: slideUp 0.6s ease-out;
+  /* hanya animasi shadow & transform, height di-handle Framer Motion layout */
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+  will-change: transform, box-shadow;
 }
-/* ✅ Custom scrollbar untuk card */
+
+.authCard:hover {
+  box-shadow: 
+    0 8px 32px 0 rgba(31, 38, 135, 0.37),
+    0 0 20px 0 rgba(147, 197, 253, 0.4),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Custom scrollbar (kalau nanti overflow-y diaktifkan lagi) */
 .authCard::-webkit-scrollbar {
   width: 6px;
 }
 
 .authCard::-webkit-scrollbar-track {
-  background: rgba(15, 23, 42, 0.4);
+  background: rgba(255, 255, 255, 0.2);
   border-radius: 10px;
 }
 
 .authCard::-webkit-scrollbar-thumb {
-  background: rgba(59, 130, 246, 0.5);
+  background: rgba(47, 128, 237, 0.5);
   border-radius: 10px;
+  transition: background 0.3s ease;
 }
 
 .authCard::-webkit-scrollbar-thumb:hover {
-  background: rgba(59, 130, 246, 0.7);
+  background: rgba(47, 128, 237, 0.7);
 }
 
+/* Logo Section */
 .logoSection {
   text-align: center;
   margin-bottom: 40px;
+  animation: fadeIn 0.8s ease-out 0.2s both;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .logo {
-  color: #3b82f6;
+  color: #2f80ed;
   margin-bottom: 16px;
-  filter: drop-shadow(0 0 20px rgba(59, 130, 246, 0.6));
+  filter: drop-shadow(0 0 20px rgba(47, 128, 237, 0.4));
+  animation: logoPulse 2s ease-in-out infinite;
+  display: inline-block;
+}
+
+@keyframes logoPulse {
+  0%, 100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 20px rgba(47, 128, 237, 0.4));
+  }
+  50% {
+    transform: scale(1.05);
+    filter: drop-shadow(0 0 30px rgba(47, 128, 237, 0.6));
+  }
 }
 
 .title {
   font-size: 36px;
   font-weight: 800;
-  background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+  color: #1e3a8a;
+  margin-bottom: 8px;
+  letter-spacing: 2px;
+  text-shadow: 0 2px 10px rgba(30, 58, 138, 0.2);
+  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #1e3a8a 100%);
+  background-size: 200% auto;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  margin-bottom: 8px;
-  letter-spacing: 2px;
+  animation: gradientShift 3s ease infinite;
+}
+
+@keyframes gradientShift {
+  0%, 100% { background-position: 0% center; }
+  50% { background-position: 100% center; }
 }
 
 .subtitle {
-  color: #94a3b8;
+  color: #475569;
   font-size: 14px;
-  font-weight: 300;
+  font-weight: 400;
+  animation: fadeIn 0.8s ease-out 0.4s both;
 }
 
+/* Toggle Buttons */
 .toggleButtons {
   display: flex;
   gap: 12px;
   margin-bottom: 32px;
-  background: rgba(15, 23, 42, 0.6);
+  background: rgba(255, 255, 255, 0.4);
   padding: 6px;
   border-radius: 12px;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06);
+  animation: fadeIn 0.8s ease-out 0.6s both;
 }
 
 .toggleBtn {
@@ -84,20 +496,62 @@
   padding: 12px;
   border: none;
   background: transparent;
-  color: #94a3b8;
+  color: #64748b;
   font-size: 14px;
   font-weight: 600;
   border-radius: 8px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.toggleBtn:focus,
+.toggleBtn:focus-visible {
+  outline: none;
+}
+
+.toggleBtn::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.4);
+  transform: translate(-50%, -50%);
+  transition: width 0.4s ease-out, height 0.4s ease-out, opacity 0.4s ease-out;
+  opacity: 0;
+  z-index: -1;
+}
+
+.toggleBtn:active::after {
+  width: 200px;
+  height: 200px;
+  opacity: 1;
+  transition: width 0s, height 0s, opacity 0.4s;
+}
+
+.toggleBtn:hover:not(.active) {
+  background: rgba(255, 255, 255, 0.3);
+  color: #475569;
+  transform: scale(1.02);
 }
 
 .toggleBtn.active {
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  background: #2f80ed;
   color: white;
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+  box-shadow: 
+    0 4px 12px rgba(47, 128, 237, 0.4),
+    0 2px 4px rgba(0, 0, 0, 0.1);
+  transform: translateY(-1px);
 }
 
+/* ✨ FORM - biarkan tinggi diatur layout Motion */
 .form {
   display: flex;
   flex-direction: column;
@@ -115,88 +569,89 @@
   left: 16px;
   color: #64748b;
   pointer-events: none;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1;
 }
 
 .input {
   width: 100%;
   padding: 14px 16px 14px 48px;
-  background: rgba(15, 23, 42, 0.8);
-  border: 1px solid rgba(59, 130, 246, 0.3);
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.5);
   border-radius: 12px;
-  color: white;
+  color: #1e293b;
   font-size: 14px;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  will-change: transform, box-shadow;
 }
 
 .input:focus {
   outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-  background: rgba(15, 23, 42, 0.95);
+  border-color: #2f80ed;
+  box-shadow: 
+    0 0 0 3px rgba(47, 128, 237, 0.15),
+    0 4px 12px rgba(47, 128, 237, 0.1);
+  background: rgba(255, 255, 255, 0.85);
+  transform: translateY(-2px) scale(1.005);
+}
+
+.input:focus + .icon,
+.inputGroup:focus-within .icon {
+  color: #2f80ed;
+  transform: scale(1.1);
 }
 
 .input::placeholder {
-  color: #64748b;
+  color: #94a3b8;
 }
 
+/* Submit Button */
 .submitBtn {
   margin-top: 8px;
   padding: 16px;
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  background: linear-gradient(135deg, #2f80ed 0%, #1d4ed8 100%);
   border: none;
   border-radius: 12px;
   color: white;
   font-size: 16px;
   font-weight: 700;
   cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 
+    0 4px 16px rgba(47, 128, 237, 0.3),
+    0 2px 4px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: hidden;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.submitBtn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.5);
-}
-
-.submitBtn:active {
-  transform: translateY(0);
-}
-
-/* Responsif mobile */
-@media (max-width: 600px) {
-  .authCard {
-    padding: 24px 8px;
-    max-width: 98vw;
-    font-size: 15px;
-  }
-  .logoSection {
-    margin-bottom: 24px;
-  }
-  .title {
-    font-size: 28px;
-  }
-}
-
-.errorMessage {
-  background-color: #fee;
-  color: #c33;
-  padding: 12px;
-  border-radius: 8px;
-  margin-bottom: 16px;
-  font-size: 14px;
+/* Teks di dalam tombol submit agar smooth saat animasi */
+.submitText {
+  display: inline-block;
+  min-width: 110px; /* optional: biar lebar tombol stabil saat teks ganti */
   text-align: center;
-  border: 1px solid #fcc;
 }
 
-.successMessage {
-  background-color: #efe;
-  color: #3c3;
-  padding: 12px;
-  border-radius: 8px;
-  margin-bottom: 16px;
-  font-size: 14px;
-  text-align: center;
-  border: 1px solid #cfc;
+.submitBtn:focus {
+  outline: none;
+}
+
+.submitBtn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.5s ease;
+  z-index: 0;
+}
+
+.submitBtn:hover::before {
+  left: 100%;
 }
 
 .submitBtn:disabled {
@@ -204,396 +659,110 @@
   cursor: not-allowed;
 }
 
-/* ✅ Role Selection Styles */
-.roleSection {
-  margin: 20px 0;
-  width: 100%;
-}
-
-.roleLabel {
-  display: block;
-  font-size: 14px;
-  font-weight: 500;
-  color: #333;
-  margin-bottom: 12px;
-  text-align: left;
-}
-
-.roleOptions {
-  display: flex;
-  gap: 12px;
-  width: 100%;
-}
-
-.roleOption {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 16px;
-  border: 2px solid #e0e0e0;
-  border-radius: 12px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  background: #fff;
-}
-
-.roleOption:hover {
-  border-color: #9b59b6;
-  background: #f9f5ff;
-}
-
-.roleActive {
-  border-color: #9b59b6;
-  background: #f3e8ff;
-  box-shadow: 0 0 0 3px rgba(155, 89, 182, 0.1);
-}
-
-.radioInput {
-  display: none;
-}
-
-.roleIcon {
-  color: #9b59b6;
-  flex-shrink: 0;
-}
-
-.roleText {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  text-align: left;
-}
-
-.roleName {
-  font-weight: 600;
-  font-size: 14px;
-  color: #333;
-}
-
-.roleDesc {
-  font-size: 12px;
-  color: #666;
-}
-
-/* Responsive */
-@media (max-width: 480px) {
-  .roleOptions {
-    flex-direction: column;
-  }
-  
-  .roleOption {
-    width: 100%;
-  }
-}
-
-/* ==================== ARTIST BIO SECTION (STEP 2) ==================== */
-.artistBioSection {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-  animation: fadeIn 0.4s ease;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.backButton {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 16px;
-  background: rgba(15, 23, 42, 0.6);
-  border: 1px solid rgba(59, 130, 246, 0.3);
+/* Messages */
+.errorMessage {
+  background: linear-gradient(135deg, rgba(254, 226, 226, 0.95) 0%, rgba(254, 202, 202, 0.9) 100%);
+  color: #dc2626;
+  padding: 12px 16px;
   border-radius: 10px;
-  color: #94a3b8;
   font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  width: fit-content;
-}
-
-.backButton:hover {
-  background: rgba(59, 130, 246, 0.15);
-  border-color: #3b82f6;
-  color: #3b82f6;
-  transform: translateX(-3px);
-}
-
-.backButton:active {
-  transform: translateX(0);
-}
-
-.stepTitle {
   text-align: center;
-  margin: 8px 0 16px;
+  border: 1px solid rgba(252, 165, 165, 0.5);
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.15);
+  position: relative;
+  overflow: hidden;
 }
 
-.stepIcon {
-  color: #3b82f6;
-  margin-bottom: 12px;
-  filter: drop-shadow(0 0 15px rgba(59, 130, 246, 0.5));
-}
-
-.stepTitle h3 {
-  font-size: 22px;
-  font-weight: 700;
-  color: #e2e8f0;
-  margin-bottom: 8px;
-  letter-spacing: 0.5px;
-}
-
-.stepDesc {
-  color: #94a3b8;
-  font-size: 13px;
-  font-weight: 400;
-  line-height: 1.5;
-}
-
-.textarea {
+.errorMessage::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
   width: 100%;
-  padding: 16px;
-  background: rgba(15, 23, 42, 0.8);
-  border: 1px solid rgba(59, 130, 246, 0.3);
-  border-radius: 12px;
-  color: white;
-  font-size: 14px;
-  font-family: inherit;
-  line-height: 1.6;
-  resize: vertical;
-  transition: all 0.3s ease;
-  min-height: 120px;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(220, 38, 38, 0.2), transparent);
+  animation: errorPulse 2s ease infinite;
+  pointer-events: none;
 }
 
-.textarea:focus {
-  outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-  background: rgba(15, 23, 42, 0.95);
+@keyframes errorPulse {
+  0% { left: -100%; }
+  100% { left: 100%; }
 }
 
-.textarea::placeholder {
-  color: #64748b;
-  font-size: 13px;
-  line-height: 1.5;
-}
-
-/* Update role section colors untuk konsisten */
-.roleLabel {
-  color: #e2e8f0; /* ✅ Match dengan theme gelap */
-  font-weight: 600;
-}
-
-.roleOption {
-  background: rgba(15, 23, 42, 0.8); /* ✅ Match dengan input */
-  border: 1px solid rgba(59, 130, 246, 0.3);
-}
-
-.roleOption:hover {
-  border-color: #3b82f6;
-  background: rgba(59, 130, 246, 0.1);
-}
-
-.roleActive {
-  border-color: #3b82f6;
-  background: rgba(59, 130, 246, 0.15);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-}
-
-.roleIcon {
-  color: #3b82f6; /* ✅ Match dengan theme */
-}
-
-.roleName {
-  color: #e2e8f0; /* ✅ Text putih untuk dark theme */
-  font-size: 15px;
-}
-
-.roleDesc {
-  color: #94a3b8; /* ✅ Subtle grey */
-}
-
-/* Responsive untuk step 2 */
-@media (max-width: 600px) {
-  .stepTitle h3 {
-    font-size: 18px;
-  }
-  
-  .stepDesc {
-    font-size: 12px;
-  }
-  
-  .textarea {
-    min-height: 100px;
-    font-size: 13px;
-  }
-  
-  .backButton {
-    font-size: 13px;
-    padding: 8px 14px;
-  }
-}
-/* ==================== ARTIST BIO SECTION (STEP 2) ==================== */
-.artistBioSection {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-  animation: fadeIn 0.4s ease;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.backButton {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 16px;
-  background: rgba(15, 23, 42, 0.6);
-  border: 1px solid rgba(59, 130, 246, 0.3);
+.successMessage {
+  background: linear-gradient(135deg, rgba(220, 252, 231, 0.95) 0%, rgba(187, 247, 208, 0.9) 100%);
+  color: #16a34a;
+  padding: 12px 16px;
   border-radius: 10px;
-  color: #94a3b8;
   font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  width: fit-content;
-}
-
-.backButton:hover {
-  background: rgba(59, 130, 246, 0.15);
-  border-color: #3b82f6;
-  color: #3b82f6;
-  transform: translateX(-3px);
-}
-
-.backButton:active {
-  transform: translateX(0);
-}
-
-.stepTitle {
   text-align: center;
-  margin: 8px 0 16px;
+  border: 1px solid rgba(134, 239, 172, 0.5);
+  box-shadow: 0 2px 8px rgba(22, 163, 74, 0.15);
+  position: relative;
+  overflow: hidden;
 }
 
-.stepIcon {
-  color: #3b82f6;
-  margin-bottom: 12px;
-  filter: drop-shadow(0 0 15px rgba(59, 130, 246, 0.5));
-}
-
-.stepTitle h3 {
-  font-size: 22px;
-  font-weight: 700;
-  color: #e2e8f0;
-  margin-bottom: 8px;
-  letter-spacing: 0.5px;
-}
-
-.stepDesc {
-  color: #94a3b8;
-  font-size: 13px;
-  font-weight: 400;
-  line-height: 1.5;
-}
-
-.textarea {
+.successMessage::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
   width: 100%;
-  padding: 16px;
-  background: rgba(15, 23, 42, 0.8);
-  border: 1px solid rgba(59, 130, 246, 0.3);
-  border-radius: 12px;
-  color: white;
-  font-size: 14px;
-  font-family: inherit;
-  line-height: 1.6;
-  resize: vertical;
-  transition: all 0.3s ease;
-  min-height: 120px;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+  animation: successSparkle 2s ease infinite;
+  pointer-events: none;
 }
 
-.textarea:focus {
-  outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-  background: rgba(15, 23, 42, 0.95);
+@keyframes successSparkle {
+  0% { left: -100%; }
+  100% { left: 100%; }
 }
 
-.textarea::placeholder {
-  color: #64748b;
-  font-size: 13px;
-  line-height: 1.5;
-}
-
-/* Update role section colors untuk konsisten */
-.roleLabel {
-  color: #e2e8f0; /* ✅ Match dengan theme gelap */
-  font-weight: 600;
-}
-
-.roleOption {
-  background: rgba(15, 23, 42, 0.8); /* ✅ Match dengan input */
-  border: 1px solid rgba(59, 130, 246, 0.3);
-}
-
-.roleOption:hover {
-  border-color: #3b82f6;
-  background: rgba(59, 130, 246, 0.1);
-}
-
-.roleActive {
-  border-color: #3b82f6;
-  background: rgba(59, 130, 246, 0.15);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-}
-
-.roleIcon {
-  color: #3b82f6; /* ✅ Match dengan theme */
-}
-
-.roleName {
-  color: #e2e8f0; /* ✅ Text putih untuk dark theme */
-  font-size: 15px;
-}
-
-.roleDesc {
-  color: #94a3b8; /* ✅ Subtle grey */
-}
-
-/* Responsive untuk step 2 */
+/* Responsive Mobile */
 @media (max-width: 600px) {
-  .stepTitle h3 {
-    font-size: 18px;
+  .authCard, .loadingCard {
+    padding: 32px 24px;
+    max-width: 95vw;
   }
   
-  .stepDesc {
-    font-size: 12px;
+  .logoSection {
+    margin-bottom: 24px;
   }
   
-  .textarea {
-    min-height: 100px;
-    font-size: 13px;
+  .title, .loadingTitle {
+    font-size: 28px;
   }
-  
-  .backButton {
-    font-size: 13px;
-    padding: 8px 14px;
+
+  .blob1 {
+    width: 300px;
+    height: 300px;
+    top: -100px;
+    left: -50px;
+  }
+
+  .blob2 {
+    width: 250px;
+    height: 250px;
+    bottom: -100px;
+    right: -50px;
+  }
+
+  .blob3 {
+    width: 200px;
+    height: 200px;
+    right: -100px;
+  }
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

@@ -8,20 +8,23 @@
   border: 1px solid rgba(59, 130, 246, 0.15);
   cursor: pointer;
   position: relative;
-  overflow: visible; /* ✅ Tetap visible tapi dropdown di-render via portal */
 }
 
 .albumCard:hover {
   background: rgba(59, 130, 246, 0.12);
   border-color: rgba(59, 130, 246, 0.4);
-  transform: translateY(-2px);
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
-  z-index: 5;
+  transform: translateY(-4px);
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.6);
+}
+
+.albumCard.playing {
+  background: rgba(159, 122, 234, 0.15);
+  border-color: rgba(159, 122, 234, 0.5);
 }
 
 .coverWrapper {
   position: relative;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
 }
 
 .cover {
@@ -32,18 +35,26 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 56px;
+  font-size: 64px;
   box-shadow: 0 8px 24px rgba(59, 130, 246, 0.3);
-  position: relative;
-  z-index: 1;
+  transition: all 0.3s ease;
+}
+
+.albumCard:hover .cover {
+  box-shadow: 0 12px 32px rgba(59, 130, 246, 0.5);
+  transform: scale(1.02);
+}
+
+.albumCard.playing .cover {
+  box-shadow: 0 12px 32px rgba(159, 122, 234, 0.6);
 }
 
 .playButton {
   position: absolute;
-  bottom: 8px;
-  right: 8px;
-  width: 48px;
-  height: 48px;
+  bottom: 12px;
+  right: 12px;
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
   border: none;
   background: rgba(255, 255, 255, 0.95);
@@ -53,23 +64,27 @@
   justify-content: center;
   cursor: pointer;
   opacity: 0;
-  transform: translateY(8px) scale(0.9);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.4);
+  transform: translateY(12px) scale(0.8);
+  transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
   z-index: 10;
   backdrop-filter: blur(20px);
 }
 
-.albumCard:hover .playButton,
-.playButton.active {
-  opacity: 1 !important;
+.playButton.visible {
+  opacity: 1;
   transform: translateY(0) scale(1);
 }
 
-.playButton:hover {
-  transform: translateY(0) scale(1.1);
+.playButton:hover:not(:disabled) {
+  transform: translateY(0) scale(1.15);
   background: white;
-  box-shadow: 0 12px 32px rgba(59, 130, 246, 0.5);
+  box-shadow: 0 12px 32px rgba(59, 130, 246, 0.6);
+}
+
+.playButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
 }
 
 .playButton.active {
@@ -77,277 +92,103 @@
   color: white;
 }
 
-.playButton.active::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  border: 2px solid rgba(159, 122, 234, 0.6);
-  transform: translate(-50%, -50%);
-  animation: pulse 1.5s ease-out infinite;
+.playButton.active:hover {
+  background: #9f7aea;
+  box-shadow: 0 12px 32px rgba(159, 122, 234, 0.7);
 }
 
-.menuContainer {
+/* Spinner animation untuk loading state */
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.songCount {
   position: absolute;
   top: 8px;
   right: 8px;
-  z-index: 25;
-}
-
-.menuButton {
-  width: 48px !important;
-  height: 48px !important;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.98) !important;
-  backdrop-filter: blur(30px);
-  border: 2px solid rgba(59, 130, 246, 0.4);
-  color: #1e3a8a !important;
+  background: rgba(15, 23, 42, 0.9);
+  backdrop-filter: blur(12px);
+  padding: 6px 12px;
+  border-radius: 20px;
   display: flex;
   align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-  opacity: 0;
-  transform: scale(0.8);
-}
-
-.albumCard:hover .menuButton,
-.albumCard.playing .menuButton {
-  opacity: 1 !important;
-  transform: scale(1) !important;
-}
-
-.menuButton:hover {
-  background: white !important;
-  border-color: #3b82f6 !important;
-  color: #1e40af !important;
-  transform: scale(1.1) !important;
-  box-shadow: 0 16px 40px rgba(59, 130, 246, 0.5);
-}
-
-.menuButton:active {
-  transform: scale(0.95) !important;
-}
-
-.menuButton.playingMenu {
-  background: rgba(159, 122, 234, 0.98) !important;
-  border-color: #9f7aea !important;
-  color: white !important;
-}
-
-.menuButton.playingMenu:hover {
-  background: #9f7aea !important;
-  transform: scale(1.1) !important;
-}
-
-/* ✅ DROPDOWN MENU - Minimal CSS (position handled by inline style) */
-.dropdownMenu {
-  width: 320px;
-  max-height: 420px;
-  background: rgba(15, 23, 42, 0.98);
-  backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 16px;
-  box-shadow: 0 32px 64px rgba(0, 0, 0, 0.7);
-  animation: slideDownBig 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-  overflow: hidden;
-}
-
-@keyframes slideDownBig {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-.menuHeader {
-  padding: 16px;
-  border-bottom: 1px solid rgba(59, 130, 246, 0.2);
-  font-size: 13px;
-  font-weight: 700;
-  color: #94a3b8;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  background: rgba(59, 130, 246, 0.08);
-}
-
-.menuLoading, .menuEmpty {
-  padding: 32px 20px;
-  text-align: center;
-  color: #94a3b8;
-}
-
-.menuEmpty p {
-  margin: 0 0 16px;
-  color: #cbd5e1;
-}
-
-.createPlaylistBtn {
-  padding: 12px 24px;
-  border-radius: 24px;
-  background: linear-gradient(135deg, #3b82f6, #2563eb);
-  color: white;
-  border: none;
-  font-size: 14px;
+  gap: 6px;
+  font-size: 12px;
   font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.4);
+  color: #cbd5e1;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
 }
 
-.createPlaylistBtn:hover {
-  transform: translateY(-1px) scale(1.02);
-  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.5);
-}
-
-.menuList {
-  max-height: 320px;
-  overflow-y: auto;
-  padding: 8px 0;
-}
-
-.menuList::-webkit-scrollbar {
-  width: 6px;
-}
-
-.menuList::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.menuList::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 3px;
-}
-
-.menuList::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.3);
-}
-
-.menuItem {
-  width: 100%;
-  padding: 14px 16px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  background: transparent;
-  border: none;
+.albumCard.playing .songCount {
+  background: rgba(159, 122, 234, 0.9);
   color: white;
-  cursor: pointer;
-  transition: all 0.2s;
-  text-align: left;
-  font-size: 14px;
+  border-color: rgba(159, 122, 234, 0.5);
 }
 
-.menuItem:hover:not(:disabled) {
-  background: rgba(59, 130, 246, 0.15);
+.songCount svg {
+  color: #60a5fa;
+  transition: color 0.3s ease;
 }
 
-.menuItem:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.menuItem.inPlaylist {
-  color: #9f7aea;
-  background: rgba(159, 122, 234, 0.12);
-}
-
-.playlistIcon {
-  font-size: 20px;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  flex-shrink: 0;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.playlistName {
-  flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-weight: 500;
-}
-
-.plusIcon, .checkIcon {
-  flex-shrink: 0;
-  color: #94a3b8;
-  transition: all 0.2s;
-}
-
-.menuItem:hover .plusIcon {
-  color: #3b82f6;
-  transform: scale(1.1);
-}
-
-.checkIcon {
-  color: #9f7aea !important;
-}
-
-.loadingDot {
-  color: #3b82f6;
-  font-weight: bold;
-  animation: blink 1s infinite;
-}
-
-@keyframes blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.3; }
-}
-
-@keyframes pulse {
-  0% { 
-    transform: translate(-50%, -50%) scale(1);
-    opacity: 0.8; 
-  }
-  100% { 
-    transform: translate(-50%, -50%) scale(1.6);
-    opacity: 0; 
-  }
+.albumCard.playing .songCount svg {
+  color: white;
 }
 
 .info {
   text-align: left;
-  z-index: 1;
 }
 
 .title {
   color: white;
-  font-size: 16px;
-  font-weight: 600;
-  margin-bottom: 4px;
+  font-size: 17px;
+  font-weight: 700;
+  margin-bottom: 6px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  letter-spacing: 0.3px;
+  transition: color 0.3s ease;
 }
 
 .artist {
   color: #94a3b8;
   font-size: 14px;
+  margin-bottom: 4px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  font-weight: 500;
+  transition: color 0.3s ease;
 }
 
-.albumCard.playing {
-  background: rgba(159, 122, 234, 0.2);
-  border-color: rgba(159, 122, 234, 0.4);
+.year {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 400;
+  margin-top: 4px;
+}
+
+.albumCard:hover .title {
+  color: #60a5fa;
 }
 
 .albumCard.playing .title {
   color: #9f7aea;
+}
+
+.albumCard.playing .artist {
+  color: #c4b5fd;
 }
 
 @media (max-width: 768px) {
@@ -355,33 +196,35 @@
     padding: 16px;
   }
   
-  .menuContainer {
-    top: 4px;
-    right: 4px;
+  .cover {
+    font-size: 52px;
   }
   
-  .menuButton {
-    width: 44px !important;
-    height: 44px !important;
+  .playButton {
+    width: 48px;
+    height: 48px;
   }
   
-  .dropdownMenu {
-    width: 280px;
+  .playButton.visible {
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
 }
 
 @media (max-width: 480px) {
   .cover {
-    font-size: 48px;
+    font-size: 44px;
   }
   
   .playButton {
-    width: 42px;
-    height: 42px;
+    width: 44px;
+    height: 44px;
+    bottom: 8px;
+    right: 8px;
   }
   
-  .menuButton {
-    width: 40px !important;
-    height: 40px !important;
+  .songCount {
+    padding: 4px 8px;
+    font-size: 11px;
   }
 }

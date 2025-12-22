@@ -10,7 +10,8 @@ export const adminService = {
     if (!response.ok) {
       throw new Error('Failed to fetch admin stats');
     }
-    return response.json();
+    const responseBody = await response.json();
+    return responseBody.data || responseBody;
   },
 
   // --- Genre Management ---
@@ -22,7 +23,8 @@ export const adminService = {
     if (!response.ok) {
       throw new Error('Failed to fetch genres');
     }
-    return response.json();
+    const responseBody = await response.json();
+    return responseBody.data || responseBody;
   },
 
   createGenre: async (genreName, description) => {
@@ -42,7 +44,8 @@ export const adminService = {
       }
       throw new Error(errorMessage);
     }
-    return response.json();
+    const responseBody = await response.json();
+    return responseBody.data || responseBody;
   },
 
   updateGenre: async (genreId, genreName, description) => {
@@ -62,7 +65,8 @@ export const adminService = {
       }
       throw new Error(errorMessage);
     }
-    return response.json();
+    const responseBody = await response.json();
+    return responseBody.data || responseBody;
   },
 
   deleteGenre: async (genreId) => {
@@ -81,7 +85,8 @@ export const adminService = {
       }
       throw new Error(errorMessage);
     }
-    return response.json();
+    const responseBody = await response.json();
+    return responseBody.data || responseBody;
   },
 
   // --- User Management ---
@@ -93,7 +98,8 @@ export const adminService = {
     if (!response.ok) {
       throw new Error('Failed to fetch users');
     }
-    return response.json();
+    const responseBody = await response.json();
+    return responseBody.data || responseBody;
   },
 
   getUsersByType: async (accountType) => {
@@ -107,7 +113,8 @@ export const adminService = {
     if (!response.ok) {
       throw new Error(`Failed to fetch ${accountType}s`);
     }
-    return response.json();
+    const responseBody = await response.json();
+    return responseBody.data || responseBody;
   },
 
   getBannedUsers: async () => {
@@ -118,7 +125,8 @@ export const adminService = {
     if (!response.ok) {
       throw new Error('Failed to fetch banned users');
     }
-    return response.json();
+    const responseBody = await response.json();
+    return responseBody.data || responseBody;
   },
 
   banUser: async (accountId, reason) => {
@@ -141,7 +149,8 @@ export const adminService = {
       }
       throw new Error(errorMessage);
     }
-    return response.json();
+    const responseBody = await response.json();
+    return responseBody.data || responseBody;
   },
 
   unbanUser: async (accountId) => {
@@ -163,7 +172,8 @@ export const adminService = {
       }
       throw new Error(errorMessage);
     }
-    return response.json();
+    const responseBody = await response.json();
+    return responseBody.data || responseBody;
   },
 
   deleteUser: async (accountId) => {
@@ -182,7 +192,8 @@ export const adminService = {
       }
       throw new Error(errorMessage);
     }
-    return response.json();
+    const responseBody = await response.json();
+    return responseBody.data || responseBody;
   },
 
   searchUsers: async (query) => {
@@ -196,7 +207,8 @@ export const adminService = {
     if (!response.ok) {
       throw new Error('Failed to search users');
     }
-    return response.json();
+    const responseBody = await response.json();
+    return responseBody.data || responseBody;
   },
 
   // --- Artist Management (metadata) ---
@@ -212,7 +224,8 @@ export const adminService = {
     if (!response.ok) {
       throw new Error('Failed to fetch artists');
     }
-    return response.json();
+    const responseBody = await response.json();
+    return responseBody.data || responseBody;
   },
 
   /**
@@ -236,7 +249,8 @@ export const adminService = {
       }
       throw new Error(errorMessage);
     }
-    return response.json();
+    const responseBody = await response.json();
+    return responseBody.data || responseBody;
   },
 
   /**
@@ -258,7 +272,8 @@ export const adminService = {
       }
       throw new Error(errorMessage);
     }
-    return response.json();
+    const responseBody = await response.json();
+    return responseBody.data || responseBody;
   },
 
   // --- Artist (dropdown) & Song Management ---
@@ -271,7 +286,8 @@ export const adminService = {
     if (!response.ok) {
       throw new Error('Failed to fetch artists');
     }
-    return response.json();
+    const responseBody = await response.json();
+    return responseBody.data || responseBody;
   },
 
   uploadSong: async (data) => {
@@ -299,7 +315,8 @@ export const adminService = {
       throw new Error(errorMessage);
     }
 
-    return response.json();
+    const responseBody = await response.json();
+    return responseBody.data || responseBody;
   },
 
   deleteSong: async (songId) => {
@@ -319,7 +336,8 @@ export const adminService = {
       throw new Error(errorMessage);
     }
 
-    return response.json();
+    const responseBody = await response.json();
+    return responseBody.data || responseBody;
   },
 };
 

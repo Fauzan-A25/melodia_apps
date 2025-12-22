@@ -5,6 +5,9 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import melodia.controller.exception.admin.ArtistAlreadyExistsException;
+import melodia.controller.exception.admin.ArtistNotFoundException;
+import melodia.controller.exception.admin.InvalidOperationException;
 import melodia.model.entity.Artist;
 import melodia.model.repository.ArtistRepository;
 
@@ -22,7 +25,7 @@ public class ArtistService {
     @Transactional
     public Artist createArtist(String artistName, String bio) {
         if (artistRepository.existsByArtistName(artistName)) {
-            throw new IllegalArgumentException("Nama artist sudah digunakan");
+            throw new ArtistAlreadyExistsException("Nama artist sudah digunakan");
         }
 
         Artist artist = new Artist(artistName, bio);
@@ -34,11 +37,11 @@ public class ArtistService {
     @Transactional
     public Artist updateArtist(String artistId, String artistName, String bio) {
         Artist artist = artistRepository.findById(artistId)
-            .orElseThrow(() -> new IllegalArgumentException("Artist tidak ditemukan"));
+            .orElseThrow(() -> new ArtistNotFoundException("Artist tidak ditemukan"));
 
         if (artistName != null && !artistName.equals(artist.getArtistName())) {
             if (artistRepository.existsByArtistName(artistName)) {
-                throw new IllegalArgumentException("Nama artist sudah digunakan");
+                throw new ArtistAlreadyExistsException("Nama artist sudah digunakan");
             }
             artist.setArtistName(artistName);
         }
@@ -55,10 +58,10 @@ public class ArtistService {
     @Transactional
     public void deleteArtist(String artistId) {
         Artist artist = artistRepository.findById(artistId)
-            .orElseThrow(() -> new IllegalArgumentException("Artist tidak ditemukan"));
+            .orElseThrow(() -> new ArtistNotFoundException("Artist tidak ditemukan"));
 
         if (!artist.getSongs().isEmpty()) {
-            throw new IllegalStateException("Tidak dapat menghapus artist yang masih mempunyai lagu");
+            throw new InvalidOperationException("Tidak dapat menghapus artist yang masih mempunyai lagu");
         }
 
         artistRepository.delete(artist);
@@ -68,7 +71,7 @@ public class ArtistService {
 
     public Artist getArtistById(String artistId) {
         return artistRepository.findById(artistId)
-            .orElseThrow(() -> new IllegalArgumentException("Artist tidak ditemukan"));
+            .orElseThrow(() -> new ArtistNotFoundException("Artist tidak ditemukan"));
     }
 
     public List<Artist> getAllArtists() {

@@ -1,7 +1,9 @@
 package melodia.model.service.admin;
 
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -9,7 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import melodia.model.dto.response.UserManagementResponse;
+import melodia.model.dto.response.admin.UserManagementResponse;
 import melodia.model.entity.Account;
 import melodia.model.entity.User;
 import melodia.model.repository.AccountRepository;
@@ -39,6 +41,16 @@ public class UserManagementService {
         
         logger.info("Found {} users", users.size());
         return users;
+    }
+
+    /**
+     * Get user details by ID
+     */
+    public UserManagementResponse getUserDetailsById(String userId) {
+        logger.debug("Fetching user details for userId: {}", userId);
+        Account account = accountRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        return mapAccountToResponse(account);
     }
 
     /**
@@ -136,6 +148,42 @@ public class UserManagementService {
         logger.info("User deleted successfully");
     }
 
+    // ==================== STATISTICS ====================
+
+    /**
+     * Get user statistics (login count, playlists count, etc)
+     */
+    public Map<String, Object> getUserStats(String userId) {
+        logger.debug("Fetching stats for userId: {}", userId);
+        Account account = accountRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        Map<String, Object> stats = new HashMap<>();
+        stats.put("userId", account.getAccountId());
+        stats.put("username", account.getUsername());
+        stats.put("isBanned", account.isBanned());
+        stats.put("createdAt", account.getCreatedAt() != null 
+            ? account.getCreatedAt().format(DATE_TIME_FORMATTER) 
+            : null);
+        // TODO: Add more stats jika diperlukan (playlists count, etc)
+        
+        logger.info("Stats fetched for user: {}", account.getUsername());
+        return stats;
+    }
+
+    /**
+     * Get total users count
+     */
+    public long getTotalUsersCount() {
+        logger.debug("Fetching total users count");
+        long total = accountRepository.findAll().stream()
+                .filter(acc -> !(acc instanceof melodia.model.entity.Admin))
+                .count();
+        
+        logger.info("Total users count: {}", total);
+        return total;
+    }
+
     // ==================== MAPPER ====================
 
     /**
@@ -143,6 +191,10 @@ public class UserManagementService {
      * Since Artist is no longer an Account, we only handle User type.
      */
     private UserManagementResponse mapAccountToResponse(Account account) {
+        if (account == null) {
+            return null;
+        }
+
         String accountType = account instanceof User ? "USER" : account.getAccountType();
 
         return new UserManagementResponse(

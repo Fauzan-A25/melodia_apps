@@ -1,0 +1,401 @@
+/* SongCard.module.css */
+
+/* Card utama */
+.songCard {
+  background: rgba(15, 23, 42, 0.8);
+  border-radius: 12px;
+  padding: 16px; /* ↓ dari 20px biar lebih compact */
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid rgba(59, 130, 246, 0.15);
+  cursor: pointer;
+  position: relative;
+  overflow: visible;
+  box-sizing: border-box;
+
+  /* ✅ Supaya tinggi card konsisten dengan AlbumCard */
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.songCard:hover {
+  background: rgba(59, 130, 246, 0.12);
+  border-color: rgba(59, 130, 246, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+  z-index: 5;
+}
+
+/* Cover section */
+.coverWrapper {
+  position: relative;
+  margin-bottom: 12px;
+  width: 100%;
+  /* ✅ Konsisten dengan AlbumCard: square cover */
+  aspect-ratio: 1 / 1;
+}
+
+.cover {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 50%, #1e3a8a 100%);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 52px; /* ↓ sedikit dari 56 supaya card tidak terlalu tinggi */
+  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.3);
+  position: relative;
+  z-index: 1;
+}
+
+/* Play button di atas cover */
+.playButton {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  width: 44px;  /* ↓ sedikit */
+  height: 44px; /* ↓ sedikit */
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.95);
+  color: #1e3a8a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transform: translateY(8px) scale(0.9);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.4);
+  z-index: 10;
+  backdrop-filter: blur(20px);
+}
+
+.songCard:hover .playButton,
+.playButton.active {
+  opacity: 1 !important;
+  transform: translateY(0) scale(1);
+}
+
+.playButton:hover {
+  transform: translateY(0) scale(1.1);
+  background: white;
+  box-shadow: 0 12px 32px rgba(59, 130, 246, 0.5);
+}
+
+.playButton.active {
+  background: rgba(159, 122, 234, 0.95);
+  color: white;
+}
+
+.playButton.active::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 2px solid rgba(159, 122, 234, 0.6);
+  transform: translate(-50%, -50%);
+  animation: pulse 1.5s ease-out infinite;
+}
+
+/* Menu (3 dots) di pojok kanan atas */
+.menuContainer {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 25;
+}
+
+.menuButton {
+  width: 44px !important;  /* ↓ sedikit dari 48 */
+  height: 44px !important;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.98) !important;
+  backdrop-filter: blur(30px);
+  border: 2px solid rgba(59, 130, 246, 0.4);
+  color: #1e3a8a !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  opacity: 0;
+  transform: scale(0.8);
+}
+
+.songCard:hover .menuButton,
+.songCard.playing .menuButton {
+  opacity: 1 !important;
+  transform: scale(1) !important;
+}
+
+.menuButton:hover {
+  background: white !important;
+  border-color: #3b82f6 !important;
+  color: #1e40af !important;
+  transform: scale(1.1) !important;
+  box-shadow: 0 16px 40px rgba(59, 130, 246, 0.5);
+}
+
+.menuButton:active {
+  transform: scale(0.95) !important;
+}
+
+.menuButton.playingMenu {
+  background: rgba(159, 122, 234, 0.98) !important;
+  border-color: #9f7aea !important;
+  color: white !important;
+}
+
+.menuButton.playingMenu:hover {
+  background: #9f7aea !important;
+  transform: scale(1.1) !important;
+}
+
+/* Dropdown menu */
+.dropdownMenu {
+  width: 300px; /* ↓ sedikit dari 320 */
+  max-height: 380px;
+  background: rgba(15, 23, 42, 0.98);
+  backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 16px;
+  box-shadow: 0 32px 64px rgba(0, 0, 0, 0.7);
+  animation: slideDownBig 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  overflow: hidden;
+}
+
+@keyframes slideDownBig {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.menuHeader {
+  padding: 16px;
+  border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+  font-size: 13px;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: rgba(59, 130, 246, 0.08);
+}
+
+.menuLoading,
+.menuEmpty {
+  padding: 32px 20px;
+  text-align: center;
+  color: #94a3b8;
+}
+
+.menuEmpty p {
+  margin: 0 0 16px;
+  color: #cbd5e1;
+}
+
+.emptyHint {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.menuList {
+  max-height: 280px;
+  overflow-y: auto;
+  padding: 8px 0;
+}
+
+.menuList::-webkit-scrollbar {
+  width: 6px;
+}
+
+.menuList::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.menuList::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
+
+.menuList::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.menuItem {
+  width: 100%;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: transparent;
+  border: none;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+  font-size: 14px;
+}
+
+.menuItem:hover:not(:disabled) {
+  background: rgba(59, 130, 246, 0.15);
+}
+
+.menuItem:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.menuItem.inPlaylist {
+  color: #9f7aea;
+  background: rgba(159, 122, 234, 0.12);
+}
+
+.playlistIcon {
+  font-size: 20px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  flex-shrink: 0;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.playlistName {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+.plusIcon,
+.checkIcon {
+  flex-shrink: 0;
+  color: #94a3b8;
+  transition: all 0.2s;
+}
+
+.menuItem:hover .plusIcon {
+  color: #3b82f6;
+  transform: scale(1.1);
+}
+
+.checkIcon {
+  color: #9f7aea !important;
+}
+
+.loadingDot {
+  color: #3b82f6;
+  font-weight: bold;
+  animation: blink 1s infinite;
+}
+
+@keyframes blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
+@keyframes pulse {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1.6);
+    opacity: 0;
+  }
+}
+
+/* Info text di bawah cover */
+.info {
+  text-align: left;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1; /* ✅ isi sisa tinggi card seperti AlbumCard */
+}
+
+.title {
+  color: white;
+  font-size: 14px; /* ↓ dari 16 supaya tinggi teks pas dengan AlbumCard */
+  font-weight: 600;
+  margin: 0 0 4px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.artist {
+  color: #94a3b8;
+  font-size: 12px; /* ↓ dari 14 */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* State playing */
+.songCard.playing {
+  background: rgba(159, 122, 234, 0.2);
+  border-color: rgba(159, 122, 234, 0.4);
+}
+
+.songCard.playing .title {
+  color: #9f7aea;
+}
+
+/* Responsive tweaks */
+@media (max-width: 768px) {
+  .songCard {
+    padding: 14px;
+  }
+
+  .menuContainer {
+    top: 4px;
+    right: 4px;
+  }
+
+  .menuButton {
+    width: 40px !important;
+    height: 40px !important;
+  }
+
+  .dropdownMenu {
+    width: 260px;
+  }
+}
+
+@media (max-width: 480px) {
+  .cover {
+    font-size: 44px;
+  }
+
+  .playButton {
+    width: 40px;
+    height: 40px;
+  }
+
+  .menuButton {
+    width: 38px !important;
+    height: 38px !important;
+  }
+}

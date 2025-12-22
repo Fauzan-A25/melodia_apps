@@ -8,13 +8,15 @@ export const musicService = {
   getAllSongs: async () => {
     const response = await fetch(`${API_URL}/songs`);
     if (!response.ok) throw new Error('Failed to fetch songs');
-    return await response.json();
+    const responseBody = await response.json();
+    return responseBody.data || responseBody;
   },
 
   getSongById: async (id) => {
     const response = await fetch(`${API_URL}/songs/${id}`);
     if (!response.ok) throw new Error('Song not found');
-    return await response.json();
+    const responseBody = await response.json();
+    return responseBody.data || responseBody;
   },
 
   searchSongs: async (query) => {
@@ -22,7 +24,8 @@ export const musicService = {
       `${API_URL}/songs/search?query=${encodeURIComponent(query)}`
     );
     if (!response.ok) throw new Error('Search failed');
-    return await response.json();
+    const responseBody = await response.json();
+    return responseBody.data || responseBody;
   },
 
   searchByTitle: async (query) => {
@@ -30,7 +33,8 @@ export const musicService = {
       `${API_URL}/songs/search/title?query=${encodeURIComponent(query)}`
     );
     if (!response.ok) throw new Error('Search failed');
-    return await response.json();
+    const responseBody = await response.json();
+    return responseBody.data || responseBody;
   },
 
   searchByArtist: async (query) => {
@@ -38,7 +42,8 @@ export const musicService = {
       `${API_URL}/songs/search/artist?query=${encodeURIComponent(query)}`
     );
     if (!response.ok) throw new Error('Search failed');
-    return await response.json();
+    const responseBody = await response.json();
+    return responseBody.data || responseBody;
   },
 
   filterByGenre: async (genreName) => {
@@ -46,7 +51,8 @@ export const musicService = {
       `${API_URL}/songs/filter/genre?name=${encodeURIComponent(genreName)}`
     );
     if (!response.ok) throw new Error('Filter failed');
-    return await response.json();
+    const responseBody = await response.json();
+    return responseBody.data || responseBody;
   },
 
   filterByYear: async (year) => {
@@ -54,7 +60,8 @@ export const musicService = {
       `${API_URL}/songs/filter/year?year=${year}`
     );
     if (!response.ok) throw new Error('Filter failed');
-    return await response.json();
+    const responseBody = await response.json();
+    return responseBody.data || responseBody;
   },
 
   getStreamUrl: (songId) => `${API_URL}/songs/stream/${songId}`,
@@ -128,7 +135,8 @@ export const musicService = {
       throw new Error(errorMessage);
     }
 
-    return await response.json();
+    const responseBody = await response.json();
+    return responseBody.data || responseBody;
   },
 
   /**
@@ -156,7 +164,8 @@ export const musicService = {
       throw new Error(errorMessage);
     }
 
-    return await response.json();
+    const responseBody = await response.json();
+    return responseBody.data || responseBody;
   },
 
   /**
@@ -186,7 +195,8 @@ export const musicService = {
       throw new Error(errorData.message || 'Failed to create playlist');
     }
 
-    return await response.json();
+    const responseBody = await response.json();
+    return responseBody.data || responseBody;
   },
 
   getUserPlaylists: async (userId) => {
@@ -207,7 +217,8 @@ export const musicService = {
       throw new Error('Failed to fetch user playlists');
     }
 
-    return await response.json();
+    const responseBody = await response.json();
+    return responseBody.data || responseBody;
   },
 
   getPlaylistById: async (playlistId) => {
@@ -217,7 +228,8 @@ export const musicService = {
       throw new Error('Playlist not found');
     }
 
-    return await response.json();
+    const responseBody = await response.json();
+    return responseBody.data || responseBody;
   },
 
   updatePlaylist: async (playlistId, userId, name, description) => {
@@ -234,7 +246,8 @@ export const musicService = {
       throw new Error(errorData.message || 'Failed to update playlist');
     }
 
-    return await response.json();
+    const responseBody = await response.json();
+    return responseBody.data || responseBody;
   },
 
   deletePlaylist: async (playlistId, userId) => {
@@ -253,7 +266,8 @@ export const musicService = {
       throw new Error(errorData.message || 'Failed to delete playlist');
     }
 
-    return await response.json();
+    const responseBody = await response.json();
+    return responseBody.data || responseBody;
   },
 
   addSongToPlaylist: async (playlistId, songId, userId) => {
@@ -272,7 +286,8 @@ export const musicService = {
       );
     }
 
-    return await response.json();
+    const responseBody = await response.json();
+    return responseBody.data || responseBody;
   },
 
   removeSongFromPlaylist: async (playlistId, songId, userId) => {
@@ -293,7 +308,8 @@ export const musicService = {
       );
     }
 
-    return await response.json();
+    const responseBody = await response.json();
+    return responseBody.data || responseBody;
   },
 
   searchPlaylists: async (query) => {
@@ -305,7 +321,8 @@ export const musicService = {
       throw new Error('Search failed');
     }
 
-    return await response.json();
+    const responseBody = await response.json();
+    return responseBody.data || responseBody;
   },
 
   getPlaylistSongs: async (playlistId) => {
@@ -317,7 +334,8 @@ export const musicService = {
       throw new Error('Failed to fetch playlist songs');
     }
 
-    return await response.json();
+    const responseBody = await response.json();
+    return responseBody.data || responseBody;
   },
 
   // ==================== HISTORY ENDPOINTS ====================
@@ -329,7 +347,8 @@ export const musicService = {
       throw new Error('Failed to fetch history');
     }
 
-    return await response.json();
+    const responseBody = await response.json();
+    return responseBody.data || responseBody;
   },
 
   getPlayedSongs: async (userId) => {
@@ -339,7 +358,8 @@ export const musicService = {
       throw new Error('Failed to fetch played songs');
     }
 
-    return await response.json();
+    const responseBody = await response.json();
+    return responseBody.data || responseBody;
   },
 
   getRecentlyPlayedSongs: async (userId, limit = 10) => {
@@ -355,7 +375,8 @@ export const musicService = {
       throw new Error('Failed to fetch recent songs');
     }
 
-    return await response.json();
+    const responseBody = await response.json();
+    return responseBody.data || responseBody;
   },
 
   addSongToHistory: async (userId, songId) => {
@@ -377,7 +398,8 @@ export const musicService = {
       throw new Error(errorMessage);
     }
 
-    return await response.json();
+    const responseBody = await response.json();
+    return responseBody.data || responseBody;
   },
 
   removeSongFromHistory: async (userId, songId) => {
@@ -401,7 +423,8 @@ export const musicService = {
       throw new Error(errorMessage);
     }
 
-    return await response.json();
+    const responseBody = await response.json();
+    return responseBody.data || responseBody;
   },
 
   clearUserHistory: async (userId) => {
@@ -422,7 +445,8 @@ export const musicService = {
       throw new Error(errorMessage);
     }
 
-    return await response.json();
+    const responseBody = await response.json();
+    return responseBody.data || responseBody;
   },
 
   checkIfSongPlayed: async (userId, songId) => {
@@ -434,7 +458,8 @@ export const musicService = {
       throw new Error('Failed to check song played status');
     }
 
-    return await response.json();
+    const responseBody = await response.json();
+    return responseBody.data || responseBody;
   },
 
   getHistorySummary: async (userId) => {
@@ -444,7 +469,8 @@ export const musicService = {
       throw new Error('Failed to fetch history summary');
     }
 
-    return await response.json();
+    const responseBody = await response.json();
+    return responseBody.data || responseBody;
   },
 
   // ==================== ALBUM ENDPOINTS ====================
@@ -468,7 +494,8 @@ export const musicService = {
       throw new Error(errorMessage);
     }
 
-    return await response.json();
+    const responseBody = await response.json();
+    return responseBody.data || responseBody;
   },
 
   /**
@@ -494,7 +521,8 @@ export const musicService = {
       throw new Error(errorMessage);
     }
 
-    return await response.json();
+    const responseBody = await response.json();
+    return responseBody.data || responseBody;
   },
 
   /**
@@ -520,7 +548,8 @@ export const musicService = {
       throw new Error(errorMessage);
     }
 
-    return await response.json();
+    const responseBody = await response.json();
+    return responseBody.data || responseBody;
   },
 
   /**
@@ -542,7 +571,8 @@ export const musicService = {
       throw new Error(errorMessage);
     }
 
-    return await response.json();
+    const responseBody = await response.json();
+    return responseBody.data || responseBody;
   },
 
   /**
@@ -566,7 +596,8 @@ export const musicService = {
       throw new Error(errorMessage);
     }
 
-    return await response.json();
+    const responseBody = await response.json();
+    return responseBody.data || responseBody;
   },
 
   /**
@@ -590,7 +621,8 @@ export const musicService = {
       throw new Error(errorMessage);
     }
 
-    return await response.json();
+    const responseBody = await response.json();
+    return responseBody.data || responseBody;
   },
 
   /**
@@ -612,7 +644,8 @@ export const musicService = {
       throw new Error(errorMessage);
     }
 
-    return await response.json();
+    const responseBody = await response.json();
+    return responseBody.data || responseBody;
   },
 
   /**
@@ -648,7 +681,8 @@ export const musicService = {
       throw new Error(errorMessage);
     }
 
-    return await response.json();
+    const responseBody = await response.json();
+    return responseBody.data || responseBody;
   },
 
   /**
@@ -681,7 +715,8 @@ export const musicService = {
       throw new Error(errorMessage);
     }
 
-    return await response.json();
+    const responseBody = await response.json();
+    return responseBody.data || responseBody;
   },
 
   /**
@@ -711,8 +746,9 @@ export const musicService = {
       return { message: 'Album deleted successfully' };
     }
 
+    const responseBody = await response.json();
     try {
-      return await response.json();
+      return responseBody.data || responseBody;
     } catch {
       return { message: 'Album deleted successfully' };
     }
@@ -744,8 +780,9 @@ export const musicService = {
     }
 
     // ✅ Return response data or default message
+    const responseBody = await response.json();
     try {
-      return await response.json();
+      return responseBody.data || responseBody;
     } catch {
       return { message: 'Song added to album successfully' };
     }
@@ -777,8 +814,9 @@ export const musicService = {
     }
 
     // ✅ Return response data or default message
+    const responseBody = await response.json();
     try {
-      return await response.json();
+      return responseBody.data || responseBody;
     } catch {
       return { message: 'Song removed from album successfully' };
     }
@@ -797,7 +835,8 @@ export const musicService = {
       throw new Error('Failed to fetch albums count');
     }
 
-    return await response.json();
+    const responseBody = await response.json();
+    return responseBody.data || responseBody;
   },
 
   /**
@@ -819,6 +858,7 @@ export const musicService = {
       throw new Error(errorMessage);
     }
 
-    return await response.json();
+    const responseBody = await response.json();
+    return responseBody.data || responseBody;
   },
 };

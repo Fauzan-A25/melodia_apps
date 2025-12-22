@@ -1,3 +1,4 @@
+// context/MusicContext.jsx
 import { createContext, useContext, useState, useMemo, useCallback } from 'react';
 
 const MusicContext = createContext(null);
@@ -272,6 +273,18 @@ export const MusicProvider = ({ children }) => {
     setCurrentIndex(0);
   }, []);
 
+  // ✅ NEW: Get current queue information
+  const getCurrentQueue = useCallback(() => {
+    return {
+      currentSong,
+      currentIndex,
+      queue,
+      totalSongs: queue.length,
+      remainingSongs: queue.slice(currentIndex + 1),
+      previousSongs: queue.slice(0, currentIndex),
+    };
+  }, [currentSong, currentIndex, queue]);
+
   // ==================== MEMOIZED VALUE ====================
 
   const value = useMemo(
@@ -320,6 +333,7 @@ export const MusicProvider = ({ children }) => {
       addToQueue,
       clearQueue,
       setIsPlaying,
+      getCurrentQueue, // ✅ Export this method
     }),
     [
       library,
@@ -360,6 +374,7 @@ export const MusicProvider = ({ children }) => {
       toggleShuffle,
       addToQueue,
       clearQueue,
+      getCurrentQueue, // ✅ Add to dependencies
     ],
   );
 

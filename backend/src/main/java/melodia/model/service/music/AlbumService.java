@@ -7,6 +7,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import melodia.controller.exception.admin.ArtistNotFoundException;
+import melodia.controller.exception.music.AlbumNotFoundException;
+import melodia.controller.exception.music.GenreNotFoundException;
 import melodia.model.entity.Album;
 import melodia.model.entity.Artist;
 import melodia.model.entity.Genre;
@@ -41,7 +44,7 @@ public class AlbumService {
     @Transactional(readOnly = true)
     public Album getAlbumById(String albumId) {
         return albumRepository.findById(albumId)
-            .orElseThrow(() -> new IllegalArgumentException("Album not found with ID: " + albumId));
+            .orElseThrow(() -> new AlbumNotFoundException("Album tidak ditemukan dengan ID: " + albumId));
     }
 
     @Transactional(readOnly = true)
@@ -53,7 +56,7 @@ public class AlbumService {
     @Transactional(readOnly = true)
     public List<Album> getAlbumsByArtist(String artistId) {
         Artist artist = artistRepository.findById(artistId)
-            .orElseThrow(() -> new IllegalArgumentException("Artist not found with ID: " + artistId));
+            .orElseThrow(() -> new ArtistNotFoundException("Artist tidak ditemukan dengan ID: " + artistId));
         return albumRepository.findByArtist(artist);
     }
 
@@ -62,14 +65,14 @@ public class AlbumService {
     @Transactional
     public Album createAlbum(String title, String artistId, int releaseYear, List<String> genreNames) {
         Artist artist = artistRepository.findById(artistId)
-            .orElseThrow(() -> new IllegalArgumentException("Artist not found with ID: " + artistId));
+            .orElseThrow(() -> new ArtistNotFoundException("Artist tidak ditemukan dengan ID: " + artistId));
 
         Album album = new Album(title, artist, releaseYear);
 
         if (genreNames != null && !genreNames.isEmpty()) {
             List<Genre> genres = genreNames.stream()
                 .map(name -> genreRepository.findByName(name)
-                    .orElseThrow(() -> new IllegalArgumentException("Genre not found: " + name)))
+                    .orElseThrow(() -> new GenreNotFoundException("Genre tidak ditemukan: " + name)))
                 .collect(Collectors.toList());
             album.setGenres(genres);
         }

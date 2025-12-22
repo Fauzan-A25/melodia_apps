@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import melodia.controller.exception.user.UserNotFoundException;
 import melodia.model.entity.History;
 import melodia.model.entity.Playlist;
 import melodia.model.entity.Song;
@@ -39,18 +40,18 @@ public class UserService {
     @Transactional
     public User updateUserProfile(String id, String newUsername, String newEmail) {
         User user = userRepository.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("User tidak ditemukan"));
+            .orElseThrow(() -> new UserNotFoundException("User tidak ditemukan"));
         
         if (newUsername != null && !newUsername.equals(user.getUsername())) {
             if (userRepository.existsByUsername(newUsername)) {
-                throw new IllegalArgumentException("Username sudah dipakai.");
+                throw new UserNotFoundException("Username sudah dipakai.");
             }
             user.setUsername(newUsername);
         }
         
         if (newEmail != null && !newEmail.equals(user.getEmail())) {
             if (userRepository.existsByEmail(newEmail)) {
-                throw new IllegalArgumentException("Email sudah dipakai.");
+                throw new UserNotFoundException("Email sudah dipakai.");
             }
             user.setEmail(newEmail);
         }
@@ -85,7 +86,7 @@ public class UserService {
     @Transactional
     public void addSongToHistory(String userId, Song song) {
         History history = historyRepository.findById(userId)
-            .orElseThrow(() -> new IllegalArgumentException("History tidak ditemukan"));
+            .orElseThrow(() -> new UserNotFoundException("History tidak ditemukan"));
         
         history.addPlayedSong(song);
         historyRepository.save(history);

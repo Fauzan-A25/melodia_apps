@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import melodia.controller.exception.music.GenreAlreadyExistsException;
+import melodia.controller.exception.music.GenreNotFoundException;
 import melodia.model.dto.response.GenreResponse;
 import melodia.model.entity.Genre;
 import melodia.model.repository.GenreRepository;
@@ -34,7 +36,7 @@ public class GenreService {
      */
     public GenreResponse getGenreById(String id) {
         Genre genre = genreRepository.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("Genre tidak ditemukan"));
+            .orElseThrow(() -> new GenreNotFoundException("Genre tidak ditemukan"));
         
         return toGenreResponse(genre);
     }
@@ -51,7 +53,7 @@ public class GenreService {
 
         // Cek duplikasi nama genre
         if (genreRepository.existsByName(name)) {
-            throw new IllegalArgumentException("Genre dengan nama '" + name + "' sudah ada");
+            throw new GenreAlreadyExistsException("Genre dengan nama '" + name + "' sudah ada");
         }
 
         // Generate ID
@@ -71,13 +73,13 @@ public class GenreService {
     public GenreResponse updateGenre(String id, String name, String description) {
         // Find genre
         Genre genre = genreRepository.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("Genre tidak ditemukan"));
+            .orElseThrow(() -> new GenreNotFoundException("Genre tidak ditemukan"));
 
         // Update nama jika ada dan tidak duplikat
         if (name != null && !name.trim().isEmpty()) {
             // Cek duplikasi hanya jika nama berubah
             if (!genre.getName().equals(name) && genreRepository.existsByName(name)) {
-                throw new IllegalArgumentException("Genre dengan nama '" + name + "' sudah ada");
+                throw new GenreAlreadyExistsException("Genre dengan nama '" + name + "' sudah ada");
             }
             genre.setName(name.trim());
         }

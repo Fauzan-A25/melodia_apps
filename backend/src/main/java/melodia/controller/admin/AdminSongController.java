@@ -20,7 +20,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import melodia.model.dto.response.ArtistDropdownResponse;
+import melodia.model.dto.common.ApiResponse;
+import melodia.model.dto.response.admin.ArtistDropdownResponse;
 import melodia.model.entity.Artist;
 import melodia.model.entity.Genre;
 import melodia.model.entity.Song;
@@ -28,6 +29,7 @@ import melodia.model.repository.ArtistRepository;
 import melodia.model.repository.GenreRepository;
 import melodia.model.repository.SongRepository;
 import melodia.model.service.music.FileStorageService;
+import melodia.model.service.music.SongDeletionService;
 
 @RestController
 @RequestMapping("/api/admin/songs")
@@ -47,6 +49,9 @@ public class AdminSongController {
 
     @Autowired
     private FileStorageService fileStorageService;
+
+    @Autowired
+    private SongDeletionService songDeletionService; // ✅ service baru untuk handle cascade delete
 
     /**
      * Admin upload new song (select artist from dropdown)
@@ -76,18 +81,18 @@ public class AdminSongController {
 
             if (audioFile.isEmpty()) {
                 return ResponseEntity.badRequest()
-                        .body(new ErrorResponse("Audio file is required"));
+                        .body(ApiResponse.error("Audio file is required"));
             }
 
             String contentType = audioFile.getContentType();
             if (contentType == null || !contentType.startsWith("audio/")) {
                 return ResponseEntity.badRequest()
-                        .body(new ErrorResponse("File must be an audio file"));
+                        .body(ApiResponse.error("File must be an audio file"));
             }
 
             if (songRepository.existsByTitle(title)) {
                 return ResponseEntity.status(HttpStatus.CONFLICT)
-                        .body(new ErrorResponse("Song with this title already exists"));
+                        .body(ApiResponse.error("Song with this title already exists"));
             }
 
             // Artist metadata validation
@@ -98,7 +103,7 @@ public class AdminSongController {
 
             if (genreIdsJson == null || genreIdsJson.isBlank()) {
                 return ResponseEntity.badRequest()
-                        .body(new ErrorResponse("At least one genre is required"));
+                        .body(ApiResponse.error("At least one genre is required"));
             }
 
             String trimmed = genreIdsJson.trim();
@@ -111,7 +116,7 @@ public class AdminSongController {
 
             if (idArray.length == 0) {
                 return ResponseEntity.badRequest()
-                        .body(new ErrorResponse("At least one genre is required"));
+                        .body(ApiResponse.error("At least one genre is required"));
             }
 
             List<Genre> genres = new ArrayList<>();
@@ -126,7 +131,7 @@ public class AdminSongController {
 
             if (genres.isEmpty()) {
                 return ResponseEntity.badRequest()
-                        .body(new ErrorResponse("No valid genres found"));
+                        .body(ApiResponse.error("No valid genres found"));
             }
 
             // ==================== SAVE AUDIO FILE ====================
@@ -149,52 +154,44 @@ public class AdminSongController {
 
             logger.info("Song uploaded successfully: {} (ID: {})", title, savedSong.getSongId());
 
-            return ResponseEntity.status(HttpStatus.CREATED).body(savedSong);
+            return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success("Song uploaded successfully", savedSong));
 
         } catch (IllegalArgumentException e) {
             logger.error("Validation error: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new ErrorResponse(e.getMessage()));
+                    .body(ApiResponse.error(e.getMessage()));
         } catch (Exception e) {
             logger.error("Error uploading song: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ErrorResponse("Failed to upload song: " + e.getMessage()));
+                    .body(ApiResponse.error("Failed to upload song: " + e.getMessage()));
         }
     }
 
     /**
      * Admin delete any song (no ownership check needed)
      * DELETE /api/admin/songs/{songId}
+     * 
+     * ✅ Sekarang pakai service khusus untuk hapus semua referensi dulu
      */
     @DeleteMapping("/{songId}")
-    public ResponseEntity<?> adminDeleteSong(@PathVariable String songId) {
+    public ResponseEntity<ApiResponse<?>> adminDeleteSong(@PathVariable String songId) {
         logger.info("Admin deleting song: {}", songId);
 
         try {
-            Song song = songRepository.findById(songId)
-                    .orElseThrow(() -> new RuntimeException("Song not found"));
+            // ✅ Pakai service yang handle cascade delete
+            songDeletionService.deleteSongWithReferences(songId);
 
-            try {
-                fileStorageService.deleteFile(song.getFilePath());
-            } catch (Exception e) {
-                logger.error("Warning: Could not delete file from storage: {}", e.getMessage());
-            }
-
-            songRepository.delete(song);
-            logger.info("Song deleted successfully by admin: {} (by {})",
-                    song.getTitle(),
-                    song.getArtist() != null ? song.getArtist().getArtistName() : "unknown");
-
-            return ResponseEntity.ok(new SuccessResponse("Song deleted successfully by admin"));
+            logger.info("Song deleted successfully by admin: {}", songId);
+            return ResponseEntity.ok(ApiResponse.success("Song deleted successfully by admin"));
 
         } catch (RuntimeException e) {
             logger.error("Song not found: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new ErrorResponse(e.getMessage()));
+                    .body(ApiResponse.error(e.getMessage()));
         } catch (Exception e) {
             logger.error("Error deleting song: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ErrorResponse("Failed to delete song: " + e.getMessage()));
+                    .body(ApiResponse.error("Failed to delete song: " + e.getMessage()));
         }
     }
 
@@ -203,7 +200,7 @@ public class AdminSongController {
      * GET /api/admin/songs/artists
      */
     @GetMapping("/artists")
-    public ResponseEntity<List<ArtistDropdownResponse>> getAllArtistsForDropdown() {
+    public ResponseEntity<ApiResponse<List<ArtistDropdownResponse>>> getAllArtistsForDropdown() {
         List<Artist> artists = artistRepository.findAll();
 
         List<ArtistDropdownResponse> result = artists.stream()
@@ -214,32 +211,6 @@ public class AdminSongController {
                 ))
                 .toList();
 
-        return ResponseEntity.ok(result);
-    }
-
-    // ==================== INNER RESPONSE CLASSES ====================
-
-    static class ErrorResponse {
-        private final String message;
-
-        public ErrorResponse(String message) {
-            this.message = message;
-        }
-
-        public String getMessage() {
-            return message;
-        }
-    }
-
-    static class SuccessResponse {
-        private final String message;
-
-        public SuccessResponse(String message) {
-            this.message = message;
-        }
-
-        public String getMessage() {
-            return message;
-        }
+        return ResponseEntity.ok(ApiResponse.success("Artists fetched successfully", result));
     }
 }

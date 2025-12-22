@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import melodia.controller.exception.user.UserNotFoundException;
 import melodia.model.entity.History;
 import melodia.model.entity.Song;
 import melodia.model.repository.HistoryRepository;
@@ -64,7 +65,7 @@ public class HistoryService {
 
         // Verify user exists
         if (!userRepository.existsById(userId)) {
-            throw new IllegalArgumentException("User tidak ditemukan");
+            throw new UserNotFoundException("User tidak ditemukan");
         }
 
         // Ambil atau buat history baru
@@ -94,7 +95,7 @@ public class HistoryService {
         }
 
         History history = historyRepository.findById(userId)
-            .orElseThrow(() -> new IllegalArgumentException("History tidak ditemukan untuk user: " + userId));
+            .orElseThrow(() -> new UserNotFoundException("History tidak ditemukan untuk user: " + userId));
         
         if (!history.hasPlayedSong(song)) {
             throw new IllegalArgumentException("Song tidak ditemukan di history");

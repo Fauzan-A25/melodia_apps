@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import melodia.model.dto.common.ApiResponse;
 import melodia.model.entity.Genre;
 import melodia.model.entity.Song;
 import melodia.model.repository.GenreRepository;
@@ -44,37 +45,38 @@ public class MusicController {
     
 
     @GetMapping("/genres")
-    public ResponseEntity<List<Genre>> getAllGenres() {
+    public ResponseEntity<ApiResponse<List<Genre>>> getAllGenres() {
         logger.debug("Fetching all genres");
         List<Genre> genres = genreRepository.findAll();
         logger.info("✅ Found {} genres", genres.size());
-        return ResponseEntity.ok(genres);
+        return ResponseEntity.ok(ApiResponse.success("Genres fetched successfully", genres));
     }
 
     // ==================== SONG ENDPOINTS ====================
 
     @GetMapping("/songs")
-    public ResponseEntity<List<Song>> getAllSongs() {
+    public ResponseEntity<ApiResponse<List<Song>>> getAllSongs() {
         logger.debug("Fetching all songs");
         List<Song> songs = musicService.getAllSongs();
         logger.info("✅ Found {} songs", songs.size());
-        return ResponseEntity.ok(songs);
+        return ResponseEntity.ok(ApiResponse.success("Songs fetched successfully", songs));
     }
 
     @GetMapping("/songs/{id}")
-    public ResponseEntity<Song> getSongById(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<Song>> getSongById(@PathVariable String id) {
         logger.debug("Fetching song by id: {}", id);
         Song song = musicService.getSongById(id);
         if (song == null) {
             logger.warn("Song not found: {}", id);
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(ApiResponse.error("Song not found"));
         }
         logger.info("✅ Song found: {}", song.getTitle());
-        return ResponseEntity.ok(song);
+        return ResponseEntity.ok(ApiResponse.success("Song fetched successfully", song));
     }
 
     @GetMapping("/songs/search")
-    public ResponseEntity<List<Song>> searchSongs(@RequestParam String query) {
+    public ResponseEntity<ApiResponse<List<Song>>> searchSongs(@RequestParam String query) {
         logger.debug("Searching songs with query: {}", query);
         List<Song> songsByTitle = musicService.searchByTitle(query);
         
@@ -82,43 +84,43 @@ public class MusicController {
             logger.debug("No songs found by title, searching by artist");
             List<Song> songsByArtist = musicService.searchByArtist(query);
             logger.info("✅ Found {} songs by artist", songsByArtist.size());
-            return ResponseEntity.ok(songsByArtist);
+            return ResponseEntity.ok(ApiResponse.success("Songs found by artist", songsByArtist));
         }
         
         logger.info("✅ Found {} songs by title", songsByTitle.size());
-        return ResponseEntity.ok(songsByTitle);
+        return ResponseEntity.ok(ApiResponse.success("Songs found by title", songsByTitle));
     }
 
     @GetMapping("/songs/search/title")
-    public ResponseEntity<List<Song>> searchByTitle(@RequestParam String query) {
+    public ResponseEntity<ApiResponse<List<Song>>> searchByTitle(@RequestParam String query) {
         logger.debug("Searching songs by title: {}", query);
         List<Song> songs = musicService.searchByTitle(query);
         logger.info("✅ Found {} songs", songs.size());
-        return ResponseEntity.ok(songs);
+        return ResponseEntity.ok(ApiResponse.success("Songs found by title", songs));
     }
 
     @GetMapping("/songs/search/artist")
-    public ResponseEntity<List<Song>> searchByArtist(@RequestParam String query) {
+    public ResponseEntity<ApiResponse<List<Song>>> searchByArtist(@RequestParam String query) {
         logger.debug("Searching songs by artist: {}", query);
         List<Song> songs = musicService.searchByArtist(query);
         logger.info("✅ Found {} songs", songs.size());
-        return ResponseEntity.ok(songs);
+        return ResponseEntity.ok(ApiResponse.success("Songs found by artist", songs));
     }
 
     @GetMapping("/songs/filter/genre")
-    public ResponseEntity<List<Song>> filterByGenre(@RequestParam String name) {
+    public ResponseEntity<ApiResponse<List<Song>>> filterByGenre(@RequestParam String name) {
         logger.debug("Filtering songs by genre: {}", name);
         List<Song> songs = musicService.filterByGenre(name);
         logger.info("✅ Found {} songs for genre: {}", songs.size(), name);
-        return ResponseEntity.ok(songs);
+        return ResponseEntity.ok(ApiResponse.success("Songs filtered by genre", songs));
     }
 
     @GetMapping("/songs/filter/year")
-    public ResponseEntity<List<Song>> filterByYear(@RequestParam int year) {
+    public ResponseEntity<ApiResponse<List<Song>>> filterByYear(@RequestParam int year) {
         logger.debug("Filtering songs by year: {}", year);
         List<Song> songs = musicService.filterByReleaseYear(year);
         logger.info("✅ Found {} songs for year: {}", songs.size(), year);
-        return ResponseEntity.ok(songs);
+        return ResponseEntity.ok(ApiResponse.success("Songs filtered by year", songs));
     }
 
     /**

@@ -6,7 +6,6 @@ import {
   ChevronDown,
   BadgeMinus,
   Search,
-  Music,
   Upload,
   Clock,
 } from 'lucide-react';
@@ -16,38 +15,28 @@ const Topbar = () => {
   const { user, logout } = useUser();
   const navigate = useNavigate();
   const location = useLocation();
+
   const [showDropdown, setShowDropdown] = useState(false);
   const [internalQuery, setInternalQuery] = useState('');
+
+  const isSearchPage = location.pathname === '/search';
+
+  // baca query dari URL hanya kalau di /search
+  const queryFromUrl = useMemo(() => {
+    if (!isSearchPage) return '';
+    const params = new URLSearchParams(location.search);
+    return params.get('q') || '';
+  }, [isSearchPage, location.search]);
+
+  // nilai yang tampil di input:
+  // - di /search → langsung pakai URL (supaya sync)
+  // - di halaman lain → pakai internal state
+  const value = isSearchPage ? queryFromUrl : internalQuery;
 
   const handleLogout = () => {
     logout();
     setShowDropdown(false);
     navigate('/auth');
-  };
-
-  // Derived value dari URL (tanpa setState di effect)
-  const queryFromUrl = useMemo(() => {
-    if (location.pathname === '/search') {
-      const params = new URLSearchParams(location.search);
-      return params.get('q') || '';
-    }
-    return '';
-  }, [location.pathname, location.search]);
-
-  // Display value: gunakan URL query jika di search page, otherwise gunakan internal
-  const displayQuery =
-    location.pathname === '/search' ? queryFromUrl : internalQuery;
-
-  const handleSearchChange = (e) => {
-    setInternalQuery(e.target.value);
-  };
-
-  const handleSearchKeyDown = (e) => {
-    if (e.key === 'Enter' && internalQuery.trim()) {
-      saveSearchHistory(internalQuery.trim());
-      navigate(`/search?q=${encodeURIComponent(internalQuery.trim())}`);
-      setInternalQuery('');
-    }
   };
 
   const saveSearchHistory = (query) => {
@@ -62,6 +51,44 @@ const Topbar = () => {
       localStorage.setItem('searchHistory', JSON.stringify(newHistory));
     } catch (err) {
       console.error('Error saving search history:', err);
+    }
+  };
+
+  const performSearch = (raw) => {
+    const q = raw.trim();
+    if (!q) return;
+
+    saveSearchHistory(q);
+
+    // selalu navigate ke /search dengan query baru
+    navigate(`/search?q=${encodeURIComponent(q)}`);
+
+    // kosongkan hanya state lokal (biar di luar /search input kosong)
+    setInternalQuery('');
+  };
+
+  const handleSearchChange = (e) => {
+    const next = e.target.value;
+
+    if (isSearchPage) {
+      // 🔁 kalau sedang di /search, langsung sync ke URL
+      const params = new URLSearchParams(location.search);
+      if (next) {
+        params.set('q', next);
+      } else {
+        params.delete('q');
+      }
+      navigate(`/search?${params.toString()}`, { replace: true });
+    } else {
+      // di halaman lain, simpan di state lokal
+      setInternalQuery(next);
+    }
+  };
+
+  const handleSearchKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      // pakai value yang sedang tampil (sudah konsisten)
+      performSearch(value);
     }
   };
 
@@ -81,7 +108,6 @@ const Topbar = () => {
       </div>
 
       <div className={styles.center}>
-        {/* Search Bar (hanya untuk non-admin) */}
         {user?.accountType !== 'ADMIN' && (
           <div className={styles.searchContainer}>
             <Search size={18} className={styles.searchIcon} />
@@ -89,7 +115,7 @@ const Topbar = () => {
               type="text"
               className={styles.searchInput}
               placeholder="Search songs, artists..."
-              value={displayQuery}
+              value={value}
               onChange={handleSearchChange}
               onKeyDown={handleSearchKeyDown}
             />
@@ -117,23 +143,19 @@ const Topbar = () => {
                 <span className={styles.accountType}>{user?.accountType}</span>
               </div>
 
-              {/* Menu khusus ADMIN */}
               {user?.accountType === 'ADMIN' && (
-                <>
-                  <button
-                    className={styles.dropdownItem}
-                    onClick={() => {
-                      setShowDropdown(false);
-                      navigate('/admin/upload');
-                    }}
-                  >
-                    <Upload size={16} />
-                    Upload Song
-                  </button>
-                </>
+                <button
+                  className={styles.dropdownItem}
+                  onClick={() => {
+                    setShowDropdown(false);
+                    navigate('/admin/upload');
+                  }}
+                >
+                  <Upload size={16} />
+                  Upload Song
+                </button>
               )}
 
-              {/* History Menu - hanya non-admin */}
               {user?.accountType !== 'ADMIN' && (
                 <button
                   className={styles.dropdownItem}

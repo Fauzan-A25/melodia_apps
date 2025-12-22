@@ -6,6 +6,9 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import melodia.controller.exception.admin.ArtistNotFoundException;
+import melodia.controller.exception.music.SongAlreadyExistsException;
+import melodia.controller.exception.music.SongNotFoundException;
 import melodia.model.entity.Artist;
 import melodia.model.entity.Genre;
 import melodia.model.entity.Song;
@@ -49,11 +52,11 @@ public class MusicService {
             int releaseYear
     ) {
         if (songRepository.existsByTitle(title)) {
-            throw new IllegalArgumentException("Lagu dengan judul ini sudah ada");
+            throw new SongAlreadyExistsException("Lagu dengan judul ini sudah ada");
         }
 
         Artist artist = artistRepository.findById(artistId)
-                .orElseThrow(() -> new IllegalArgumentException("Artist tidak ditemukan: " + artistId));
+                .orElseThrow(() -> new ArtistNotFoundException("Artist tidak ditemukan: " + artistId));
 
         Song song = new Song();
         song.setSongId("SNG" + System.currentTimeMillis());
@@ -85,7 +88,7 @@ public class MusicService {
             Integer newReleaseYear
     ) {
         Song song = songRepository.findById(songId)
-                .orElseThrow(() -> new IllegalArgumentException("Lagu tidak ditemukan"));
+                .orElseThrow(() -> new SongNotFoundException("Lagu tidak ditemukan"));
 
         if (newTitle != null) {
             song.setTitle(newTitle);
@@ -93,7 +96,7 @@ public class MusicService {
 
         if (newArtistId != null) {
             Artist artist = artistRepository.findById(newArtistId)
-                    .orElseThrow(() -> new IllegalArgumentException("Artist tidak ditemukan: " + newArtistId));
+                    .orElseThrow(() -> new ArtistNotFoundException("Artist tidak ditemukan: " + newArtistId));
             song.setArtist(artist);
         }
 

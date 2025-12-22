@@ -21,7 +21,6 @@ const MainLayout = ({ children }) => {
   const [accountType, setAccountType] = useState(null);
   const [initialized, setInitialized] = useState(false);
 
-  // ✅ Ambil userId & accountType dari context + localStorage, lalu tandai initialized
   useEffect(() => {
     const storedId =
       localStorage.getItem('userId') || localStorage.getItem('accountId');
@@ -36,19 +35,12 @@ const MainLayout = ({ children }) => {
     setInitialized(true);
   }, [user]);
 
-  const isAdmin = useMemo(
-    () => accountType === 'ADMIN',
-    [accountType]
-  );
-
-  // ✅ Player hanya untuk non-admin
+  const isAdmin = useMemo(() => accountType === 'ADMIN', [accountType]);
   const showPlayer = !isAdmin && currentSong !== null;
 
-  // ✅ Create Playlist Handler + EVENT EMITTER
   const handleCreatePlaylist = async (e) => {
     e.preventDefault();
 
-    // Jangan izinkan sebelum initialized, atau kalau admin, atau tidak ada userId
     if (!initialized || !userId || isAdmin) {
       alert('Access denied');
       return;
@@ -68,7 +60,6 @@ const MainLayout = ({ children }) => {
         newPlaylist.description
       );
 
-      // Emit event untuk refresh sidebar
       window.dispatchEvent(new CustomEvent('playlist:created'));
       console.log('🎵 playlist:created event dispatched!');
 
@@ -85,14 +76,11 @@ const MainLayout = ({ children }) => {
 
   return (
     <div className={styles.layout}>
-      {/* Sidebar */}
       <Sidebar onCreatePlaylist={() => setShowCreateModal(true)} />
 
       <div className={styles.mainArea}>
         <Topbar />
-        <div className={styles.pageContent}>
-          {children}
-        </div>
+        <div className={styles.pageContent}>{children}</div>
       </div>
 
       {showPlayer && (
@@ -101,7 +89,6 @@ const MainLayout = ({ children }) => {
         </div>
       )}
 
-      {/* Modal Create Playlist */}
       {showCreateModal && (
         <div
           className={styles.modalOverlay}

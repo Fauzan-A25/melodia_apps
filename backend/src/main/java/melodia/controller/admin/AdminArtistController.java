@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
+import melodia.model.dto.common.ApiResponse;
 import melodia.model.dto.request.auth.RegisterArtistRequest;
 import melodia.model.entity.Artist;
 import melodia.model.repository.ArtistRepository;
@@ -38,10 +39,10 @@ public class AdminArtistController {
      * GET /api/admin/artists
      */
     @GetMapping
-    public ResponseEntity<List<Artist>> getAllArtists() {
+    public ResponseEntity<ApiResponse<List<Artist>>> getAllArtists() {
         logger.info("Admin fetching all artists metadata");
         List<Artist> artists = artistRepository.findAll();
-        return ResponseEntity.ok(artists);
+        return ResponseEntity.ok(ApiResponse.success("Artists fetched successfully", artists));
     }
 
     /**
@@ -49,56 +50,46 @@ public class AdminArtistController {
      * POST /api/admin/artists
      */
     @PostMapping
-    public ResponseEntity<?> createArtist(@Valid @RequestBody RegisterArtistRequest request) {
+    public ResponseEntity<ApiResponse<?>> createArtist(@Valid @RequestBody RegisterArtistRequest request) {
         logger.info("Admin creating artist: {}", request.getArtistName());
         if (artistRepository.existsByArtistName(request.getArtistName())) {
+            logger.warn("Artist with name '{}' already exists", request.getArtistName());
             return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body(new ErrorResponse("Artist with this name already exists"));
+                    .body(ApiResponse.error("Artist with this name already exists"));
         }
-
 
         Artist artist = new Artist(request.getArtistName(), request.getBio());
         Artist saved = artistRepository.save(artist);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(saved);
+        logger.info("✅ Artist created successfully: {}", saved.getArtistId());
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success("Artist created successfully", saved));
     }
 
     /**
-     * Optional: delete artist metadata (hati-hati kalau sudah ada lagu yang refer ke sini).
+     * Delete artist metadata (hati-hati kalau sudah ada lagu yang refer ke sini).
      * DELETE /api/admin/artists/{artistId}
      */
     @DeleteMapping("/{artistId}")
-    public ResponseEntity<?> deleteArtist(@PathVariable String artistId) {
+    public ResponseEntity<ApiResponse<?>> deleteArtist(@PathVariable String artistId) {
         logger.info("Admin deleting artist: {}", artistId);
 
         Artist artist = artistRepository.findById(artistId)
                 .orElse(null);
         if (artist == null) {
+            logger.warn("Artist not found: {}", artistId);
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new ErrorResponse("Artist not found"));
+                    .body(ApiResponse.error("Artist not found"));
         }
 
-        // TODO: kalau mau, cek dulu apakah masih punya songs
         if (!artist.getSongs().isEmpty()) {
+            logger.warn("Cannot delete artist {} - has {} songs", artistId, artist.getSongs().size());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new ErrorResponse("Cannot delete artist with existing songs"));
+                    .body(ApiResponse.error("Cannot delete artist with existing songs"));
         }
 
         artistRepository.delete(artist);
-        return ResponseEntity.ok(new SuccessResponse("Artist deleted successfully"));
-    }
-
-    // ========== SIMPLE RESPONSE WRAPPERS ==========
-
-    static class ErrorResponse {
-        private final String message;
-        public ErrorResponse(String message) { this.message = message; }
-        public String getMessage() { return message; }
-    }
-
-    static class SuccessResponse {
-        private final String message;
-        public SuccessResponse(String message) { this.message = message; }
-        public String getMessage() { return message; }
+        logger.info("✅ Artist deleted successfully: {}", artistId);
+        return ResponseEntity.ok(ApiResponse.success("Artist deleted successfully"));
     }
 }

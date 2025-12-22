@@ -1,5 +1,6 @@
-// App.jsx
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+// eslint-disable-next-line no-unused-vars
+import { AnimatePresence, motion } from 'framer-motion';
 import { UserProvider, useUser } from './context/UserContext';
 import { MusicProvider } from './context/MusicContext';
 import { AuthProvider } from './context/AuthContext';
@@ -20,11 +21,30 @@ import UserManagement from './pages/admin/UserManagement';
 import AdminSong from './pages/admin/AdminSong';
 import AdminUpload from './pages/admin/AdminUpload';
 import ArtistManagement from './pages/admin/ArtistManagement';
-import AlbumManagement from './pages/admin/AlbumManagement'; // ✅ NEW
+import AlbumManagement from './pages/admin/AlbumManagement';
+
+// ✨ ENHANCED Page Transition - LEBIH TERLIHAT!
+const PageTransition = ({ children }) => {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 50, scale: 0.96 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: -50, scale: 0.96 }}
+      transition={{
+        duration: 0.5, // ✅ 500ms - lebih lambat
+        ease: [0.6, 0.05, 0.01, 0.9] // ✅ Custom cubic bezier
+      }}
+      style={{ width: '100%', height: '100%' }}
+    >
+      {children}
+    </motion.div>
+  );
+};
 
 // Role-based Route Wrapper
 const RoleBasedRoutes = () => {
   const { user } = useUser();
+  const location = useLocation();
 
   const storedRole =
     localStorage.getItem('role') || localStorage.getItem('accountType');
@@ -33,80 +53,181 @@ const RoleBasedRoutes = () => {
   // Jika ADMIN
   if (effectiveAccountType === 'ADMIN') {
     return (
-      <Routes>
+      <AnimatePresence mode="wait">
+        <Routes location={location} key={location.pathname}>
+          <Route
+            path="/admin/dashboard"
+            element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <PageTransition>
+                    <AdminDashboard />
+                  </PageTransition>
+                </MainLayout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/admin/genres"
+            element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <PageTransition>
+                    <GenreManagement />
+                  </PageTransition>
+                </MainLayout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/admin/users"
+            element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <PageTransition>
+                    <UserManagement />
+                  </PageTransition>
+                </MainLayout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/admin/artists"
+            element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <PageTransition>
+                    <ArtistManagement />
+                  </PageTransition>
+                </MainLayout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/admin/albums"
+            element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <PageTransition>
+                    <AlbumManagement />
+                  </PageTransition>
+                </MainLayout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/admin/songs"
+            element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <PageTransition>
+                    <AdminSong />
+                  </PageTransition>
+                </MainLayout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/admin/upload"
+            element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <PageTransition>
+                    <AdminUpload />
+                  </PageTransition>
+                </MainLayout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/settings"
+            element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <PageTransition>
+                    <Settings />
+                  </PageTransition>
+                </MainLayout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route path="/" element={<Navigate to="/admin/dashboard" replace />} />
+          <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
+        </Routes>
+      </AnimatePresence>
+    );
+  }
+
+  // Jika USER
+  return (
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
         <Route
-          path="/admin/dashboard"
+          path="/home"
           element={
             <ProtectedRoute>
               <MainLayout>
-                <AdminDashboard />
+                <PageTransition>
+                  <Home />
+                </PageTransition>
               </MainLayout>
             </ProtectedRoute>
           }
         />
 
         <Route
-          path="/admin/genres"
+          path="/playlist/:playlistId"
           element={
             <ProtectedRoute>
               <MainLayout>
-                <GenreManagement />
+                <PageTransition>
+                  <PlaylistDetail />
+                </PageTransition>
               </MainLayout>
             </ProtectedRoute>
           }
         />
 
         <Route
-          path="/admin/users"
+          path="/playlist"
           element={
             <ProtectedRoute>
               <MainLayout>
-                <UserManagement />
+                <Navigate to="/home" replace />
               </MainLayout>
             </ProtectedRoute>
           }
         />
 
         <Route
-          path="/admin/artists"
+          path="/history"
           element={
             <ProtectedRoute>
               <MainLayout>
-                <ArtistManagement />
-              </MainLayout>
-            </ProtectedRoute>
-          }
-        />
-
-        {/* ✅ NEW: Album Management Route */}
-        <Route
-          path="/admin/albums"
-          element={
-            <ProtectedRoute>
-              <MainLayout>
-                <AlbumManagement />
+                <PageTransition>
+                  <History />
+                </PageTransition>
               </MainLayout>
             </ProtectedRoute>
           }
         />
 
         <Route
-          path="/admin/songs"
+          path="/search"
           element={
             <ProtectedRoute>
               <MainLayout>
-                <AdminSong />
-              </MainLayout>
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/admin/upload"
-          element={
-            <ProtectedRoute>
-              <MainLayout>
-                <AdminUpload />
+                <PageTransition>
+                  <Search />
+                </PageTransition>
               </MainLayout>
             </ProtectedRoute>
           }
@@ -117,104 +238,43 @@ const RoleBasedRoutes = () => {
           element={
             <ProtectedRoute>
               <MainLayout>
-                <Settings />
+                <PageTransition>
+                  <Settings />
+                </PageTransition>
               </MainLayout>
             </ProtectedRoute>
           }
         />
 
-        <Route path="/" element={<Navigate to="/admin/dashboard" replace />} />
-        <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
+        <Route path="/" element={<Navigate to="/home" replace />} />
+        <Route path="*" element={<Navigate to="/home" replace />} />
       </Routes>
-    );
-  }
-
-  // Jika USER
-  return (
-    <Routes>
-      <Route
-        path="/home"
-        element={
-          <ProtectedRoute>
-            <MainLayout>
-              <Home />
-            </MainLayout>
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/playlist/:playlistId"
-        element={
-          <ProtectedRoute>
-            <MainLayout>
-              <PlaylistDetail />
-            </MainLayout>
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/playlist"
-        element={
-          <ProtectedRoute>
-            <MainLayout>
-              <Navigate to="/home" replace />
-            </MainLayout>
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/history"
-        element={
-          <ProtectedRoute>
-            <MainLayout>
-              <History />
-            </MainLayout>
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/search"
-        element={
-          <ProtectedRoute>
-            <MainLayout>
-              <Search />
-            </MainLayout>
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/settings"
-        element={
-          <ProtectedRoute>
-            <MainLayout>
-              <Settings />
-            </MainLayout>
-          </ProtectedRoute>
-        }
-      />
-
-      <Route path="/" element={<Navigate to="/home" replace />} />
-      <Route path="*" element={<Navigate to="/home" replace />} />
-    </Routes>
+    </AnimatePresence>
   );
 };
 
 const App = () => {
+  const location = useLocation();
+
   return (
     <AuthProvider>
       <UserProvider>
         <MusicProvider>
           <SessionTimeoutWarning />
 
-          <Routes>
-            <Route path="/auth" element={<AuthPage />} />
-            <Route path="*" element={<RoleBasedRoutes />} />
-          </Routes>
+          <AnimatePresence mode="wait">
+            <Routes location={location} key={location.pathname}>
+              <Route 
+                path="/auth" 
+                element={
+                  <PageTransition>
+                    <AuthPage />
+                  </PageTransition>
+                } 
+              />
+              <Route path="*" element={<RoleBasedRoutes />} />
+            </Routes>
+          </AnimatePresence>
         </MusicProvider>
       </UserProvider>
     </AuthProvider>
