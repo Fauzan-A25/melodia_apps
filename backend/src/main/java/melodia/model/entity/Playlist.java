@@ -18,56 +18,71 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 /**
- * Playlist - Koleksi lagu yang dibuat oleh User (atau Artist yang extends User)
- * Implements Playable dan Searchable
+ * Playlist - Koleksi lagu yang dibuat oleh user di Melodia.
+ * Bisa dimiliki oleh User biasa maupun Artist (karena Artist extends User di domain ini).
  */
 @Entity
 @Table(name = "playlists")
 public class Playlist {
 
+    // ==================== Identitas & metadata ====================
+
     @Id
     @Column(name = "playlist_id", length = 50, nullable = false)
-    private String playlistId;
+    private String playlistId; //! ID unik playlist, di-set dari service (bisa prefix + timestamp seperti entity lain).
 
     @Column(name = "name", nullable = false, length = 100)
-    private String name;
+    private String name; // * Nama playlist yang muncul di UI.
 
     @Column(name = "description", length = 500)
-    private String description;
+    private String description; // * Deskripsi singkat playlist (opsional).
 
-    // ✅ Owner adalah User (bisa regular User atau Artist yang extends User)
-    // Add @JsonIgnoreProperties untuk prevent circular reference
-    @ManyToOne(fetch = FetchType.EAGER)  // Changed to EAGER untuk bisa akses owner info
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt; // * Waktu playlist dibuat, berguna untuk sort dan riwayat.
+
+    // ==================== Owner playlist ====================
+
+    //! Owner adalah User (bisa regular user atau artist).
+    //  Menggunakan EAGER agar informasi owner tersedia saat playlist di-fetch untuk UI.
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id", nullable = false)
-    @JsonIgnoreProperties({"playlists", "password", "hibernateLazyInitializer", "handler"})
+    @JsonIgnoreProperties({
+            "playlists",
+            "password",
+            "hibernateLazyInitializer",
+            "handler"
+    }) // * Hindari circular reference & data sensitif saat serialize User.
     private User owner;
 
-    // ✅ Daftar lagu dalam playlist (composition via junction table)
-    // Add @JsonIgnore untuk prevent circular reference
+    // ==================== Relasi dengan lagu ====================
+
+    // * Daftar lagu yang menjadi isi playlist.
+    // * Relasi many-to-many melalui tabel junction "playlist_songs".
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
         name = "playlist_songs",
         joinColumns = @JoinColumn(name = "playlist_id"),
         inverseJoinColumns = @JoinColumn(name = "song_id")
     )
-    @JsonIgnore  // Jangan serialize songs, handle manual via getSongCount()
+    @JsonIgnore // * Hindari serialisasi langsung entity song untuk mencegah lazy-loading issue / siklus.
     private List<Song> songs = new ArrayList<>();
 
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+    // ==================== Constructors ====================
 
-    // Constructors
+    // * Dipakai saat membuat playlist baru dari kode (misalnya dari UI).
     public Playlist(String name, User owner) {
         this.name = name;
         this.owner = owner;
         this.createdAt = LocalDateTime.now();
     }
 
+    // * Diperlukan oleh JPA.
     protected Playlist() {
         this.createdAt = LocalDateTime.now();
     }
 
     // ==================== Getters & Setters ====================
+
     public String getPlaylistId() { return playlistId; }
     public void setPlaylistId(String playlistId) { this.playlistId = playlistId; }
 
@@ -84,18 +99,20 @@ public class Playlist {
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 
     /**
-     * Get semua lagu dalam playlist (implements Playable interface)
+     * Mengembalikan semua lagu dalam playlist.
+     * Biasanya dipakai di layer service, bukan langsung di JSON response.
      */
     public List<Song> getSongs() { return songs; }
-    
-    public void setSongs(List<Song> songs) { 
-        this.songs = songs != null ? songs : new ArrayList<>(); 
+
+    public void setSongs(List<Song> songs) {
+        // * Jaga supaya list tidak pernah null.
+        this.songs = songs != null ? songs : new ArrayList<>();
     }
 
     // ==================== Helper Methods ====================
-    
+
     /**
-     * Tambah lagu ke playlist
+     * Menambahkan lagu ke playlist jika belum ada.
      */
     public void addSong(Song song) {
         if (song != null && !this.songs.contains(song)) {
@@ -104,7 +121,7 @@ public class Playlist {
     }
 
     /**
-     * Hapus lagu dari playlist
+     * Menghapus lagu dari playlist.
      */
     public void removeSong(Song song) {
         if (song != null) {
@@ -113,30 +130,30 @@ public class Playlist {
     }
 
     /**
-     * Cek apakah lagu ada di playlist
+     * Mengecek apakah lagu tertentu ada di playlist.
      */
     public boolean containsSong(Song song) {
-        return this.songs.contains(song);
+        return song != null && this.songs.contains(song);
     }
 
     /**
-     * Get jumlah lagu dalam playlist
-     * ✅ Method ini akan di-serialize ke JSON sebagai "songCount"
+     * Mengembalikan jumlah lagu dalam playlist.
+     * Biasanya di-expose ke JSON sebagai "songCount" untuk ringkasan playlist.
      */
     public int getSongCount() {
         return this.songs.size();
     }
 
     /**
-     * Cek apakah user tertentu adalah owner playlist ini
+     * Mengecek apakah user tertentu adalah pemilik playlist ini.
      */
     public boolean isOwnedBy(User user) {
         return this.owner != null && this.owner.equals(user);
     }
 
     /**
-     * Search playlist by keyword (implements Searchable interface)
-     * Cari di nama dan deskripsi playlist
+     * Pencarian sederhana berdasarkan nama dan deskripsi playlist.
+     * Bisa dipakai untuk filter di sisi backend sebelum kirim ke frontend.
      */
     public boolean search(String keyword) {
         if (keyword == null || keyword.isEmpty()) {

@@ -27,7 +27,6 @@ import melodia.model.service.music.MusicService;
 
 @RestController
 @RequestMapping("/api")
-@CrossOrigin(origins = "http://localhost:5173")
 public class MusicController {
 
     private static final Logger logger = LoggerFactory.getLogger(MusicController.class);
