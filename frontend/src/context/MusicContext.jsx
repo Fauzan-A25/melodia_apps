@@ -12,7 +12,7 @@ export const MusicProvider = ({ children }) => {
 
   // ==================== PLAYER STATE ====================
   const [currentSong, setCurrentSong] = useState(null);
-  const [queue, setQueue] = useState([]);
+  const [queue, setQueue] = useState([]);          // selalu treat sebagai array
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolume] = useState(70);
@@ -23,6 +23,7 @@ export const MusicProvider = ({ children }) => {
   // ==================== LIBRARY METHODS ====================
 
   const addToLibrary = useCallback((track) => {
+    if (!track || !track.id) return;
     setLibrary((prev) => {
       const exists = prev.find((t) => t.id === track.id);
       if (exists) return prev;
@@ -51,14 +52,15 @@ export const MusicProvider = ({ children }) => {
   }, []);
 
   const addToPlaylist = useCallback((playlistId, track) => {
+    if (!track || !track.id) return;
     setPlaylists((prev) =>
       prev.map((playlist) => {
         if (playlist.id === playlistId) {
-          const exists = playlist.tracks.find((t) => t.id === track.id);
+          const exists = (playlist.tracks || []).find((t) => t.id === track.id);
           if (exists) return playlist;
           return {
             ...playlist,
-            tracks: [...playlist.tracks, track],
+            tracks: [...(playlist.tracks || []), track],
           };
         }
         return playlist;
@@ -72,7 +74,7 @@ export const MusicProvider = ({ children }) => {
         if (playlist.id === playlistId) {
           return {
             ...playlist,
-            tracks: playlist.tracks.filter((t) => t.id !== trackId),
+            tracks: (playlist.tracks || []).filter((t) => t.id !== trackId),
           };
         }
         return playlist;
@@ -96,15 +98,14 @@ export const MusicProvider = ({ children }) => {
   }, []);
 
   const getPlaylistById = useCallback(
-    (playlistId) => {
-      return playlists.find((p) => p.id === playlistId) || null;
-    },
+    (playlistId) => playlists.find((p) => p.id === playlistId) || null,
     [playlists],
   );
 
   // ==================== FAVORITES METHODS ====================
 
   const addToFavorites = useCallback((track) => {
+    if (!track || !track.id) return;
     setFavorites((prev) => {
       const exists = prev.find((t) => t.id === track.id);
       if (exists) return prev;
@@ -117,6 +118,7 @@ export const MusicProvider = ({ children }) => {
   }, []);
 
   const toggleFavorite = useCallback((track) => {
+    if (!track || !track.id) return;
     setFavorites((prev) => {
       const exists = prev.find((t) => t.id === track.id);
       if (exists) {
@@ -127,15 +129,14 @@ export const MusicProvider = ({ children }) => {
   }, []);
 
   const isFavorite = useCallback(
-    (trackId) => {
-      return favorites.some((t) => t.id === trackId);
-    },
+    (trackId) => favorites.some((t) => t.id === trackId),
     [favorites],
   );
 
   // ==================== HISTORY METHODS ====================
 
   const addToHistory = useCallback((track) => {
+    if (!track || !track.id) return;
     const historyEntry = {
       ...track,
       playedAt: new Date().toISOString(),
@@ -156,12 +157,16 @@ export const MusicProvider = ({ children }) => {
     (query) => {
       if (!query || query.length < 2) return [];
       const lowerQuery = query.toLowerCase();
-      return library.filter(
-        (track) =>
-          track.title.toLowerCase().includes(lowerQuery) ||
-          track.artist.toLowerCase().includes(lowerQuery) ||
-          track.album?.toLowerCase().includes(lowerQuery),
-      );
+      return library.filter((track) => {
+        const title = track.title || '';
+        const artist = track.artist || '';
+        const album = track.album || '';
+        return (
+          title.toLowerCase().includes(lowerQuery) ||
+          artist.toLowerCase().includes(lowerQuery) ||
+          album.toLowerCase().includes(lowerQuery)
+        );
+      });
     },
     [library],
   );
@@ -170,69 +175,66 @@ export const MusicProvider = ({ children }) => {
 
   const playSong = useCallback(
     (song, songList = [], index = 0) => {
-      setCurrentSong(song);
-      setQueue(songList);
-      setCurrentIndex(index);
-      setIsPlaying(true);
-      addToHistory(song);
+      const safeList = Array.isArray(songList) ? songList : [];
+      const safeIndex =
+        typeof index === 'number' && index >= 0 && index < safeList.length
+          ? index
+          : 0;
+
+      setCurrentSong(song || null);
+      setQueue(safeList);
+      setCurrentIndex(safeIndex);
+      setIsPlaying(!!song);
+      if (song) addToHistory(song);
     },
     [addToHistory],
   );
 
-  const playNext = useCallback(
-    () => {
-      if (!queue || queue.length === 0) {
-        return;
+  const playNext = useCallback(() => {
+    const safeQueue = Array.isArray(queue) ? queue : [];
+    if (!safeQueue.length) return;
+
+    if (repeatMode === 'one') {
+      return;
+    }
+
+    let nextIndex = currentIndex;
+
+    if (isShuffled && safeQueue.length > 1) {
+      let randomIndex = currentIndex;
+      while (randomIndex === currentIndex) {
+        randomIndex = Math.floor(Math.random() * safeQueue.length);
       }
+      nextIndex = randomIndex;
+    } else if (currentIndex < safeQueue.length - 1) {
+      nextIndex = currentIndex + 1;
+    } else if (repeatMode === 'all') {
+      nextIndex = 0;
+    } else {
+      return;
+    }
 
-      if (repeatMode === 'one') {
-        // Dengan audio.loop di PlayerBar, tidak perlu berubah lagu
-        return;
-      }
+    setCurrentIndex(nextIndex);
+    setCurrentSong(safeQueue[nextIndex]);
+    addToHistory(safeQueue[nextIndex]);
+  }, [currentIndex, queue, repeatMode, isShuffled, addToHistory]);
 
-      let nextIndex = currentIndex;
+  const playPrevious = useCallback(() => {
+    const safeQueue = Array.isArray(queue) ? queue : [];
+    if (!safeQueue.length) return;
 
-      if (isShuffled && queue.length > 1) {
-        let randomIndex = currentIndex;
-        while (randomIndex === currentIndex) {
-          randomIndex = Math.floor(Math.random() * queue.length);
-        }
-        nextIndex = randomIndex;
-      } else if (currentIndex < queue.length - 1) {
-        nextIndex = currentIndex + 1;
-      } else if (repeatMode === 'all') {
-        nextIndex = 0;
-      } else {
-        return;
-      }
-
-      setCurrentIndex(nextIndex);
-      setCurrentSong(queue[nextIndex]);
-      addToHistory(queue[nextIndex]);
-    },
-    [currentIndex, queue, repeatMode, isShuffled, addToHistory],
-  );
-
-  const playPrevious = useCallback(
-    () => {
-      if (!queue || queue.length === 0) {
-        return;
-      }
-
-      if (currentIndex > 0) {
-        const prevIndex = currentIndex - 1;
-        setCurrentIndex(prevIndex);
-        setCurrentSong(queue[prevIndex]);
-        addToHistory(queue[prevIndex]);
-      } else if (repeatMode === 'all') {
-        const lastIndex = queue.length - 1;
-        setCurrentIndex(lastIndex);
-        setCurrentSong(queue[lastIndex]);
-        addToHistory(queue[lastIndex]);
-      }
-    },
-    [currentIndex, queue, repeatMode, addToHistory],
-  );
+    if (currentIndex > 0) {
+      const prevIndex = currentIndex - 1;
+      setCurrentIndex(prevIndex);
+      setCurrentSong(safeQueue[prevIndex]);
+      addToHistory(safeQueue[prevIndex]);
+    } else if (repeatMode === 'all') {
+      const lastIndex = safeQueue.length - 1;
+      setCurrentIndex(lastIndex);
+      setCurrentSong(safeQueue[lastIndex]);
+      addToHistory(safeQueue[lastIndex]);
+    }
+  }, [currentIndex, queue, repeatMode, addToHistory]);
 
   const stopMusic = useCallback(() => {
     setCurrentSong(null);
@@ -265,7 +267,8 @@ export const MusicProvider = ({ children }) => {
   }, []);
 
   const addToQueue = useCallback((song) => {
-    setQueue((prev) => [...prev, song]);
+    if (!song) return;
+    setQueue((prev) => [...(Array.isArray(prev) ? prev : []), song]);
   }, []);
 
   const clearQueue = useCallback(() => {
@@ -273,15 +276,25 @@ export const MusicProvider = ({ children }) => {
     setCurrentIndex(0);
   }, []);
 
-  // ✅ NEW: Get current queue information
+  // ==================== Get current queue info (null-safe) ====================
+
   const getCurrentQueue = useCallback(() => {
+    const safeQueue = Array.isArray(queue) ? queue : [];
+    const safeIndex =
+      typeof currentIndex === 'number' && currentIndex >= 0
+        ? Math.min(currentIndex, safeQueue.length - 1)
+        : 0;
+
     return {
       currentSong,
-      currentIndex,
-      queue,
-      totalSongs: queue.length,
-      remainingSongs: queue.slice(currentIndex + 1),
-      previousSongs: queue.slice(0, currentIndex),
+      currentIndex: safeIndex,
+      queue: safeQueue,
+      totalSongs: safeQueue.length,
+      remainingSongs:
+        safeQueue.length > safeIndex + 1
+          ? safeQueue.slice(safeIndex + 1)
+          : [],
+      previousSongs: safeQueue.slice(0, safeIndex),
     };
   }, [currentSong, currentIndex, queue]);
 
@@ -333,7 +346,7 @@ export const MusicProvider = ({ children }) => {
       addToQueue,
       clearQueue,
       setIsPlaying,
-      getCurrentQueue, // ✅ Export this method
+      getCurrentQueue,
     }),
     [
       library,
@@ -374,7 +387,7 @@ export const MusicProvider = ({ children }) => {
       toggleShuffle,
       addToQueue,
       clearQueue,
-      getCurrentQueue, // ✅ Add to dependencies
+      getCurrentQueue,
     ],
   );
 
@@ -385,9 +398,7 @@ export const MusicProvider = ({ children }) => {
   );
 };
 
-/**
- * Custom hook to use music context
- */
+// Custom hook
 // eslint-disable-next-line react-refresh/only-export-components
 export const useMusic = () => {
   const context = useContext(MusicContext);
@@ -397,7 +408,7 @@ export const useMusic = () => {
   return context;
 };
 
-// Alias untuk backward compatibility
+// Alias
 // eslint-disable-next-line react-refresh/only-export-components
 export const useMusicContext = useMusic;
 // eslint-disable-next-line react-refresh/only-export-components

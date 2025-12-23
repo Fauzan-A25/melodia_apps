@@ -1,6 +1,6 @@
 // pages/admin/AdminSong.jsx
 import React, { useState, useEffect } from 'react';
-import { musicService } from '../../services/musicService';
+import { adminService } from '../../services/api';
 import styles from './AdminSong.module.css';
 
 const AdminSong = () => {
@@ -20,8 +20,8 @@ const AdminSong = () => {
     try {
       setLoading(true);
       const [songsData, genresData] = await Promise.all([
-        musicService.getAllSongs(),
-        musicService.getAllGenres(),
+        adminService.getAllSongs(),
+        adminService.getAllGenres(),
       ]);
 
       setSongs(songsData);
@@ -43,7 +43,7 @@ const AdminSong = () => {
 
     const songToDelete = deleteModal.song;
     try {
-      await musicService.adminDeleteSong(songToDelete.songId);
+      await adminService.deleteSong(songToDelete.songId);
       setSongs((prevSongs) =>
         prevSongs.filter((s) => s.songId !== songToDelete.songId),
       );

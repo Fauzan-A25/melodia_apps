@@ -14,6 +14,19 @@ export const adminService = {
     return responseBody.data || responseBody;
   },
 
+  // --- Song Management ---
+  getAllSongs: async () => {
+    const response = await fetch(`${API_BASE_URL}/songs`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    if (!response.ok) {
+      throw new Error('Failed to fetch songs');
+    }
+    const responseBody = await response.json();
+    return responseBody.data || responseBody;
+  },
+
   // --- Genre Management ---
   getAllGenres: async () => {
     const response = await fetch(`${API_BASE_URL}/admin/genres`, {
