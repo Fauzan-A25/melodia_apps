@@ -1,6 +1,494 @@
-/* AuthPage.module.css - Enhanced with Smooth Height Transitions */
+/* AuthPage.module.css - Complete Full Code */
 
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* ✅ Global: Hapus outline di semua button */
+button:focus,
+button:focus-visible,
+button:active {
+  outline: none !important;
+}
+
+/* ========== AUTH CONTAINER ========== */
 .authContainer {
+  position: relative;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 10%;
+}
+
+/* Background Layers */
+.bgLayer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  background-repeat: no-repeat;
+}
+
+.overlayLayer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+  background-repeat: no-repeat;
+  pointer-events: none;
+}
+
+/* Logo di pojok kiri atas */
+.logoContainer {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  z-index: 20;
+  animation: fadeInDown 0.8s ease-out;
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.melodiaLogo {
+  width: 100px;
+  height: 100px;
+  filter: brightness(1.2) drop-shadow(0 0 20px rgba(255, 255, 255, 0.3));
+  animation: logoPulseLeft 3s ease-in-out infinite;
+}
+
+@keyframes logoPulseLeft {
+  0%, 100% {
+    transform: scale(1);
+    filter: brightness(1.2) drop-shadow(0 0 20px rgba(255, 255, 255, 0.3));
+  }
+  50% {
+    transform: scale(1.05);
+    filter: brightness(1.3) drop-shadow(0 0 30px rgba(255, 255, 255, 0.5));
+  }
+}
+
+/* ========== TOGGLE BUTTONS ========== */
+.toggleButtonsLeft {
+  position: absolute;
+  bottom: 60px;
+  left: 50%;
+  transform: translateX(-180%);
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  z-index: 20;
+  animation: fadeInUp 0.8s ease-out 0.3s both;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateX(-180%) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-180%) translateY(0);
+  }
+}
+
+/* ✅ Button Style - Base */
+.toggleBtnLeft {
+  padding: 12px 50px;
+  background: rgba(10, 25, 50, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 25px;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(30px) saturate(150%);
+  -webkit-backdrop-filter: blur(30px) saturate(150%);
+  outline: none !important;
+  -webkit-tap-highlight-color: transparent;
+  min-width: 180px;
+  text-align: center;
+  box-shadow: 
+    0 4px 20px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+/* ========== ✅ CUSTOM POSISI X DAN Y PER BUTTON ========== */
+
+/* ✅ Login Button (nth-child 1) - EDIT POSISI DI SINI */
+.toggleBtnLeft:nth-child(1) {
+  transform: translateX(0px) translateY(0px); 
+  /* translateX = X (horizontal): positif = kanan, negatif = kiri */
+  /* translateY = Y (vertical): positif = bawah, negatif = atas */
+  /* Contoh: transform: translateX(20px) translateY(-10px); */
+  z-index: 2;
+  transition: all 0.3s ease;
+}
+
+/* ✅ Register Button (nth-child 2) - EDIT POSISI DI SINI */
+.toggleBtnLeft:nth-child(2) {
+  transform: translateX(0px) translateY(0px);
+  /* translateX = X (horizontal): positif = kanan, negatif = kiri */
+  /* translateY = Y (vertical): positif = bawah, negatif = atas */
+  /* Contoh: transform: translateX(40px) translateY(5px); */
+  z-index: 1;
+  transition: all 0.3s ease;
+}
+
+/* ✅ Saat Login AKTIF - Tetap di posisi custom */
+.toggleBtnLeft:nth-child(1).activeLeft {
+  z-index: 3;
+  transform: translateX(0px) translateY(0px); 
+  /* ✅ Samakan dengan posisi non-aktif Login */
+}
+
+/* ✅ Saat Register AKTIF - Tetap di posisi custom */
+.toggleBtnLeft:nth-child(2).activeLeft {
+  z-index: 3;
+  transform: translateX(0px) translateY(0px); 
+  /* ✅ Samakan dengan posisi non-aktif Register */
+}
+
+/* ✅ Hover Login - Naik sedikit, X tetap */
+.toggleBtnLeft:nth-child(1):hover:not(:disabled):not(.activeLeft) {
+  transform: translateX(0px) translateY(-2px);
+  /* ✅ Edit Y sesuai posisi custom Login + -2px */
+}
+
+/* ✅ Hover Register - Naik sedikit, X tetap */
+.toggleBtnLeft:nth-child(2):hover:not(:disabled):not(.activeLeft) {
+  transform: translateX(0px) translateY(-2px);
+  /* ✅ Edit Y sesuai posisi custom Register + -2px */
+}
+
+/* ========== END CUSTOM POSISI ========== */
+
+/* ✅ Shimmer Effect */
+.toggleBtnLeft::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.1),
+    transparent
+  );
+  transition: left 0.5s ease;
+}
+
+.toggleBtnLeft:hover::before {
+  left: 100%;
+}
+
+/* ✅ Focus States */
+.toggleBtnLeft:focus,
+.toggleBtnLeft:focus-visible,
+.toggleBtnLeft:active {
+  outline: none !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+/* ✅ Hover State - Non Aktif */
+.toggleBtnLeft:hover:not(:disabled):not(.activeLeft) {
+  background: rgba(20, 35, 60, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  color: rgba(255, 255, 255, 0.8);
+  box-shadow: 
+    0 6px 25px rgba(0, 0, 0, 0.2),
+    0 0 20px rgba(70, 130, 230, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+/* ✅ Button AKTIF - Solid Blue */
+.toggleBtnLeft.activeLeft {
+  background: linear-gradient(135deg, #4682e6 0%, #5a9ff5 100%);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  color: #ffffff;
+  box-shadow: 
+    0 4px 25px rgba(70, 130, 230, 0.5),
+    0 0 30px rgba(70, 130, 230, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.2);
+}
+
+/* ✅ Animated Glow Pulse */
+.toggleBtnLeft.activeLeft::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 25px;
+  background: radial-gradient(
+    circle at center,
+    rgba(255, 255, 255, 0.2),
+    transparent 70%
+  );
+  opacity: 0;
+  animation: glowPulse 2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes glowPulse {
+  0%, 100% {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ✅ Active Focus States */
+.toggleBtnLeft.activeLeft:focus,
+.toggleBtnLeft.activeLeft:focus-visible,
+.toggleBtnLeft.activeLeft:active {
+  outline: none !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+}
+
+/* ✅ Hover State - Aktif */
+.toggleBtnLeft.activeLeft:hover:not(:disabled) {
+  background: linear-gradient(135deg, #5a9ff5 0%, #6aafff 100%);
+  border: 1px solid rgba(255, 255, 255, 0.4) !important;
+  box-shadow: 
+    0 6px 30px rgba(70, 130, 230, 0.6),
+    0 0 40px rgba(70, 130, 230, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+/* ✅ Disabled State */
+.toggleBtnLeft:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ========== FORM CONTENT ========== */
+.formContent {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  max-width: 500px;
+  animation: slideInRight 0.8s ease-out;
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* ========== TAGLINE ========== */
+.tagline {
+  margin-bottom: 60px;
+  text-align: center;
+  animation: fadeIn 1s ease-out 0.2s both;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ✅ Tagline Text dengan Glowstone Effect */
+.taglineText {
+  font-size: 3.5rem;
+  font-weight: 300;
+  color: rgba(140, 180, 255, 0.95);
+  letter-spacing: 10px;
+  margin: 8px 0;
+  text-transform: lowercase;
+  font-style: italic;
+  line-height: 1.1;
+  text-shadow: 
+    0 0 10px rgba(140, 180, 255, 0.8),
+    0 0 20px rgba(140, 180, 255, 0.6),
+    0 0 30px rgba(140, 180, 255, 0.4),
+    0 0 40px rgba(70, 130, 230, 0.3),
+    0 0 60px rgba(70, 130, 230, 0.2);
+  position: relative;
+  animation: textGlowPulse 3s ease-in-out infinite;
+}
+
+@keyframes textGlowPulse {
+  0%, 100% {
+    text-shadow: 
+      0 0 10px rgba(140, 180, 255, 0.8),
+      0 0 20px rgba(140, 180, 255, 0.6),
+      0 0 30px rgba(140, 180, 255, 0.4),
+      0 0 40px rgba(70, 130, 230, 0.3),
+      0 0 60px rgba(70, 130, 230, 0.2);
+  }
+  50% {
+    text-shadow: 
+      0 0 15px rgba(140, 180, 255, 1),
+      0 0 25px rgba(140, 180, 255, 0.8),
+      0 0 35px rgba(140, 180, 255, 0.6),
+      0 0 45px rgba(70, 130, 230, 0.5),
+      0 0 70px rgba(70, 130, 230, 0.3);
+  }
+}
+
+/* ========== FORM ========== */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  animation: fadeIn 0.4s ease;
+}
+
+.label {
+  display: block;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  margin-left: 0;
+}
+
+/* ========== INPUT ========== */
+.input {
+  width: 100%;
+  padding: 12px 0;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 0;
+  color: #ffffff;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  outline: none;
+}
+
+.input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+  font-style: italic;
+}
+
+.input:focus {
+  background: transparent;
+  border-bottom-color: rgba(70, 130, 230, 0.8);
+  box-shadow: 0 1px 0 0 rgba(70, 130, 230, 0.3);
+  transform: none;
+}
+
+.input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ========== SUBMIT BUTTON ========== */
+.submitBtn {
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(135deg, #4682e6 0%, #5a9ff5 100%);
+  border: none;
+  border-radius: 30px;
+  color: #ffffff;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  cursor: pointer;
+  margin-top: 30px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(70, 130, 230, 0.4);
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+  text-transform: capitalize;
+}
+
+.submitBtn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #5a9ff5 0%, #6aafff 100%);
+  box-shadow: 0 6px 20px rgba(70, 130, 230, 0.6);
+  transform: translateY(-2px);
+}
+
+.submitBtn:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 2px 10px rgba(70, 130, 230, 0.3);
+}
+
+.submitBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.submitText {
+  display: inline-block;
+  min-width: 110px;
+  text-align: center;
+}
+
+/* ========== MESSAGES ========== */
+.errorMessage {
+  background: linear-gradient(135deg, rgba(254, 226, 226, 0.95) 0%, rgba(254, 202, 202, 0.9) 100%);
+  color: #dc2626;
+  padding: 14px 18px;
+  border-radius: 12px;
+  font-size: 14px;
+  text-align: center;
+  border: 1px solid rgba(252, 165, 165, 0.5);
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.15);
+}
+
+.successMessage {
+  background: linear-gradient(135deg, rgba(220, 252, 231, 0.95) 0%, rgba(187, 247, 208, 0.9) 100%);
+  color: #16a34a;
+  padding: 14px 18px;
+  border-radius: 12px;
+  font-size: 14px;
+  text-align: center;
+  border: 1px solid rgba(134, 239, 172, 0.5);
+  box-shadow: 0 2px 8px rgba(22, 163, 74, 0.15);
+}
+
+/* ========== LOADING SCREEN ========== */
+.loadingContainer {
   min-height: 100vh;
   width: 100vw;
   display: flex;
@@ -11,8 +499,7 @@
   overflow: hidden;
 }
 
-/* ✨ Animated gradient background */
-.authContainer::before {
+.loadingContainer::before {
   content: '';
   position: absolute;
   top: -50%;
@@ -26,82 +513,14 @@
     transparent 70%
   );
   animation: shimmer 15s linear infinite;
-  z-index: 0;
   pointer-events: none;
 }
 
 @keyframes shimmer {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
-/* ✨ Decorative blurred blobs */
-.blob1, .blob2, .blob3 {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(100px);
-  opacity: 0.5;
-  z-index: 1;
-  pointer-events: none;
-}
-
-.blob1 {
-  width: 500px;
-  height: 500px;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.8) 0%, transparent 70%);
-  top: -200px;
-  left: -100px;
-  animation: float 25s ease-in-out infinite, breathe 8s ease-in-out infinite;
-}
-
-.blob2 {
-  width: 400px;
-  height: 400px;
-  background: radial-gradient(circle, rgba(147, 197, 253, 0.6) 0%, transparent 70%);
-  bottom: -150px;
-  right: -100px;
-  animation: float 20s ease-in-out infinite reverse, breathe 6s ease-in-out infinite;
-  animation-delay: 0s, -2s;
-}
-
-.blob3 {
-  width: 350px;
-  height: 350px;
-  background: radial-gradient(circle, rgba(96, 165, 250, 0.5) 0%, transparent 70%);
-  top: 50%;
-  right: -200px;
-  animation: float 30s ease-in-out infinite, breathe 10s ease-in-out infinite;
-  animation-delay: -5s, -4s;
-}
-
-@keyframes float {
-  0%, 100% {
-    transform: translate(0, 0) scale(1);
-  }
-  33% {
-    transform: translate(30px, -50px) scale(1.1);
-  }
-  66% {
-    transform: translate(-20px, 30px) scale(0.9);
-  }
-}
-
-@keyframes breathe {
-  0%, 100% {
-    filter: blur(100px);
-    opacity: 0.5;
-  }
-  50% {
-    filter: blur(120px);
-    opacity: 0.3;
-  }
-}
-
-/* ✨ LOADING CARD */
 .loadingCard {
   background: rgba(255, 255, 255, 0.25);
   backdrop-filter: blur(20px);
@@ -110,16 +529,11 @@
   padding: 60px 40px;
   max-width: 400px;
   width: 90%;
-  box-shadow: 
-    0 8px 32px 0 rgba(31, 38, 135, 0.37),
-    0 0 1px 0 rgba(255, 255, 255, 0.5),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 30px;
-  position: relative;
   z-index: 10;
   animation: loadingCardEntrance 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
@@ -138,7 +552,6 @@
   }
 }
 
-/* Music Notes Animation */
 .musicNotesContainer {
   position: relative;
   width: 120px;
@@ -178,10 +591,10 @@
   animation: floatNote 3s ease-in-out infinite;
 }
 
-.musicNote:nth-child(2) { animation-delay: 0s; }
-.musicNote:nth-child(3) { animation-delay: 0.75s; }
-.musicNote:nth-child(4) { animation-delay: 1.5s; }
-.musicNote:nth-child(5) { animation-delay: 2.25s; }
+.musicNote:nth-child(2) { animation-delay: 0s; --x: 50px; --y: -70px; }
+.musicNote:nth-child(3) { animation-delay: 0.75s; --x: -50px; --y: -70px; }
+.musicNote:nth-child(4) { animation-delay: 1.5s; --x: 60px; --y: 40px; }
+.musicNote:nth-child(5) { animation-delay: 2.25s; --x: -60px; --y: 40px; }
 
 @keyframes floatNote {
   0%, 100% {
@@ -196,12 +609,6 @@
   80% { opacity: 0.5; }
 }
 
-.musicNote:nth-child(2) { --x: 50px; --y: -70px; }
-.musicNote:nth-child(3) { --x: -50px; --y: -70px; }
-.musicNote:nth-child(4) { --x: 60px; --y: 40px; }
-.musicNote:nth-child(5) { --x: -60px; --y: 40px; }
-
-/* Spinner */
 .spinnerContainer {
   position: relative;
   width: 60px;
@@ -215,8 +622,6 @@
   border-top: 4px solid #2f80ed;
   border-radius: 50%;
   animation: spin 1s linear infinite;
-  position: relative;
-  z-index: 2;
 }
 
 @keyframes spin {
@@ -246,7 +651,6 @@
   }
 }
 
-/* Loading Text */
 .loadingTextContainer {
   text-align: center;
   display: flex;
@@ -264,7 +668,6 @@
   background-clip: text;
   animation: gradientFlow 3s ease infinite;
   letter-spacing: 3px;
-  margin: 0;
 }
 
 @keyframes gradientFlow {
@@ -316,21 +719,18 @@
   50% { opacity: 1; }
 }
 
-/* Progress Bar */
 .progressBar {
   width: 100%;
   height: 4px;
   background: rgba(47, 128, 237, 0.2);
   border-radius: 10px;
   overflow: hidden;
-  position: relative;
 }
 
 .progressFill {
   height: 100%;
   background: linear-gradient(90deg, #2f80ed 0%, #60a5fa 50%, #2f80ed 100%);
   background-size: 200% 100%;
-  border-radius: 10px;
   animation: progressMove 2s ease-in-out infinite;
 }
 
@@ -349,414 +749,106 @@
   }
 }
 
-/* ✨ AUTH CARD - Smooth height via Framer Motion layout */
-.authCard {
-  background: rgba(255, 255, 255, 0.25);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-radius: 24px;
-  padding: 48px 36px;
-  max-width: 440px;
-  width: 90%;
-  max-height: 90vh;
-  /* penting: biarkan tinggi bebas, jangan scroll internal saat animasi */
-  overflow-y: visible;
-  box-shadow: 
-    0 8px 32px 0 rgba(31, 38, 135, 0.37),
-    0 0 1px 0 rgba(255, 255, 255, 0.5),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  z-index: 10;
-  animation: slideUp 0.6s ease-out;
-  /* hanya animasi shadow & transform, height di-handle Framer Motion layout */
-  transition: box-shadow 0.3s ease, transform 0.3s ease;
-  will-change: transform, box-shadow;
-}
-
-.authCard:hover {
-  box-shadow: 
-    0 8px 32px 0 rgba(31, 38, 135, 0.37),
-    0 0 20px 0 rgba(147, 197, 253, 0.4),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.3);
-  transform: translateY(-2px);
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
+/* ========== RESPONSIVE ========== */
+@media (max-width: 1024px) {
+  .authContainer {
+    flex-direction: column;
+    justify-content: center;
+    padding-right: 0;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+
+  .formContent {
+    padding: 40px 30px;
   }
-}
 
-/* Custom scrollbar (kalau nanti overflow-y diaktifkan lagi) */
-.authCard::-webkit-scrollbar {
-  width: 6px;
-}
-
-.authCard::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 10px;
-}
-
-.authCard::-webkit-scrollbar-thumb {
-  background: rgba(47, 128, 237, 0.5);
-  border-radius: 10px;
-  transition: background 0.3s ease;
-}
-
-.authCard::-webkit-scrollbar-thumb:hover {
-  background: rgba(47, 128, 237, 0.7);
-}
-
-/* Logo Section */
-.logoSection {
-  text-align: center;
-  margin-bottom: 40px;
-  animation: fadeIn 0.8s ease-out 0.2s both;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
+  .taglineText {
+    font-size: 2.5rem;
+    letter-spacing: 6px;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+
+  .toggleButtonsLeft {
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    flex-direction: row;
+    gap: 15px;
   }
-}
 
-.logo {
-  color: #2f80ed;
-  margin-bottom: 16px;
-  filter: drop-shadow(0 0 20px rgba(47, 128, 237, 0.4));
-  animation: logoPulse 2s ease-in-out infinite;
-  display: inline-block;
-}
-
-@keyframes logoPulse {
-  0%, 100% {
-    transform: scale(1);
-    filter: drop-shadow(0 0 20px rgba(47, 128, 237, 0.4));
-  }
-  50% {
-    transform: scale(1.05);
-    filter: drop-shadow(0 0 30px rgba(47, 128, 237, 0.6));
-  }
-}
-
-.title {
-  font-size: 36px;
-  font-weight: 800;
-  color: #1e3a8a;
-  margin-bottom: 8px;
-  letter-spacing: 2px;
-  text-shadow: 0 2px 10px rgba(30, 58, 138, 0.2);
-  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #1e3a8a 100%);
-  background-size: 200% auto;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  animation: gradientShift 3s ease infinite;
-}
-
-@keyframes gradientShift {
-  0%, 100% { background-position: 0% center; }
-  50% { background-position: 100% center; }
-}
-
-.subtitle {
-  color: #475569;
-  font-size: 14px;
-  font-weight: 400;
-  animation: fadeIn 0.8s ease-out 0.4s both;
-}
-
-/* Toggle Buttons */
-.toggleButtons {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 32px;
-  background: rgba(255, 255, 255, 0.4);
-  padding: 6px;
-  border-radius: 12px;
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06);
-  animation: fadeIn 0.8s ease-out 0.6s both;
-}
-
-.toggleBtn {
-  flex: 1;
-  padding: 12px;
-  border: none;
-  background: transparent;
-  color: #64748b;
-  font-size: 14px;
-  font-weight: 600;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  overflow: hidden;
-  z-index: 1;
-  outline: none;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.toggleBtn:focus,
-.toggleBtn:focus-visible {
-  outline: none;
-}
-
-.toggleBtn::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 0;
-  height: 0;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.4);
-  transform: translate(-50%, -50%);
-  transition: width 0.4s ease-out, height 0.4s ease-out, opacity 0.4s ease-out;
-  opacity: 0;
-  z-index: -1;
-}
-
-.toggleBtn:active::after {
-  width: 200px;
-  height: 200px;
-  opacity: 1;
-  transition: width 0s, height 0s, opacity 0.4s;
-}
-
-.toggleBtn:hover:not(.active) {
-  background: rgba(255, 255, 255, 0.3);
-  color: #475569;
-  transform: scale(1.02);
-}
-
-.toggleBtn.active {
-  background: #2f80ed;
-  color: white;
-  box-shadow: 
-    0 4px 12px rgba(47, 128, 237, 0.4),
-    0 2px 4px rgba(0, 0, 0, 0.1);
-  transform: translateY(-1px);
-}
-
-/* ✨ FORM - biarkan tinggi diatur layout Motion */
-.form {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.inputGroup {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.icon {
-  position: absolute;
-  left: 16px;
-  color: #64748b;
-  pointer-events: none;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  z-index: 1;
-}
-
-.input {
-  width: 100%;
-  padding: 14px 16px 14px 48px;
-  background: rgba(255, 255, 255, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  border-radius: 12px;
-  color: #1e293b;
-  font-size: 14px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  will-change: transform, box-shadow;
-}
-
-.input:focus {
-  outline: none;
-  border-color: #2f80ed;
-  box-shadow: 
-    0 0 0 3px rgba(47, 128, 237, 0.15),
-    0 4px 12px rgba(47, 128, 237, 0.1);
-  background: rgba(255, 255, 255, 0.85);
-  transform: translateY(-2px) scale(1.005);
-}
-
-.input:focus + .icon,
-.inputGroup:focus-within .icon {
-  color: #2f80ed;
-  transform: scale(1.1);
-}
-
-.input::placeholder {
-  color: #94a3b8;
-}
-
-/* Submit Button */
-.submitBtn {
-  margin-top: 8px;
-  padding: 16px;
-  background: linear-gradient(135deg, #2f80ed 0%, #1d4ed8 100%);
-  border: none;
-  border-radius: 12px;
-  color: white;
-  font-size: 16px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 
-    0 4px 16px rgba(47, 128, 237, 0.3),
-    0 2px 4px rgba(0, 0, 0, 0.1);
-  position: relative;
-  overflow: hidden;
-  outline: none;
-  -webkit-tap-highlight-color: transparent;
-}
-
-/* Teks di dalam tombol submit agar smooth saat animasi */
-.submitText {
-  display: inline-block;
-  min-width: 110px; /* optional: biar lebar tombol stabil saat teks ganti */
-  text-align: center;
-}
-
-.submitBtn:focus {
-  outline: none;
-}
-
-.submitBtn::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-  transition: left 0.5s ease;
-  z-index: 0;
-}
-
-.submitBtn:hover::before {
-  left: 100%;
-}
-
-.submitBtn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-/* Messages */
-.errorMessage {
-  background: linear-gradient(135deg, rgba(254, 226, 226, 0.95) 0%, rgba(254, 202, 202, 0.9) 100%);
-  color: #dc2626;
-  padding: 12px 16px;
-  border-radius: 10px;
-  font-size: 14px;
-  text-align: center;
-  border: 1px solid rgba(252, 165, 165, 0.5);
-  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.15);
-  position: relative;
-  overflow: hidden;
-}
-
-.errorMessage::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(220, 38, 38, 0.2), transparent);
-  animation: errorPulse 2s ease infinite;
-  pointer-events: none;
-}
-
-@keyframes errorPulse {
-  0% { left: -100%; }
-  100% { left: 100%; }
-}
-
-.successMessage {
-  background: linear-gradient(135deg, rgba(220, 252, 231, 0.95) 0%, rgba(187, 247, 208, 0.9) 100%);
-  color: #16a34a;
-  padding: 12px 16px;
-  border-radius: 10px;
-  font-size: 14px;
-  text-align: center;
-  border: 1px solid rgba(134, 239, 172, 0.5);
-  box-shadow: 0 2px 8px rgba(22, 163, 74, 0.15);
-  position: relative;
-  overflow: hidden;
-}
-
-.successMessage::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
-  animation: successSparkle 2s ease infinite;
-  pointer-events: none;
-}
-
-@keyframes successSparkle {
-  0% { left: -100%; }
-  100% { left: 100%; }
-}
-
-/* Responsive Mobile */
-@media (max-width: 600px) {
-  .authCard, .loadingCard {
-    padding: 32px 24px;
-    max-width: 95vw;
+  .toggleBtnLeft {
+    min-width: 140px;
   }
   
-  .logoSection {
-    margin-bottom: 24px;
+  /* Reset custom position di tablet/mobile */
+  .toggleBtnLeft:nth-child(1),
+  .toggleBtnLeft:nth-child(2) {
+    transform: translateX(0px) translateY(0px) !important;
   }
   
-  .title, .loadingTitle {
-    font-size: 28px;
-  }
-
-  .blob1 {
-    width: 300px;
-    height: 300px;
-    top: -100px;
-    left: -50px;
-  }
-
-  .blob2 {
-    width: 250px;
-    height: 250px;
-    bottom: -100px;
-    right: -50px;
-  }
-
-  .blob3 {
-    width: 200px;
-    height: 200px;
-    right: -100px;
+  .toggleBtnLeft:nth-child(1):hover:not(:disabled):not(.activeLeft),
+  .toggleBtnLeft:nth-child(2):hover:not(:disabled):not(.activeLeft) {
+    transform: translateX(0px) translateY(-2px) !important;
   }
 }
 
-/* Reduce motion for accessibility */
+@media (max-width: 768px) {
+  .formContent {
+    padding: 30px 20px;
+    max-width: 90%;
+  }
+
+  .taglineText {
+    font-size: 2rem;
+    letter-spacing: 4px;
+  }
+
+  .toggleBtnLeft {
+    padding: 10px 35px;
+    font-size: 14px;
+    min-width: 130px;
+  }
+
+  .logoContainer {
+    top: 15px;
+    left: 15px;
+  }
+
+  .melodiaLogo {
+    width: 55px;
+    height: 55px;
+  }
+}
+
+@media (max-width: 480px) {
+  .tagline {
+    margin-bottom: 40px;
+  }
+
+  .taglineText {
+    font-size: 1.5rem;
+    letter-spacing: 3px;
+  }
+
+  .input {
+    font-size: 14px;
+  }
+
+  .submitBtn {
+    padding: 14px;
+    font-size: 15px;
+  }
+
+  .toggleButtonsLeft {
+    flex-direction: column;
+    gap: 10px;
+    width: 85%;
+  }
+
+  .toggleBtnLeft {
+    width: 100%;
+  }
+}
+
+/* ========== ACCESSIBILITY ========== */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

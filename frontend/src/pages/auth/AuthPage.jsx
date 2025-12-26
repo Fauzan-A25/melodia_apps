@@ -2,10 +2,13 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuthContext } from '../../context/AuthContext';
-// eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from 'framer-motion';
 import styles from './AuthPage.module.css';
-import { Music2, Mail, Lock, User } from 'lucide-react';
+import { Music2 } from 'lucide-react';
+
+import logoImage from '../../assets/images/authPage/logo.png';
+import fullBgImage from '../../assets/images/common/bg.png';
+import rightOverlayImage from '../../assets/images/authPage/auth-page-bg-miring.png';
 
 const USERNAME_REGEX = /^[^\s]+$/;
 
@@ -170,11 +173,7 @@ const AuthPage = () => {
   // Loading Screen
   if (contextLoading) {
     return (
-      <div className={styles.authContainer}>
-        <div className={styles.blob1}></div>
-        <div className={styles.blob2}></div>
-        <div className={styles.blob3}></div>
-
+      <div className={styles.loadingContainer}>
         <div className={styles.loadingCard}>
           <div className={styles.musicNotesContainer}>
             <Music2 size={64} className={styles.loadingLogo} />
@@ -211,42 +210,80 @@ const AuthPage = () => {
 
   return (
     <div className={styles.authContainer}>
-      <div className={styles.blob1}></div>
-      <div className={styles.blob2}></div>
-      <div className={styles.blob3}></div>
+      {/* ✅ Background Layer 1: Full BG dengan Animasi */}
+      <motion.div 
+        className={styles.bgLayer}
+        style={{
+          backgroundImage: `url(${fullBgImage})`,
+          backgroundSize: 'cover',
+          backgroundRepeat: 'no-repeat',
+        }}
+        animate={{
+          backgroundPosition: isLogin 
+            ? '-350px center'      // ✅ Posisi saat Login
+            : '-900px center'      // ✅ Posisi saat Register (geser ke kanan)
+        }}
+        transition={{
+          duration: 0.8,           // ✅ Durasi animasi (ubah sesuai keinginan)
+          ease: [0.4, 0, 0.2, 1]   // ✅ Smooth easing
+        }}
+      />
+      
+      {/* ✅ Background Layer 2: Right Overlay (TIDAK BERUBAH) */}
+      <div 
+        className={styles.overlayLayer}
+        style={{
+          backgroundImage: `url(${rightOverlayImage})`,
+          backgroundSize: 'cover',
+          backgroundPosition: '300px center',
+        }}
+      />
 
+      {/* Logo di pojok kiri atas */}
+      <div className={styles.logoContainer}>
+        <img 
+          src={logoImage}
+          alt="Melodia Logo" 
+          className={styles.melodiaLogo}
+        />
+      </div>
+      
+      {/* Toggle Buttons di kiri bawah */}
+      <div className={styles.toggleButtonsLeft}>
+        <button
+          className={`${styles.toggleBtnLeft} ${
+            isLogin ? styles.activeLeft : ''
+          }`}
+          onClick={() => handleToggle(true)}
+          disabled={loading}
+          style={{ outline: 'none', border: 'none' }}
+        >
+          Login
+        </button>
+        <button
+          className={`${styles.toggleBtnLeft} ${
+            !isLogin ? styles.activeLeft : ''
+          }`}
+          onClick={() => handleToggle(false)}
+          disabled={loading}
+          style={{ outline: 'none', border: 'none' }}
+        >
+          Register
+        </button>
+      </div>
+
+      {/* Form di kanan */}
       <motion.div
-        className={styles.authCard}
+        className={styles.formContent}
         layout
         transition={{
           layout: { duration: 0.45, ease: [0.4, 0, 0.2, 1] },
         }}
       >
-        <div className={styles.logoSection}>
-          <Music2 size={48} className={styles.logo} />
-          <h1 className={styles.title}>MELODIA</h1>
-          <p className={styles.subtitle}>Your Music, Your Vibe</p>
-        </div>
-
-        <div className={styles.toggleButtons}>
-          <button
-            className={`${styles.toggleBtn} ${
-              isLogin ? styles.active : ''
-            }`}
-            onClick={() => handleToggle(true)}
-            disabled={loading}
-          >
-            Login
-          </button>
-          <button
-            className={`${styles.toggleBtn} ${
-              !isLogin ? styles.active : ''
-            }`}
-            onClick={() => handleToggle(false)}
-            disabled={loading}
-          >
-            Register
-          </button>
+        {/* Tagline */}
+        <div className={styles.tagline}>
+          <h1 className={styles.taglineText}>your music,</h1>
+          <h1 className={styles.taglineText}>your vibe</h1>
         </div>
 
         <AnimatePresence mode="wait">
@@ -290,7 +327,7 @@ const AuthPage = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.25 }}
           >
-            <User size={20} className={styles.icon} />
+            <label className={styles.label}>Username</label>
             <input
               type="text"
               name="username"
@@ -316,7 +353,7 @@ const AuthPage = () => {
                 transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
                 style={{ overflow: 'hidden' }}
               >
-                <Mail size={20} className={styles.icon} />
+                <label className={styles.label}>Email</label>
                 <input
                   type="email"
                   name="email"
@@ -339,7 +376,7 @@ const AuthPage = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.25, delay: 0.05 }}
           >
-            <Lock size={20} className={styles.icon} />
+            <label className={styles.label}>Password</label>
             <input
               type="password"
               name="password"
@@ -354,7 +391,7 @@ const AuthPage = () => {
             />
           </motion.div>
 
-          {/* Submit Button dengan smooth text transition */}
+          {/* Submit Button */}
           <motion.button
             type="submit"
             className={styles.submitBtn}
@@ -380,27 +417,16 @@ const AuthPage = () => {
                 >
                   ⏳ Loading...
                 </motion.span>
-              ) : isLogin ? (
-                <motion.span
-                  key="signin"
-                  className={styles.submitText}
-                  initial={{ opacity: 0, y: 6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -6 }}
-                  transition={{ duration: 0.18, ease: [0.4, 0, 0.2, 1] }}
-                >
-                  Sign In
-                </motion.span>
               ) : (
                 <motion.span
-                  key="register"
+                  key="enter"
                   className={styles.submitText}
                   initial={{ opacity: 0, y: 6 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -6 }}
                   transition={{ duration: 0.18, ease: [0.4, 0, 0.2, 1] }}
                 >
-                  Create Account
+                  Enter
                 </motion.span>
               )}
             </AnimatePresence>
