@@ -138,9 +138,6 @@ button:active {
 /* ✅ Login Button (nth-child 1) - EDIT POSISI DI SINI */
 .toggleBtnLeft:nth-child(1) {
   transform: translateX(0px) translateY(0px); 
-  /* translateX = X (horizontal): positif = kanan, negatif = kiri */
-  /* translateY = Y (vertical): positif = bawah, negatif = atas */
-  /* Contoh: transform: translateX(20px) translateY(-10px); */
   z-index: 2;
   transition: all 0.3s ease;
 }
@@ -148,9 +145,6 @@ button:active {
 /* ✅ Register Button (nth-child 2) - EDIT POSISI DI SINI */
 .toggleBtnLeft:nth-child(2) {
   transform: translateX(0px) translateY(0px);
-  /* translateX = X (horizontal): positif = kanan, negatif = kiri */
-  /* translateY = Y (vertical): positif = bawah, negatif = atas */
-  /* Contoh: transform: translateX(40px) translateY(5px); */
   z-index: 1;
   transition: all 0.3s ease;
 }
@@ -159,26 +153,22 @@ button:active {
 .toggleBtnLeft:nth-child(1).activeLeft {
   z-index: 3;
   transform: translateX(0px) translateY(0px); 
-  /* ✅ Samakan dengan posisi non-aktif Login */
 }
 
 /* ✅ Saat Register AKTIF - Tetap di posisi custom */
 .toggleBtnLeft:nth-child(2).activeLeft {
   z-index: 3;
   transform: translateX(0px) translateY(0px); 
-  /* ✅ Samakan dengan posisi non-aktif Register */
 }
 
 /* ✅ Hover Login - Naik sedikit, X tetap */
 .toggleBtnLeft:nth-child(1):hover:not(:disabled):not(.activeLeft) {
   transform: translateX(0px) translateY(-2px);
-  /* ✅ Edit Y sesuai posisi custom Login + -2px */
 }
 
 /* ✅ Hover Register - Naik sedikit, X tetap */
 .toggleBtnLeft:nth-child(2):hover:not(:disabled):not(.activeLeft) {
   transform: translateX(0px) translateY(-2px);
-  /* ✅ Edit Y sesuai posisi custom Register + -2px */
 }
 
 /* ========== END CUSTOM POSISI ========== */
@@ -749,51 +739,29 @@ button:active {
   }
 }
 
-/* ========== RESPONSIVE ========== */
-@media (max-width: 1024px) {
-  .authContainer {
-    flex-direction: column;
-    justify-content: center;
-    padding-right: 0;
-  }
-
-  .formContent {
-    padding: 40px 30px;
-  }
-
-  .taglineText {
-    font-size: 2.5rem;
-    letter-spacing: 6px;
-  }
-
-  .toggleButtonsLeft {
-    bottom: 40px;
-    left: 50%;
-    transform: translateX(-50%);
-    flex-direction: row;
-    gap: 15px;
-  }
-
-  .toggleBtnLeft {
-    min-width: 140px;
-  }
-  
-  /* Reset custom position di tablet/mobile */
-  .toggleBtnLeft:nth-child(1),
-  .toggleBtnLeft:nth-child(2) {
-    transform: translateX(0px) translateY(0px) !important;
-  }
-  
-  .toggleBtnLeft:nth-child(1):hover:not(:disabled):not(.activeLeft),
-  .toggleBtnLeft:nth-child(2):hover:not(:disabled):not(.activeLeft) {
-    transform: translateX(0px) translateY(-2px) !important;
-  }
-}
+/* ========== RESPONSIVE - HANYA MOBILE (max-width: 768px) ========== */
 
 @media (max-width: 768px) {
+  /* ✅ Container dengan overflow visible untuk tombol */
+  .authContainer {
+    justify-content: center;
+    align-items: flex-start;
+    padding: 120px 20px 150px 20px; /* ✅ Tambah padding bawah untuk tombol */
+    overflow-y: auto; /* ✅ Allow scroll jika konten panjang */
+    overflow-x: hidden;
+  }
+
+  /* Form full width dengan margin */
   .formContent {
     padding: 30px 20px;
-    max-width: 90%;
+    max-width: 100%;
+    margin-top: auto;
+    margin-bottom: auto;
+  }
+
+  /* Tagline lebih kecil */
+  .tagline {
+    margin-bottom: 40px;
   }
 
   .taglineText {
@@ -801,31 +769,92 @@ button:active {
     letter-spacing: 4px;
   }
 
-  .toggleBtnLeft {
-    padding: 10px 35px;
-    font-size: 14px;
-    min-width: 130px;
+  /* Form spacing */
+  .form {
+    gap: 25px;
   }
 
+  .input {
+    font-size: 15px;
+  }
+
+  .submitBtn {
+    padding: 15px;
+    font-size: 16px;
+    margin-top: 20px;
+  }
+
+  /* ✅ Toggle buttons FIXED di bawah layar (tidak hilang) */
+  .toggleButtonsLeft {
+    position: fixed; /* ✅ FIXED agar selalu terlihat */
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    flex-direction: row;
+    gap: 12px;
+    z-index: 100; /* ✅ Z-index tinggi */
+    animation: none; /* ✅ Hilangkan animation yang bisa bikin hilang */
+  }
+
+  .toggleBtnLeft {
+    padding: 12px 30px;
+    font-size: 15px;
+    min-width: 140px;
+  }
+
+  /* Reset custom position di mobile */
+  .toggleBtnLeft:nth-child(1),
+  .toggleBtnLeft:nth-child(2) {
+    transform: translateX(0px) translateY(0px) !important;
+  }
+
+  .toggleBtnLeft:nth-child(1):hover:not(:disabled):not(.activeLeft),
+  .toggleBtnLeft:nth-child(2):hover:not(:disabled):not(.activeLeft) {
+    transform: translateX(0px) translateY(-2px) !important;
+  }
+
+  /* Logo tetap sama */
   .logoContainer {
-    top: 15px;
-    left: 15px;
+    top: 0px;
+    left: 0px;
+    position: fixed; /* ✅ FIXED agar tetap di atas */
+    z-index: 100;
   }
 
   .melodiaLogo {
-    width: 55px;
-    height: 55px;
+    width: 100px;
+    height: 100px;
+  }
+
+  /* Messages lebih kecil */
+  .errorMessage,
+  .successMessage {
+    padding: 12px 16px;
+    font-size: 13px;
   }
 }
 
 @media (max-width: 480px) {
+  /* ✅ Container dengan padding lebih banyak */
+  .authContainer {
+    padding: 100px 15px 140px 15px;
+  }
+
+  .formContent {
+    padding: 20px 15px;
+  }
+
   .tagline {
-    margin-bottom: 40px;
+    margin-bottom: 30px;
   }
 
   .taglineText {
     font-size: 1.5rem;
     letter-spacing: 3px;
+  }
+
+  .form {
+    gap: 20px;
   }
 
   .input {
@@ -835,16 +864,114 @@ button:active {
   .submitBtn {
     padding: 14px;
     font-size: 15px;
+    margin-top: 15px;
   }
 
+  /* ✅ Toggle buttons vertikal di mobile kecil */
   .toggleButtonsLeft {
+    position: fixed; /* ✅ FIXED */
+    bottom: 15px;
+    left: 50%;
+    transform: translateX(-50%);
     flex-direction: column;
     gap: 10px;
-    width: 85%;
+    width: calc(100% - 30px);
+    max-width: 300px;
+    z-index: 100;
   }
 
   .toggleBtnLeft {
     width: 100%;
+    padding: 13px;
+    font-size: 15px;
+  }
+
+  /* Logo lebih kecil di mobile kecil */
+  .logoContainer {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+  }
+
+  .melodiaLogo {
+    width: 70px;
+    height: 70px;
+  }
+}
+
+/* ✅ Extra Small */
+@media (max-width: 360px) {
+  .taglineText {
+    font-size: 1.3rem;
+    letter-spacing: 2px;
+  }
+
+  .toggleBtnLeft {
+    padding: 12px;
+    font-size: 14px;
+  }
+
+  .submitBtn {
+    padding: 13px;
+    font-size: 14px;
+  }
+}
+
+/* ✅ Landscape Mode */
+@media (max-height: 500px) and (orientation: landscape) {
+  .authContainer {
+    height: 100vh;
+    overflow-y: auto;
+    padding: 80px 15px 100px 15px;
+  }
+
+  .formContent {
+    padding: 15px;
+    max-width: 450px;
+  }
+
+  .tagline {
+    margin-bottom: 15px;
+  }
+
+  .taglineText {
+    font-size: 1.5rem;
+    letter-spacing: 3px;
+  }
+
+  .form {
+    gap: 15px;
+  }
+
+  .submitBtn {
+    margin-top: 10px;
+    padding: 10px;
+    font-size: 14px;
+  }
+
+  /* Toggle buttons horizontal fixed */
+  .toggleButtonsLeft {
+    position: fixed;
+    bottom: 10px;
+    flex-direction: row;
+    gap: 10px;
+  }
+
+  .toggleBtnLeft {
+    padding: 8px 20px;
+    font-size: 13px;
+    min-width: 100px;
+  }
+
+  .logoContainer {
+    position: fixed;
+    top: 5px;
+    left: 5px;
+  }
+
+  .melodiaLogo {
+    width: 50px;
+    height: 50px;
   }
 }
 
@@ -856,5 +983,25 @@ button:active {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+}
+
+/* ========== SAFE AREA (Notch Support) ========== */
+@supports (padding: max(0px)) {
+  @media (max-width: 768px) {
+    .authContainer {
+      padding-left: max(20px, env(safe-area-inset-left));
+      padding-right: max(20px, env(safe-area-inset-right));
+      padding-bottom: max(150px, calc(env(safe-area-inset-bottom) + 140px));
+    }
+
+    .toggleButtonsLeft {
+      bottom: max(20px, calc(env(safe-area-inset-bottom) + 15px));
+    }
+
+    .logoContainer {
+      top: max(10px, env(safe-area-inset-top));
+      left: max(10px, env(safe-area-inset-left));
+    }
   }
 }
