@@ -23,6 +23,9 @@ export const AuthProvider = ({ children }) => {
     updateProfile: auth.updateProfile,
     hasRole: auth.hasRole,
     clearError: auth.clearError,
+    // ✅ TAMBAHAN: Expose loading state untuk terminal
+    loadingMessage: auth.loadingMessage, // Message yang sedang ditampilkan
+    loadingProgress: auth.loadingProgress, // Progress 0-100
   }), [
     auth.user,
     auth.isAuthenticated,
@@ -34,6 +37,8 @@ export const AuthProvider = ({ children }) => {
     auth.updateProfile,
     auth.hasRole,
     auth.clearError,
+    auth.loadingMessage,
+    auth.loadingProgress,
   ]);
 
   return (
@@ -58,4 +63,5 @@ export const useAuthContext = () => {
   
   return context;
 };
+
 export default AuthContext;

@@ -2,9 +2,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuthContext } from '../../context/AuthContext';
+// eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from 'framer-motion';
 import styles from './AuthPage.module.css';
-import { Music2 } from 'lucide-react';
 
 import logoImage from '../../assets/images/authPage/logo.png';
 import fullBgImage from '../../assets/images/common/bg.png';
@@ -23,6 +23,8 @@ const AuthPage = () => {
     user,
     error: authError,
     clearError,
+    loadingMessage,
+    loadingProgress,
   } = useAuthContext();
 
   const [isLogin, setIsLogin] = useState(true);
@@ -37,28 +39,122 @@ const AuthPage = () => {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState('');
 
-  useEffect(() => {
-    if (!contextLoading && isAuthenticated && user) {
-      const from = location.state?.from?.pathname;
-      let redirectPath;
+  // ✅ State untuk animasi terminal bertahap
+  const [terminalLines, setTerminalLines] = useState([]);
+  const [lastMessage, setLastMessage] = useState('');
+  
+  // ✅ Track apakah loading sudah benar-benar selesai
+  const [isLoadingComplete, setIsLoadingComplete] = useState(false);
+  
+  // ✅ State untuk menampilkan loading terminal setelah submit
+  const [showTerminalLoading, setShowTerminalLoading] = useState(false);
 
-      if (from && from !== '/auth') {
-        redirectPath = from;
-      } else {
-        redirectPath =
-          user.accountType === 'ADMIN' ? '/admin/dashboard' : '/home';
+  // ✅ Effect untuk redirect HANYA setelah loading 100% complete dan success
+  useEffect(() => {
+    if (!contextLoading && isAuthenticated && user && loadingProgress === 100 && success) {
+      setIsLoadingComplete(true);
+      
+      // Tambahkan final success message ke terminal
+      const finalLine = {
+        id: Date.now() + 1000,
+        type: 'final-success',
+        text: `✓ Authentication complete! Redirecting to ${user.accountType === 'ADMIN' ? 'Admin Dashboard' : 'Home'}...`,
+      };
+      
+      setTerminalLines((prev) => [...prev, finalLine]);
+      
+      // Delay 1.5 detik setelah success message untuk redirect
+      const redirectTimer = setTimeout(() => {
+        const from = location.state?.from?.pathname;
+        let redirectPath;
+
+        if (from && from !== '/auth') {
+          redirectPath = from;
+        } else {
+          redirectPath =
+            user.accountType === 'ADMIN' ? '/admin/dashboard' : '/home';
+        }
+
+        navigate(redirectPath, { replace: true });
+      }, 1500);
+
+      return () => clearTimeout(redirectTimer);
+    }
+  }, [contextLoading, isAuthenticated, user, loadingProgress, success, navigate, location.state]);
+
+  // ✅ Effect untuk handle error di terminal
+  useEffect(() => {
+    if (authError && showTerminalLoading) {
+      // Tambahkan error message ke terminal
+      const errorLine = {
+        id: Date.now(),
+        type: 'error',
+        text: authError,
+      };
+      
+      setTerminalLines((prev) => [...prev, errorLine]);
+      
+      // Setelah 3 detik, hide terminal dan reset
+      setTimeout(() => {
+        setShowTerminalLoading(false);
+        setTerminalLines([]);
+        setLastMessage('');
+        setLoading(false);
+        setError(authError);
+      }, 3000);
+    }
+  }, [authError, showTerminalLoading]);
+
+  // ✅ Effect untuk menambahkan terminal line HANYA saat loadingMessage berubah
+  useEffect(() => {
+    if ((contextLoading || showTerminalLoading) && loadingMessage && loadingMessage !== lastMessage) {
+      const storedUsername = localStorage.getItem('username') || user?.username || formData.username || 'Guest';
+
+      // Tentukan tipe line berdasarkan message
+      let lineType = 'loading';
+      let displayText = loadingMessage;
+
+      // Mapping loadingMessage ke tipe yang sesuai
+      if (loadingMessage.includes('Initializing system') || 
+          loadingMessage.includes('init --system')) {
+        lineType = 'command';
+        displayText = `melodia@auth:~$ init --system`;
+      } else if (
+        loadingMessage.includes('successfully') || 
+        loadingMessage.includes('valid') || 
+        loadingMessage.includes('verified') ||
+        loadingMessage.includes('authenticated') ||
+        loadingMessage.includes('loaded')
+      ) {
+        lineType = 'success';
+      } else if (loadingMessage.includes('Welcome back')) {
+        lineType = 'final';
+        displayText = `Welcome back, ${storedUsername}!`;
       }
 
-      navigate(redirectPath, { replace: true });
-    }
-  }, [contextLoading, isAuthenticated, user, navigate, location.state]);
+      // Tambahkan line baru
+      const newLine = {
+        id: Date.now(),
+        type: lineType,
+        text: displayText,
+      };
 
-  useEffect(() => {
-    if (authError) {
-      setError(authError);
-      setLoading(false);
+      setTerminalLines((prev) => [...prev, newLine]);
+      setLastMessage(loadingMessage);
     }
-  }, [authError]);
+  }, [contextLoading, showTerminalLoading, loadingMessage, lastMessage, user, formData.username]);
+
+  // ✅ Reset terminal lines saat loading selesai dengan error atau cancel
+  useEffect(() => {
+    if (!contextLoading && !showTerminalLoading && !isLoadingComplete) {
+      const timer = setTimeout(() => {
+        setTerminalLines([]);
+        setLastMessage('');
+      }, 500);
+
+      return () => clearTimeout(timer);
+    }
+  }, [contextLoading, showTerminalLoading, isLoadingComplete]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -66,6 +162,9 @@ const AuthPage = () => {
     setSuccess('');
     clearError();
     setLoading(true);
+    setShowTerminalLoading(true); // ✅ Show terminal saat submit
+    setTerminalLines([]); // Reset terminal lines
+    setLastMessage('');
 
     try {
       if (!USERNAME_REGEX.test(formData.username)) {
@@ -80,22 +179,6 @@ const AuthPage = () => {
         }
 
         setSuccess('Login successful! Redirecting...');
-
-        const from = location.state?.from?.pathname;
-        let redirectPath;
-
-        if (from && from !== '/auth') {
-          redirectPath = from;
-        } else {
-          redirectPath =
-            result.user.accountType === 'ADMIN'
-              ? '/admin/dashboard'
-              : '/home';
-        }
-
-        setTimeout(() => {
-          navigate(redirectPath, { replace: true });
-        }, 800);
       } else {
         const result = await register(
           formData.username,
@@ -110,20 +193,12 @@ const AuthPage = () => {
         }
 
         setSuccess('Registration successful! Redirecting...');
-
-        const redirectPath =
-          result.user.accountType === 'ADMIN'
-            ? '/admin/dashboard'
-            : '/home';
-
-        setTimeout(() => {
-          navigate(redirectPath, { replace: true });
-        }, 800);
       }
     } catch (err) {
       console.error('Auth error:', err);
       let errorMessage = err.message || 'An error occurred';
 
+      // Translate error messages
       if (errorMessage.includes('Username tidak boleh mengandung spasi')) {
         errorMessage = 'Username tidak boleh mengandung spasi';
       } else if (
@@ -139,8 +214,23 @@ const AuthPage = () => {
         errorMessage = 'Sesi telah berakhir, silakan login kembali';
       }
 
-      setError(errorMessage);
-      setLoading(false);
+      // ✅ Tambahkan error ke terminal
+      const errorLine = {
+        id: Date.now(),
+        type: 'error',
+        text: `✗ Error: ${errorMessage}`,
+      };
+      
+      setTerminalLines((prev) => [...prev, errorLine]);
+      
+      // Hide terminal setelah 3 detik
+      setTimeout(() => {
+        setShowTerminalLoading(false);
+        setTerminalLines([]);
+        setLastMessage('');
+        setLoading(false);
+        setError(errorMessage);
+      }, 3000);
     }
   };
 
@@ -170,38 +260,172 @@ const AuthPage = () => {
     });
   };
 
-  // Loading Screen
-  if (contextLoading) {
+  // ✅ Render Terminal Line berdasarkan tipe
+  const renderTerminalLine = (line) => {
+    switch (line.type) {
+      case 'command':
+        return (
+          <motion.div
+            key={line.id}
+            className={styles.terminalLine}
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <span className={styles.terminalPrompt}>$</span>
+            <span className={styles.terminalText}>{line.text}</span>
+          </motion.div>
+        );
+
+      case 'loading':
+        return (
+          <motion.div
+            key={line.id}
+            className={styles.terminalLine}
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <span className={styles.terminalPrompt}>$</span>
+            <span className={styles.terminalText}>{line.text}</span>
+            <span className={styles.terminalLoader}>...</span>
+          </motion.div>
+        );
+
+      case 'success':
+        return (
+          <motion.div
+            key={line.id}
+            className={styles.terminalLine}
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <span className={styles.terminalCheck}>✓</span>
+            <span className={styles.terminalText}>{line.text}</span>
+          </motion.div>
+        );
+
+      case 'final':
+        return (
+          <motion.div
+            key={line.id}
+            className={styles.terminalLine}
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <span className={styles.terminalSuccess}>✓</span>
+            <span className={styles.terminalTextSuccess}>{line.text}</span>
+          </motion.div>
+        );
+
+      case 'final-success':
+        return (
+          <motion.div
+            key={line.id}
+            className={styles.terminalLine}
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5, type: 'spring' }}
+          >
+            <motion.span 
+              className={styles.terminalSuccess}
+              animate={{ 
+                scale: [1, 1.3, 1],
+                textShadow: [
+                  '0 0 15px rgba(90, 247, 142, 0.8)',
+                  '0 0 30px rgba(90, 247, 142, 1)',
+                  '0 0 15px rgba(90, 247, 142, 0.8)',
+                ]
+              }}
+              transition={{ duration: 0.8, repeat: 0 }}
+            >
+              ✓
+            </motion.span>
+            <span className={styles.terminalTextSuccess}>{line.text}</span>
+          </motion.div>
+        );
+
+      case 'error':
+        return (
+          <motion.div
+            key={line.id}
+            className={styles.terminalLine}
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <motion.span 
+              className={styles.terminalError}
+              animate={{ 
+                scale: [1, 1.2, 1],
+              }}
+              transition={{ duration: 0.5 }}
+            >
+              ✗
+            </motion.span>
+            <span className={styles.terminalTextError}>{line.text}</span>
+          </motion.div>
+        );
+
+      default:
+        return null;
+    }
+  };
+
+  // ✅ DYNAMIC Terminal Loading - tampil saat submit atau contextLoading
+  if (contextLoading || showTerminalLoading || (isAuthenticated && !isLoadingComplete && loadingProgress < 100)) {
     return (
       <div className={styles.loadingContainer}>
-        <div className={styles.loadingCard}>
-          <div className={styles.musicNotesContainer}>
-            <Music2 size={64} className={styles.loadingLogo} />
-            <div className={styles.musicNote}>♪</div>
-            <div className={styles.musicNote}>♫</div>
-            <div className={styles.musicNote}>♪</div>
-            <div className={styles.musicNote}>♫</div>
+        <div className={styles.terminalCard}>
+          {/* Terminal Header */}
+          <div className={styles.terminalHeader}>
+            <div className={styles.terminalButtons}>
+              <span className={styles.terminalBtn} style={{ background: '#ff5f56' }}></span>
+              <span className={styles.terminalBtn} style={{ background: '#ffbd2e' }}></span>
+              <span className={styles.terminalBtn} style={{ background: '#27c93f' }}></span>
+            </div>
+            <div className={styles.terminalTitle}>MELODIA Authentication System</div>
           </div>
 
-          <div className={styles.spinnerContainer}>
-            <div className={styles.spinner}></div>
-            <div className={styles.spinnerPulse}></div>
+          {/* Terminal Body - ANIMATED LINES berdasarkan loadingMessage */}
+          <div className={styles.terminalBody}>
+            <AnimatePresence>
+              {terminalLines.map((line) => renderTerminalLine(line))}
+            </AnimatePresence>
+
+            {/* Fallback jika belum ada lines */}
+            {terminalLines.length === 0 && (
+              <motion.div
+                className={styles.terminalLine}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+              >
+                <span className={styles.terminalPrompt}>$</span>
+                <span className={styles.terminalText}>
+                  {loadingMessage || 'Initializing system...'}
+                </span>
+                <span className={styles.terminalLoader}>...</span>
+              </motion.div>
+            )}
           </div>
 
-          <div className={styles.loadingTextContainer}>
-            <h2 className={styles.loadingTitle}>MELODIA</h2>
-            <p className={styles.loadingText}>
-              <span className={styles.loadingDot}>.</span>
-              <span className={styles.loadingDot}>.</span>
-              <span className={styles.loadingDot}>.</span>
-            </p>
-            <p className={styles.loadingSubtext}>
-              Preparing your music experience
-            </p>
+          {/* Progress Bar - DYNAMIC dari loadingProgress */}
+          <div className={styles.terminalProgress}>
+            <motion.div 
+              className={styles.terminalProgressBar}
+              initial={{ width: '0%' }}
+              animate={{ width: `${loadingProgress || 0}%` }}
+              transition={{ duration: 0.5, ease: 'easeOut' }}
+            />
           </div>
 
-          <div className={styles.progressBar}>
-            <div className={styles.progressFill}></div>
+          {/* Terminal Footer - Show current progress */}
+          <div className={styles.terminalFooter}>
+            <span className={styles.terminalProgressText}>
+              {loadingMessage || 'Loading...'} {loadingProgress ? `[${loadingProgress}%]` : '[0%]'}
+            </span>
           </div>
         </div>
       </div>
@@ -210,7 +434,7 @@ const AuthPage = () => {
 
   return (
     <div className={styles.authContainer}>
-      {/* ✅ Background Layer 1: Full BG dengan Animasi */}
+      {/* Background Layer 1: Full BG dengan Animasi */}
       <motion.div 
         className={styles.bgLayer}
         style={{
@@ -220,16 +444,16 @@ const AuthPage = () => {
         }}
         animate={{
           backgroundPosition: isLogin 
-            ? '-350px center'      // ✅ Posisi saat Login
-            : '-900px center'      // ✅ Posisi saat Register (geser ke kanan)
+            ? '-350px center'
+            : '-900px center'
         }}
         transition={{
-          duration: 0.8,           // ✅ Durasi animasi (ubah sesuai keinginan)
-          ease: [0.4, 0, 0.2, 1]   // ✅ Smooth easing
+          duration: 0.8,
+          ease: [0.4, 0, 0.2, 1]
         }}
       />
       
-      {/* ✅ Background Layer 2: Right Overlay (TIDAK BERUBAH) */}
+      {/* Background Layer 2: Right Overlay */}
       <div 
         className={styles.overlayLayer}
         style={{
@@ -286,8 +510,9 @@ const AuthPage = () => {
           <h1 className={styles.taglineText}>your vibe</h1>
         </div>
 
+        {/* ✅ Error message HANYA tampil jika TIDAK ada terminal loading */}
         <AnimatePresence mode="wait">
-          {error && (
+          {error && !showTerminalLoading && (
             <motion.div
               key="error"
               className={styles.errorMessage}
@@ -298,22 +523,6 @@ const AuthPage = () => {
               style={{ overflow: 'hidden' }}
             >
               {error}
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        <AnimatePresence mode="wait">
-          {success && (
-            <motion.div
-              key="success"
-              className={styles.successMessage}
-              initial={{ opacity: 0, height: 0, marginBottom: 0 }}
-              animate={{ opacity: 1, height: 'auto', marginBottom: 16 }}
-              exit={{ opacity: 0, height: 0, marginBottom: 0 }}
-              transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-              style={{ overflow: 'hidden' }}
-            >
-              {success}
             </motion.div>
           )}
         </AnimatePresence>

@@ -31,8 +31,8 @@ const PageTransition = ({ children }) => {
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: -50, scale: 0.96 }}
       transition={{
-        duration: 0.5, // ✅ 500ms - lebih lambat
-        ease: [0.6, 0.05, 0.01, 0.9] // ✅ Custom cubic bezier
+        duration: 0.5,
+        ease: [0.6, 0.05, 0.01, 0.9]
       }}
       style={{ width: '100%', height: '100%' }}
     >
@@ -262,19 +262,15 @@ const App = () => {
         <MusicProvider>
           <SessionTimeoutWarning />
 
-          <AnimatePresence mode="wait">
-            <Routes location={location} key={location.pathname}>
-              <Route 
-                path="/auth" 
-                element={
-                  <PageTransition>
-                    <AuthPage />
-                  </PageTransition>
-                } 
-              />
-              <Route path="*" element={<RoleBasedRoutes />} />
-            </Routes>
-          </AnimatePresence>
+          {/* ✅ PERBAIKAN: AuthPage TIDAK dibungkus AnimatePresence */}
+          {/* Ini memastikan terminal loading animation tidak di-interrupt */}
+          <Routes location={location} key={location.pathname}>
+            <Route 
+              path="/auth" 
+              element={<AuthPage />} 
+            />
+            <Route path="*" element={<RoleBasedRoutes />} />
+          </Routes>
         </MusicProvider>
       </UserProvider>
     </AuthProvider>
