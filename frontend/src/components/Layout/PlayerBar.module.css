@@ -1,43 +1,39 @@
-/* components/Player/PlayerBar.module.css - FIXED BOTTOM CLASSIC STYLE */
+/* components/Player/PlayerBar.module.css - BLUE THEME + PURPLE PLAY BUTTON */
 
 .playerBar {
   position: fixed !important;
   bottom: 0 !important;
   left: 0 !important;
   right: 0 !important;
-  height: 100px;
+  height: 90px;
   
-  /* Modern Gradient Background */
+  /* Dark Blue Gradient Background */
   background: linear-gradient(
     to top,
-    rgba(10, 14, 39, 0.98) 0%,
-    rgba(15, 23, 42, 0.96) 100%
+    rgba(15, 23, 42, 0.98) 0%,
+    rgba(30, 41, 59, 0.96) 100%
   );
-  backdrop-filter: blur(30px) saturate(160%);
-  -webkit-backdrop-filter: blur(30px) saturate(160%);
+  backdrop-filter: blur(24px) saturate(150%);
+  -webkit-backdrop-filter: blur(24px) saturate(150%);
   
-  /* Top Border Only */
-  border-top: 1px solid rgba(99, 102, 241, 0.35);
-  border-left: none;
-  border-right: none;
-  border-bottom: none;
+  /* Subtle Blue Border */
+  border-top: 1px solid rgba(59, 130, 246, 0.2);
   
-  /* Shadow Upward */
+  /* Minimal Shadow */
   box-shadow: 
-    0 -8px 32px rgba(0, 0, 0, 0.5),
-    0 0 0 1px rgba(255, 255, 255, 0.03) inset,
-    0 -20px 60px rgba(99, 102, 241, 0.2);
+    0 -4px 24px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(255, 255, 255, 0.03) inset;
   
-  /* Layout */
-  display: flex;
+  /* Layout - 3 Columns */
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr;
   align-items: center;
-  justify-content: space-between;
-  padding: 0 36px;
+  padding: 0 32px;
+  gap: 24px;
   z-index: 200;
   
-  /* Animation */
-  animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  transition: box-shadow 0.3s ease;
+  animation: slideUp 0.3s ease-out;
+  transition: box-shadow 0.2s ease;
 }
 
 @keyframes slideUp {
@@ -51,64 +47,37 @@
   }
 }
 
-/* Hover effect - subtle glow */
 .playerBar:hover {
   box-shadow: 
-    0 -12px 40px rgba(0, 0, 0, 0.6),
-    0 0 0 1px rgba(255, 255, 255, 0.05) inset,
-    0 -24px 80px rgba(99, 102, 241, 0.25);
+    0 -6px 32px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(255, 255, 255, 0.05) inset;
 }
 
-/* Track Info Section */
+/* LEFT: Track Info */
 .trackInfo {
   display: flex;
   align-items: center;
-  gap: 16px;
-  flex: 1;
-  max-width: 320px;
-  min-width: 250px;
+  gap: 12px;
+  min-width: 0;
 }
 
 .albumCover {
-  width: 64px;
-  height: 64px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 14px;
+  width: 56px;
+  height: 56px;
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 32px;
+  font-size: 28px;
   flex-shrink: 0;
-  box-shadow: 
-    0 8px 24px rgba(102, 126, 234, 0.45),
-    0 0 0 1px rgba(255, 255, 255, 0.1) inset;
-  position: relative;
-  overflow: hidden;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.albumCover::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.25) 0%,
-    rgba(255, 255, 255, 0) 60%
-  );
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.albumCover:hover::before {
-  opacity: 1;
+  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.4);
+  transition: all 0.2s ease;
 }
 
 .albumCover:hover {
-  transform: scale(1.08) rotateZ(-3deg);
-  box-shadow: 
-    0 12px 32px rgba(102, 126, 234, 0.6),
-    0 0 0 1px rgba(255, 255, 255, 0.15) inset;
+  transform: scale(1.05);
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.5);
 }
 
 .trackDetails {
@@ -118,14 +87,13 @@
 
 .trackDetails h4 {
   color: white;
-  font-size: 15px;
-  font-weight: 700;
-  margin: 0 0 6px 0;
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0 0 4px 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  letter-spacing: -0.02em;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  letter-spacing: -0.01em;
 }
 
 .trackDetails p {
@@ -138,79 +106,73 @@
   font-weight: 500;
 }
 
-/* Player Controls Section */
+/* CENTER: Player Controls */
 .playerControls {
-  flex: 2;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 14px;
-  max-width: 650px;
-  min-width: 420px;
+  gap: 10px;
+  max-width: 700px;
+  margin: 0 auto;
 }
 
 .controlButtons {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
 }
 
 .controlBtn {
-  background: rgba(30, 41, 59, 0.7);
-  border: 1px solid rgba(148, 163, 184, 0.15);
-  color: #cbd5e1;
+  background: transparent;
+  border: none;
+  color: #94a3b8;
   cursor: pointer;
-  padding: 10px;
-  border-radius: 12px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  flex-shrink: 0;
+  padding: 8px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   position: relative;
-  backdrop-filter: blur(10px);
 }
 
 .controlBtn:hover {
   color: white;
-  background: rgba(99, 102, 241, 0.25);
-  border-color: rgba(99, 102, 241, 0.5);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 16px rgba(99, 102, 241, 0.35);
+  background: rgba(59, 130, 246, 0.15);
 }
 
 .controlBtn:active {
-  transform: translateY(0);
+  transform: scale(0.95);
 }
 
 .controlBtn.active {
-  color: #c4b5fd;
-  background: rgba(167, 139, 250, 0.2);
-  border-color: rgba(167, 139, 250, 0.4);
-  box-shadow: 0 4px 12px rgba(167, 139, 250, 0.35);
+  color: #60a5fa;
 }
 
 .repeatBadge {
   position: absolute;
-  top: -4px;
-  right: -4px;
-  font-size: 9px;
+  top: 4px;
+  right: 4px;
+  font-size: 8px;
   font-weight: 700;
-  background: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%);
+  background: #3b82f6;
   color: white;
-  width: 16px;
-  height: 16px;
+  width: 13px;
+  height: 13px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  border: 2px solid rgba(15, 23, 42, 0.9);
-  box-shadow: 0 2px 8px rgba(167, 139, 250, 0.5);
+  border: 1.5px solid rgba(15, 23, 42, 0.9);
 }
 
+/* ✅ KEEP: Original Fancy Purple Play Button */
 .playPauseBtn {
   width: 56px;
   height: 56px;
   border-radius: 50%;
   border: none;
-  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);;
   color: white;
   display: flex;
   align-items: center;
@@ -223,6 +185,7 @@
   flex-shrink: 0;
   position: relative;
   overflow: hidden;
+  margin: 0 4px;
 }
 
 .playPauseBtn::before {
@@ -259,263 +222,258 @@
   transform: scale(1);
 }
 
-/* Progress Section */
+.playPauseBtn svg {
+  width: 24px;
+  height: 24px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+/* Progress Bar */
 .progressSection {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
   width: 100%;
 }
 
 .time {
-  color: #94a3b8;
-  font-size: 12px;
-  min-width: 42px;
+  color: #64748b;
+  font-size: 11px;
+  min-width: 40px;
   text-align: center;
   font-variant-numeric: tabular-nums;
-  font-weight: 600;
-  letter-spacing: 0.5px;
+  font-weight: 500;
 }
 
 .progressInput {
   flex: 1;
-  height: 6px;
+  height: 4px;
   -webkit-appearance: none;
   appearance: none;
-  background: rgba(30, 41, 59, 0.9);
-  border-radius: 8px;
+  background: rgba(148, 163, 184, 0.25);
+  border-radius: 4px;
   outline: none;
   cursor: pointer;
+  transition: height 0.2s ease;
   position: relative;
-  border: 1px solid rgba(148, 163, 184, 0.15);
-  transition: all 0.2s ease;
 }
 
 .progressInput:hover {
-  background: rgba(30, 41, 59, 1);
-  border-color: rgba(99, 102, 241, 0.4);
+  height: 6px;
+}
+
+.progressInput::-webkit-slider-runnable-track {
+  background: rgba(148, 163, 184, 0.25);
+  height: 4px;
+  border-radius: 4px;
 }
 
 .progressInput::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 16px;
-  height: 16px;
-  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  width: 12px;
+  height: 12px;
+  background: #3b82f6;
   border-radius: 50%;
   cursor: pointer;
-  box-shadow: 
-    0 4px 12px rgba(99, 102, 241, 0.6),
-    0 0 0 3px rgba(99, 102, 241, 0.25);
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  border: 2px solid rgba(255, 255, 255, 0.95);
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.5);
+  transition: all 0.2s ease;
+  opacity: 0;
+  margin-top: -4px;
+}
+
+.progressInput:hover::-webkit-slider-thumb {
+  opacity: 1;
 }
 
 .progressInput::-webkit-slider-thumb:hover {
-  transform: scale(1.25);
-  box-shadow: 
-    0 6px 16px rgba(99, 102, 241, 0.75),
-    0 0 0 4px rgba(99, 102, 241, 0.35);
+  transform: scale(1.3);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.7);
 }
 
 .progressInput::-webkit-slider-thumb:active {
   transform: scale(1.15);
 }
 
+.progressInput::-moz-range-track {
+  background: rgba(148, 163, 184, 0.25);
+  height: 4px;
+  border-radius: 4px;
+}
+
 .progressInput::-moz-range-thumb {
-  width: 16px;
-  height: 16px;
-  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  width: 12px;
+  height: 12px;
+  background: #3b82f6;
   border-radius: 50%;
   cursor: pointer;
-  border: 2px solid rgba(255, 255, 255, 0.95);
-  box-shadow: 
-    0 4px 12px rgba(99, 102, 241, 0.6),
-    0 0 0 3px rgba(99, 102, 241, 0.25);
+  border: none;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.5);
+  opacity: 0;
   transition: all 0.2s ease;
 }
 
-.progressInput::-moz-range-thumb:hover {
-  transform: scale(1.25);
+.progressInput:hover::-moz-range-thumb {
+  opacity: 1;
 }
 
-/* Volume Section */
+.progressInput::-moz-range-thumb:hover {
+  transform: scale(1.3);
+}
+
+/* RIGHT: Volume Section */
 .volumeSection {
   display: flex;
   align-items: center;
-  gap: 14px;
-  flex: 1;
-  max-width: 260px;
-  min-width: 200px;
+  gap: 12px;
   justify-content: flex-end;
-  color: #cbd5e1;
+  color: #94a3b8;
 }
 
 .queueBtn {
-  background: rgba(30, 41, 59, 0.7);
-  border: 1px solid rgba(148, 163, 184, 0.15);
-  color: #cbd5e1;
+  background: transparent;
+  border: none;
+  color: #94a3b8;
   cursor: pointer;
-  padding: 10px;
-  border-radius: 12px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  flex-shrink: 0;
+  padding: 8px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
-  backdrop-filter: blur(10px);
 }
 
 .queueBtn:hover {
   color: white;
-  background: rgba(99, 102, 241, 0.25);
-  border-color: rgba(99, 102, 241, 0.5);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 16px rgba(99, 102, 241, 0.35);
+  background: rgba(59, 130, 246, 0.15);
 }
 
 .queueBtn:active {
-  transform: translateY(0);
+  transform: scale(0.95);
 }
 
 .volumeInput {
-  width: 100px;
-  height: 6px;
+  width: 90px;
+  height: 4px;
   -webkit-appearance: none;
   appearance: none;
-  background: rgba(30, 41, 59, 0.9);
-  border-radius: 8px;
+  background: rgba(148, 163, 184, 0.25);
+  border-radius: 4px;
   outline: none;
   cursor: pointer;
-  border: 1px solid rgba(148, 163, 184, 0.15);
   transition: all 0.2s ease;
 }
 
 .volumeInput:hover {
-  background: rgba(30, 41, 59, 1);
-  border-color: rgba(99, 102, 241, 0.4);
+  height: 6px;
 }
 
 .volumeInput::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 14px;
-  height: 14px;
-  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  width: 12px;
+  height: 12px;
+  background: #3b82f6;
   border-radius: 50%;
   cursor: pointer;
-  border: 2px solid rgba(255, 255, 255, 0.95);
-  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.5);
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.5);
   transition: all 0.2s ease;
+  opacity: 0;
+  margin-top: -4px;
+}
+
+.volumeInput:hover::-webkit-slider-thumb {
+  opacity: 1;
 }
 
 .volumeInput::-webkit-slider-thumb:hover {
-  transform: scale(1.2);
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.7);
+  transform: scale(1.25);
 }
 
 .volumeInput::-moz-range-thumb {
-  width: 14px;
-  height: 14px;
-  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  width: 12px;
+  height: 12px;
+  background: #3b82f6;
   border-radius: 50%;
   cursor: pointer;
-  border: 2px solid rgba(255, 255, 255, 0.95);
-  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.5);
+  border: none;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.5);
+  opacity: 0;
   transition: all 0.2s ease;
 }
 
+.volumeInput:hover::-moz-range-thumb {
+  opacity: 1;
+}
+
 .volumeInput::-moz-range-thumb:hover {
-  transform: scale(1.2);
+  transform: scale(1.25);
 }
 
 .closeBtn {
-  background: rgba(30, 41, 59, 0.7);
-  border: 1px solid rgba(148, 163, 184, 0.15);
-  color: #cbd5e1;
+  background: transparent;
+  border: none;
+  color: #94a3b8;
   cursor: pointer;
-  padding: 10px;
-  border-radius: 12px;
+  padding: 8px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  flex-shrink: 0;
-  backdrop-filter: blur(10px);
+  transition: all 0.2s ease;
 }
 
 .closeBtn:hover {
-  color: #fca5a5;
-  background: rgba(239, 68, 68, 0.2);
-  border-color: rgba(239, 68, 68, 0.4);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 16px rgba(239, 68, 68, 0.35);
+  color: #f87171;
+  background: rgba(239, 68, 68, 0.15);
 }
 
 .closeBtn:active {
-  transform: translateY(0);
+  transform: scale(0.95);
 }
 
 /* Spinner */
 .spinner {
-  width: 28px;
-  height: 28px;
-  border: 3px solid rgba(255, 255, 255, 0.2);
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
   border-top-color: #fff;
   border-radius: 50%;
-  animation: spin 0.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  animation: spin 0.6s linear infinite;
 }
 
 @keyframes spin {
-  to {
-    transform: rotate(360deg);
+  to { transform: rotate(360deg); }
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .playerBar {
+    grid-template-columns: minmax(180px, 1fr) minmax(400px, 2fr) minmax(150px, 1fr);
+    padding: 0 24px;
   }
 }
 
-/* Responsive Design */
-@media (max-width: 1200px) {
+@media (max-width: 768px) {
   .playerBar {
-    padding: 0 28px;
-  }
-
-  .trackInfo {
-    max-width: 280px;
-  }
-
-  .playerControls {
-    max-width: 550px;
-    min-width: 380px;
-  }
-}
-
-@media (max-width: 900px) {
-  .playerBar {
-    height: 90px;
+    height: 80px;
+    grid-template-columns: 1fr 2fr 1fr;
     padding: 0 20px;
-  }
-
-  .trackInfo {
-    max-width: 200px;
-    min-width: 150px;
+    gap: 16px;
   }
 
   .albumCover {
-    width: 56px;
-    height: 56px;
-    font-size: 28px;
-    border-radius: 12px;
+    width: 48px;
+    height: 48px;
+    font-size: 24px;
   }
 
-  .playerControls {
-    min-width: 320px;
+  .trackDetails h4 {
+    font-size: 13px;
   }
 
-  .controlButtons {
-    gap: 10px;
-  }
-
-  .controlBtn {
-    padding: 8px;
+  .trackDetails p {
+    font-size: 12px;
   }
 
   .playPauseBtn {
@@ -523,9 +481,19 @@
     height: 50px;
   }
 
-  .volumeSection {
-    max-width: 100px;
-    min-width: 80px;
+  .controlButtons {
+    gap: 12px;
+  }
+
+  .volumeInput {
+    width: 70px;
+  }
+}
+
+@media (max-width: 640px) {
+  .playerBar {
+    grid-template-columns: 1fr 1.5fr 0.5fr;
+    gap: 12px;
   }
 
   .volumeInput {
@@ -535,103 +503,22 @@
   .queueBtn {
     display: none;
   }
-}
-
-@media (max-width: 600px) {
-  .playerBar {
-    height: 85px;
-    padding: 0 16px;
-  }
-
-  .trackInfo {
-    max-width: 140px;
-    gap: 12px;
-  }
-
-  .albumCover {
-    width: 50px;
-    height: 50px;
-    font-size: 24px;
-    border-radius: 10px;
-  }
-
-  .trackDetails h4 {
-    font-size: 13px;
-    margin-bottom: 4px;
-  }
-
-  .trackDetails p {
-    font-size: 11px;
-  }
-
-  .playerControls {
-    min-width: 280px;
-    gap: 12px;
-  }
-
-  .controlButtons {
-    gap: 8px;
-  }
-
-  .controlBtn {
-    padding: 7px;
-  }
-
-  .playPauseBtn {
-    width: 46px;
-    height: 46px;
-  }
-
-  .progressSection {
-    gap: 10px;
-  }
-
-  .progressInput {
-    height: 5px;
-  }
-
-  .progressInput::-webkit-slider-thumb {
-    width: 14px;
-    height: 14px;
-  }
-
-  .progressInput::-moz-range-thumb {
-    width: 14px;
-    height: 14px;
-  }
-
-  .time {
-    font-size: 11px;
-    min-width: 38px;
-  }
 
   .volumeSection {
-    gap: 10px;
-    max-width: 70px;
-    min-width: 60px;
-  }
-
-  .closeBtn {
-    padding: 8px;
+    justify-content: center;
   }
 }
 
 @media (max-width: 480px) {
   .playerBar {
-    height: 80px;
-    padding: 0 12px;
-  }
-
-  .trackInfo {
-    max-width: 110px;
-    gap: 10px;
+    height: 75px;
+    padding: 0 16px;
   }
 
   .albumCover {
-    width: 46px;
-    height: 46px;
+    width: 44px;
+    height: 44px;
     font-size: 22px;
-    border-radius: 8px;
   }
 
   .trackDetails h4 {
@@ -639,30 +526,12 @@
   }
 
   .trackDetails p {
-    font-size: 10px;
-  }
-
-  .playerControls {
-    min-width: 240px;
-    gap: 10px;
-  }
-
-  .controlButtons {
-    gap: 6px;
-  }
-
-  .controlBtn {
-    padding: 6px;
-  }
-
-  .controlBtn svg {
-    width: 16px;
-    height: 16px;
+    font-size: 11px;
   }
 
   .playPauseBtn {
-    width: 42px;
-    height: 42px;
+    width: 46px;
+    height: 46px;
   }
 
   .playPauseBtn svg {
@@ -670,38 +539,11 @@
     height: 20px;
   }
 
-  .progressSection {
-    gap: 8px;
+  .controlBtn {
+    padding: 6px;
   }
 
-  .progressInput {
-    height: 4px;
-  }
-
-  .progressInput::-webkit-slider-thumb {
-    width: 12px;
-    height: 12px;
-  }
-
-  .progressInput::-moz-range-thumb {
-    width: 12px;
-    height: 12px;
-  }
-
-  .time {
-    font-size: 10px;
-    min-width: 35px;
-  }
-
-  .volumeSection {
-    gap: 8px;
-  }
-
-  .closeBtn {
-    padding: 7px;
-  }
-
-  .closeBtn svg {
+  .controlBtn svg {
     width: 16px;
     height: 16px;
   }
