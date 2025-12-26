@@ -1,22 +1,18 @@
 // pages/Home.jsx
 import { useState, useEffect, useCallback } from 'react';
-import { Loader } from 'lucide-react';
+import { Loader, Play, Pause } from 'lucide-react';
 import styles from './Home.module.css';
-import SongCard from '../../components/Music/SongCard';
 import AlbumCard from '../../components/Music/AlbumCard';
 import { musicService } from '../../services/musicService';
 import { useMusic } from '../../context/MusicContext';
 import { useUser } from '../../context/UserContext';
 
 const Home = () => {
-  const { playSong } = useMusic();
+  const { playSong, currentSong, isPlaying } = useMusic(); // ✅ Ganti currentTrack jadi currentSong
   const { user, loading: authLoading } = useUser();
 
   const [recentlyPlayed, setRecentlyPlayed] = useState([]);
-  const [latestSongs, setLatestSongs] = useState([]);
   const [albums, setAlbums] = useState([]);
-  const [showAllLatest, setShowAllLatest] = useState(false);
-  const [showAllAlbums, setShowAllAlbums] = useState(false);
 
   const [loading, setLoading] = useState(true);
   const [historyLoading, setHistoryLoading] = useState(true);
@@ -27,11 +23,6 @@ const Home = () => {
     try {
       setLoading(true);
       setError('');
-
-      // Latest Songs
-      const allSongs = await musicService.getAllSongs();
-      const sortedLatest = [...allSongs].reverse();
-      setLatestSongs(sortedLatest);
 
       // Albums
       try {
@@ -61,7 +52,7 @@ const Home = () => {
         setAlbumsLoading(false);
       }
 
-      // Recently Played
+      // Recently Played (Listen Again)
       const effectiveUserId =
         user?.accountId ||
         localStorage.getItem('userId') ||
@@ -74,7 +65,7 @@ const Home = () => {
         try {
           const historyResp = await musicService.getRecentlyPlayedSongs(
             effectiveUserId,
-            8
+            6
           );
           const songs =
             historyResp.songs ||
@@ -91,7 +82,7 @@ const Home = () => {
       }
     } catch (err) {
       console.error('Error loading songs:', err);
-      setError('Failed to load songs');
+      setError('Failed to load content');
     } finally {
       setLoading(false);
     }
@@ -108,6 +99,17 @@ const Home = () => {
     },
     [playSong]
   );
+
+  // ✅ Helper function - cek dengan berbagai format ID
+  const isTrackPlaying = (track) => {
+    if (!currentSong || !isPlaying) return false;
+    
+    // Coba berbagai field ID yang mungkin
+    const trackId = track.songId || track.id;
+    const currentId = currentSong.songId || currentSong.id;
+    
+    return trackId === currentId;
+  };
 
   if (authLoading || loading) {
     return (
@@ -131,49 +133,63 @@ const Home = () => {
 
   return (
     <div className={styles.homeContainer}>
-      {/* Recently Played */}
+      {/* Listen Again (Recently Played - Horizontal Scroll) */}
       {!historyLoading && recentlyPlayed.length > 0 && (
-        <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>Recently Played</h2>
-          <div className={styles.cardGrid}>
-            {recentlyPlayed.slice(0, 8).map((track, index) => (
-              <SongCard
-                key={track.songId || track.id}
-                track={{
-                  id: track.songId || track.id,
-                  songId: track.songId || track.id,
-                  title: track.title,
-                  artist:
-                    track.artist?.name ||
-                    track.artist?.username ||
-                    track.artistName ||
-                    'Unknown Artist',
-                  cover: track.coverEmoji || '🎵',
-                  coverEmoji: track.coverEmoji || '🎵',
-                  duration: track.duration,
-                  audioUrl: musicService.getStreamUrl(
-                    track.songId || track.id
-                  ),
-                }}
-                onPlay={() => handlePlay(track, recentlyPlayed, index)}
-              />
-            ))}
+        <section className={styles.heroSection}>
+          <h2 className={styles.heroTitle}>Listen Again</h2>
+          <div className={styles.heroScroll}>
+            {recentlyPlayed.map((track, index) => {
+              const playing = isTrackPlaying(track); // ✅ Check if playing
+
+              return (
+                <div key={track.songId || track.id} className={styles.heroCard}>
+                  <div
+                    className={`${styles.heroCardInner} ${
+                      playing ? styles.heroCardPlaying : ''
+                    }`}
+                    onClick={() => handlePlay(track, recentlyPlayed, index)}
+                  >
+                    <div className={styles.heroCover}>
+                      <span className={styles.heroCoverEmoji}>
+                        {track.coverEmoji || '🎵'}
+                      </span>
+                    </div>
+                    <div className={styles.heroInfo}>
+                      <h3 className={styles.heroTrackTitle}>{track.title}</h3>
+                      <p className={styles.heroTrackArtist}>
+                        {track.artist?.name ||
+                          track.artist?.username ||
+                          track.artistName ||
+                          'Unknown Artist'}
+                      </p>
+                    </div>
+                    <button
+                      className={`${styles.heroPlayBtn} ${
+                        playing ? styles.heroPlayBtnActive : ''
+                      }`}
+                      onClick={(e) => {
+                        e.stopPropagation(); // ✅ Prevent double trigger
+                        handlePlay(track, recentlyPlayed, index);
+                      }}
+                    >
+                      {playing ? (
+                        <Pause size={24} fill="currentColor" strokeWidth={0} />
+                      ) : (
+                        <Play size={24} fill="currentColor" strokeWidth={0} />
+                      )}
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </section>
       )}
 
-      {/* Albums */}
+      {/* Your Music Collection (Albums Grid) */}
       <section className={styles.section}>
         <div className={styles.sectionHeader}>
-          <h2 className={styles.sectionTitle}>Albums</h2>
-          {albums.length > 8 && (
-            <button
-              className={styles.moreBtn}
-              onClick={() => setShowAllAlbums((prev) => !prev)}
-            >
-              {showAllAlbums ? 'Show Less' : 'View All'}
-            </button>
-          )}
+          <h2 className={styles.sectionTitle}>Your Music Collection</h2>
         </div>
 
         {albumsLoading ? (
@@ -185,7 +201,7 @@ const Home = () => {
           <p className={styles.emptyText}>No albums available.</p>
         ) : (
           <div className={styles.cardGrid}>
-            {(showAllAlbums ? albums : albums.slice(0, 8)).map((album) => (
+            {albums.slice(0, 12).map((album) => (
               <AlbumCard
                 key={album.albumId}
                 album={{
@@ -204,58 +220,6 @@ const Home = () => {
                 }}
               />
             ))}
-          </div>
-        )}
-      </section>
-
-      {/* Latest Songs */}
-      <section className={styles.section}>
-        <div className={styles.sectionHeader}>
-          <h2 className={styles.sectionTitle}>Latest Songs</h2>
-          {latestSongs.length > 8 && (
-            <button
-              className={styles.moreBtn}
-              onClick={() => setShowAllLatest((prev) => !prev)}
-            >
-              {showAllLatest ? 'Show Less' : 'View All'}
-            </button>
-          )}
-        </div>
-
-        {latestSongs.length === 0 ? (
-          <p className={styles.emptyText}>No songs available.</p>
-        ) : (
-          <div className={styles.cardGrid}>
-            {(showAllLatest ? latestSongs : latestSongs.slice(0, 8)).map(
-              (track, index) => (
-                <SongCard
-                  key={track.songId || track.id}
-                  track={{
-                    id: track.songId || track.id,
-                    songId: track.songId || track.id,
-                    title: track.title,
-                    artist:
-                      track.artist?.name ||
-                      track.artist?.username ||
-                      track.artistName ||
-                      'Unknown Artist',
-                    cover: track.coverEmoji || '🎵',
-                    coverEmoji: track.coverEmoji || '🎵',
-                    duration: track.duration,
-                    audioUrl: musicService.getStreamUrl(
-                      track.songId || track.id
-                    ),
-                  }}
-                  onPlay={() =>
-                    handlePlay(
-                      track,
-                      showAllLatest ? latestSongs : latestSongs.slice(0, 8),
-                      index
-                    )
-                  }
-                />
-              )
-            )}
           </div>
         )}
       </section>

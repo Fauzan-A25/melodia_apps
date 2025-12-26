@@ -1,9 +1,13 @@
-/* Container utama */
+/* Container utama - fixed height, no overflow */
 .homeContainer {
   width: 100%;
   max-width: 100%;
-  padding: 0 0 120px 0; /* Space untuk fixed player bar */
+  height: calc(100vh - 180px);
+  padding: 0;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 /* Loading & Error States */
@@ -13,7 +17,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 400px;
+  height: 100%;
   color: white;
 }
 
@@ -60,7 +64,6 @@
   box-shadow: 0 8px 16px rgba(59, 130, 246, 0.3);
 }
 
-/* Empty / inline info text */
 .emptyText {
   color: #94a3b8;
   font-size: 14px;
@@ -75,77 +78,229 @@
   font-size: 14px;
 }
 
-/* Music Sections */
-.section {
-  margin-bottom: 48px;
+/* ========== HERO SECTION (LISTEN AGAIN) ========== */
+.heroSection {
+  flex-shrink: 0;
+  margin-bottom: 32px;
   width: 100%;
-  overflow: hidden;
 }
 
-.section:last-child {
-  margin-bottom: 0;
+.heroTitle {
+  font-size: 28px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 16px 0;
+  letter-spacing: -0.02em;
+}
+
+/* Horizontal scroll container */
+.heroScroll {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 12px;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+.heroScroll::-webkit-scrollbar {
+  height: 8px;
+}
+
+.heroScroll::-webkit-scrollbar-track {
+  background: rgba(30, 58, 138, 0.2);
+  border-radius: 10px;
+}
+
+.heroScroll::-webkit-scrollbar-thumb {
+  background: rgba(59, 130, 246, 0.5);
+  border-radius: 10px;
+}
+
+.heroScroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(59, 130, 246, 0.7);
+}
+
+/* Hero card - large horizontal card */
+.heroCard {
+  flex: 0 0 auto;
+  width: 420px;
+  min-width: 420px;
+}
+
+.heroCardInner {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px;
+  background: rgba(30, 58, 138, 0.15);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.heroCardInner:hover {
+  background: rgba(30, 58, 138, 0.25);
+  border-color: rgba(59, 130, 246, 0.4);
+  transform: scale(1.02);
+}
+
+/* ✅ Hero card when playing */
+.heroCardPlaying {
+  background: rgba(59, 130, 246, 0.2) !important;
+  border-color: rgba(59, 130, 246, 0.5) !important;
+}
+
+/* Show play button on hover OR when playing */
+.heroCardInner:hover .heroPlayBtn {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Large cover with emoji */
+.heroCover {
+  width: 80px;
+  height: 80px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.heroCoverEmoji {
+  font-size: 40px;
+}
+
+/* Track info */
+.heroInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.heroTrackTitle {
+  font-size: 16px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 6px 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.heroTrackArtist {
+  font-size: 14px;
+  color: #94a3b8;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ✅ Play button - default hidden */
+.heroPlayBtn {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #3b82f6;
+  border: none;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+
+/* ✅ Play button when active (playing) - always visible */
+.heroPlayBtnActive {
+  opacity: 1 !important;
+  transform: translateY(0) !important;
+  background: #1e40af;
+  box-shadow: 0 6px 16px rgba(59, 130, 246, 0.6);
+}
+
+.heroPlayBtn:hover {
+  background: #2563eb;
+  transform: translateY(0) scale(1.15);
+}
+
+.heroPlayBtn:active {
+  transform: translateY(0) scale(0.95);
+}
+
+/* ✅ Force icon size */
+.heroPlayBtn svg {
+  width: 24px !important;
+  height: 24px !important;
+}
+
+/* ========== REGULAR SECTIONS (ALBUMS) ========== */
+.section {
+  flex: 1;
+  width: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .sectionTitle {
   font-size: 24px;
   font-weight: 700;
   color: white;
-  margin: 0 0 20px 0;
+  margin: 0 0 16px 0;
+  flex-shrink: 0;
   background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
-/* Header untuk section + tombol "View All" */
 .sectionHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
+  flex-shrink: 0;
 }
 
-.moreBtn {
-  padding: 8px 16px;
-  font-size: 13px;
-  font-weight: 500;
-  border-radius: 999px;
-  border: 1px solid rgba(148, 163, 184, 0.3);
-  background: rgba(15, 23, 42, 0.6);
-  color: #e5e7eb;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  white-space: nowrap;
-}
-
-.moreBtn:hover {
-  background: rgba(59, 130, 246, 0.1);
-  border-color: #3b82f6;
-  color: #f9fafb;
-}
-
-.moreBtn:active {
-  transform: scale(0.98);
-}
-
-/* Grid untuk Card - balanced, tidak terlalu besar */
+/* Grid untuk Album Cards - fixed 2 rows */
 .cardGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  grid-template-columns: repeat(6, 1fr);
+  grid-template-rows: repeat(2, 1fr);
   gap: 20px;
   width: 100%;
-  align-items: start;
+  height: 100%;
+  overflow: hidden;
 }
 
-/* Desktop besar */
+/* ========== RESPONSIVE GRID ========== */
 @media (min-width: 1600px) {
+  .homeContainer {
+    height: calc(100vh - 180px);
+  }
+  
   .cardGrid {
     grid-template-columns: repeat(6, 1fr);
     gap: 24px;
   }
+  
+  .heroCard {
+    width: 450px;
+    min-width: 450px;
+  }
 }
 
-/* Desktop wide */
 @media (min-width: 1400px) and (max-width: 1599px) {
   .cardGrid {
     grid-template-columns: repeat(5, 1fr);
@@ -153,7 +308,6 @@
   }
 }
 
-/* Desktop normal */
 @media (min-width: 1200px) and (max-width: 1399px) {
   .cardGrid {
     grid-template-columns: repeat(5, 1fr);
@@ -161,42 +315,71 @@
   }
 }
 
-/* Laptop */
 @media (min-width: 1024px) and (max-width: 1199px) {
   .cardGrid {
     grid-template-columns: repeat(4, 1fr);
     gap: 20px;
   }
-}
-
-/* Tablet landscape */
-@media (min-width: 768px) and (max-width: 1023px) {
-  .cardGrid {
-    grid-template-columns: repeat(4, 1fr);
-    gap: 18px;
+  
+  .heroCard {
+    width: 380px;
+    min-width: 380px;
   }
 }
 
-/* Tablet potrait kecil */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .cardGrid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+  }
+  
+  .heroCard {
+    width: 350px;
+    min-width: 350px;
+  }
+  
+  .heroTitle {
+    font-size: 24px;
+  }
+}
+
 @media (min-width: 600px) and (max-width: 767px) {
   .cardGrid {
     grid-template-columns: repeat(3, 1fr);
     gap: 16px;
   }
+  
+  .heroCard {
+    width: 320px;
+    min-width: 320px;
+  }
 }
 
-/* Mobile medium */
 @media (min-width: 480px) and (max-width: 599px) {
   .cardGrid {
     grid-template-columns: repeat(2, 1fr);
     gap: 14px;
   }
+  
+  .heroCard {
+    width: 300px;
+    min-width: 300px;
+  }
+  
+  .heroTitle {
+    font-size: 24px;
+  }
 }
 
-/* Mobile kecil */
 @media (max-width: 479px) {
+  .homeContainer {
+    height: auto;
+    overflow-y: auto;
+  }
+  
   .cardGrid {
     grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: auto;
     gap: 12px;
   }
 
@@ -208,118 +391,40 @@
     font-size: 20px;
     margin-bottom: 16px;
   }
-}
-
-/* Track List (jika ingin menggunakan list view) */
-.trackList {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.trackItem {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 12px 16px;
-  background: rgba(15, 23, 42, 0.6);
-  border-radius: 12px;
-  border: 1px solid rgba(59, 130, 246, 0.1);
-  transition: all 0.3s ease;
-}
-
-.trackItem:hover {
-  background: rgba(59, 130, 246, 0.1);
-  border-color: rgba(59, 130, 246, 0.3);
-  transform: translateX(4px);
-}
-
-.trackItem.playing {
-  background: rgba(159, 122, 234, 0.1);
-  border-left: 3px solid #9f7aea;
-}
-
-.trackItem.playing .trackInfo h4 {
-  color: #9f7aea;
-}
-
-.trackNumber {
-  width: 24px;
-  text-align: center;
-  color: #64748b;
-  font-weight: 600;
-  font-size: 14px;
-}
-
-.trackCover {
-  width: 48px;
-  height: 48px;
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 24px;
-  flex-shrink: 0;
-}
-
-.trackInfo {
-  flex: 1;
-  min-width: 0;
-}
-
-.trackInfo h4 {
-  color: white;
-  font-size: 15px;
-  font-weight: 600;
-  margin: 0 0 4px 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.trackInfo p {
-  color: #94a3b8;
-  font-size: 13px;
-  margin: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.trackDuration {
-  color: #64748b;
-  font-size: 13px;
-  font-weight: 500;
-  flex-shrink: 0;
-}
-
-/* Play button styles (list) */
-.playBtn {
-  background: transparent;
-  border: none;
-  color: #a0aec0;
-  cursor: pointer;
-  padding: 8px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-  flex-shrink: 0;
-}
-
-.playBtn:hover {
-  background: rgba(159, 122, 234, 0.2);
-  color: #e2e8f0;
-  transform: scale(1.1);
-}
-
-.playBtn.playing {
-  color: #9f7aea;
-  background: rgba(159, 122, 234, 0.2);
-}
-
-.playBtn:active {
-  transform: scale(0.95);
+  
+  .heroCard {
+    width: 280px;
+    min-width: 280px;
+  }
+  
+  .heroTitle {
+    font-size: 22px;
+  }
+  
+  .heroCover {
+    width: 64px;
+    height: 64px;
+  }
+  
+  .heroCoverEmoji {
+    font-size: 32px;
+  }
+  
+  .heroTrackTitle {
+    font-size: 14px;
+  }
+  
+  .heroTrackArtist {
+    font-size: 12px;
+  }
+  
+  .heroPlayBtn {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .heroPlayBtn svg {
+    width: 20px !important;
+    height: 20px !important;
+  }
 }

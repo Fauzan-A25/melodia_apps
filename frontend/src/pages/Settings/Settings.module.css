@@ -1,11 +1,17 @@
+/* ========== CONTAINER - NO SCROLL ========== */
 .settingsContainer {
-  padding: 32px;
-  max-width: 1200px;
-  margin: 0 auto;
+  padding: 0;
+  max-width: 100%;
+  width: 100%;
+  height: calc(100vh - 180px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .header {
-  margin-bottom: 32px;
+  flex-shrink: 0;
+  padding: 24px 32px 16px;
 }
 
 .header h1 {
@@ -21,9 +27,10 @@
 }
 
 .message {
+  flex-shrink: 0;
   padding: 14px 20px;
   border-radius: 10px;
-  margin-bottom: 24px;
+  margin: 0 32px 16px;
   font-weight: 500;
   animation: slideIn 0.3s ease;
 }
@@ -41,12 +48,16 @@
 }
 
 .settingsContent {
+  flex: 1;
   display: grid;
   grid-template-columns: 260px 1fr;
-  gap: 32px;
+  gap: 24px;
+  padding: 0 32px 24px;
+  overflow: hidden;
+  min-height: 0;
 }
 
-/* Sidebar */
+/* ========== SIDEBAR ========== */
 .sidebar {
   display: flex;
   flex-direction: column;
@@ -55,8 +66,8 @@
   border-radius: 12px;
   padding: 12px;
   height: fit-content;
-  position: sticky;
-  top: 24px;
+  max-height: 100%;
+  overflow-y: auto;
 }
 
 .tabBtn {
@@ -85,11 +96,44 @@
   color: #3b82f6;
 }
 
-/* Content */
+.logoutBtn {
+  margin-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 16px;
+  color: #ef4444;
+}
+
+.logoutBtn:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+/* ========== CONTENT - SCROLLABLE ========== */
 .content {
   background: rgba(255, 255, 255, 0.03);
   border-radius: 12px;
   padding: 32px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  min-height: 0;
+}
+
+.content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.content::-webkit-scrollbar-track {
+  background: rgba(30, 58, 138, 0.2);
+  border-radius: 10px;
+}
+
+.content::-webkit-scrollbar-thumb {
+  background: rgba(59, 130, 246, 0.5);
+  border-radius: 10px;
+}
+
+.content::-webkit-scrollbar-thumb:hover {
+  background: rgba(59, 130, 246, 0.7);
 }
 
 .section h2 {
@@ -187,92 +231,121 @@
   cursor: not-allowed;
 }
 
-/* Preferences */
-.preferenceGroup {
+/* ========== HISTORY SECTION ========== */
+.historySection {
+  height: 100%;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px;
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: 10px;
-  margin-bottom: 16px;
+  flex-direction: column;
 }
 
-.prefHeader {
-  display: flex;
-  align-items: center;
-  gap: 16px;
+.historyGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  width: 100%;
 }
 
-.prefHeader h3 {
-  font-size: 16px;
+.historyCard {
+  position: relative;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(59, 130, 246, 0.15);
+  border-radius: 14px;
+  padding: 16px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.historyCard:hover {
+  background: rgba(59, 130, 246, 0.12);
+  border-color: rgba(59, 130, 246, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.15);
+}
+
+.historyCard.playingCard {
+  background: rgba(59, 130, 246, 0.15);
+  border-color: rgba(59, 130, 246, 0.4);
+}
+
+.historyCover {
+  width: 100%;
+  aspect-ratio: 1;
+  background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 64px;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+  position: relative;
+}
+
+.historyPlayBtn {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.95);
+  border: none;
+  color: #1e3a8a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  z-index: 2;
+}
+
+.historyPlayBtn:hover {
+  transform: scale(1.1);
+  background: white;
+}
+
+.historyPlayBtn.playingBtn {
+  background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
+  color: white;
+}
+
+.historyInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.historyTitle {
+  color: #e2e8f0;
+  font-size: 15px;
   font-weight: 600;
-  color: #fff;
-  margin-bottom: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.prefHeader p {
+.historyArtist {
+  color: #94a3b8;
   font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.historyEmpty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  font-size: 18px;
   color: #9ca3af;
 }
 
-.preferenceGroup select {
-  padding: 10px 16px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  color: #fff;
-  font-size: 14px;
-  cursor: pointer;
-  min-width: 180px;
-}
-
-.switch {
-  position: relative;
-  display: inline-block;
-  width: 52px;
-  height: 28px;
-}
-
-.switch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-.slider {
-  position: absolute;
-  cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(255, 255, 255, 0.1);
-  transition: 0.3s;
-  border-radius: 28px;
-}
-
-.slider:before {
-  position: absolute;
-  content: "";
-  height: 20px;
-  width: 20px;
-  left: 4px;
-  bottom: 4px;
-  background-color: white;
-  transition: 0.3s;
-  border-radius: 50%;
-}
-
-input:checked + .slider {
-  background-color: #3b82f6;
-}
-
-input:checked + .slider:before {
-  transform: translateX(24px);
-}
-
-/* Danger Zone */
+/* ========== DANGER ZONE ========== */
 .dangerZone {
   padding: 24px;
   background: rgba(239, 68, 68, 0.08);
@@ -323,6 +396,83 @@ input:checked + .slider:before {
   cursor: not-allowed;
 }
 
+/* ========== LOGOUT MODAL ========== */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: fadeIn 0.2s ease;
+}
+
+.modal {
+  background: rgba(15, 23, 42, 0.98);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: 16px;
+  padding: 40px;
+  max-width: 450px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  animation: slideUp 0.3s ease;
+}
+
+.modal h2 {
+  font-size: 24px;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 32px;
+  line-height: 1.4;
+}
+
+.modalButtons {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+}
+
+.modalNoBtn,
+.modalYesBtn {
+  padding: 12px 40px;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-width: 120px;
+}
+
+.modalNoBtn {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.modalNoBtn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-2px);
+}
+
+.modalYesBtn {
+  background: #3b82f6;
+  color: white;
+}
+
+.modalYesBtn:hover {
+  background: #2563eb;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+
+/* ========== ANIMATIONS ========== */
 @keyframes slideIn {
   from {
     opacity: 0;
@@ -334,14 +484,122 @@ input:checked + .slider:before {
   }
 }
 
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 1200px) {
+  .historyGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 @media (max-width: 768px) {
+  .settingsContainer {
+    height: auto;
+    overflow-y: auto;
+  }
+
+  .header {
+    padding: 20px 16px 16px;
+  }
+
+  .message {
+    margin: 0 16px 16px;
+  }
+
   .settingsContent {
     grid-template-columns: 1fr;
+    padding: 0 16px 20px;
+    overflow: visible;
   }
 
   .sidebar {
     position: static;
     flex-direction: row;
     overflow-x: auto;
+    padding: 8px;
+    max-height: none;
+  }
+
+  .tabBtn {
+    flex-shrink: 0;
+    padding: 10px 14px;
+    font-size: 14px;
+  }
+
+  .logoutBtn {
+    border-top: none;
+    padding-top: 10px;
+    margin-top: 0;
+    border-left: 1px solid rgba(255, 255, 255, 0.1);
+    margin-left: 8px;
+    padding-left: 16px;
+  }
+
+  .content {
+    padding: 24px;
+    overflow-y: visible;
+  }
+
+  .historyGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+
+  .modal {
+    padding: 32px 24px;
+  }
+
+  .modal h2 {
+    font-size: 20px;
+    margin-bottom: 24px;
+  }
+
+  .modalButtons {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .modalNoBtn,
+  .modalYesBtn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .header h1 {
+    font-size: 26px;
+  }
+
+  .historyGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .dangerZone {
+    flex-direction: column;
+    gap: 16px;
+    align-items: stretch;
+  }
+
+  .deleteBtn {
+    width: 100%;
   }
 }

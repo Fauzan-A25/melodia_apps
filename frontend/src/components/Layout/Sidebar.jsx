@@ -7,8 +7,10 @@ import {
   Plus,
   Mic2,
   Disc3,
+  Search,
+  Music2,
 } from 'lucide-react';
-import MelodiaLogo from '../../assets/melodia_logo.svg';
+import MelodiaLogo from '../../assets/images/common/logo_sidebar.png';
 import styles from './Sidebar.module.css';
 import { NavLink } from 'react-router-dom';
 import { useUser } from '../../context/UserContext';
@@ -100,7 +102,10 @@ const Sidebar = ({ onCreatePlaylist }) => {
     { icon: Users, label: 'Manage Users', path: '/admin/users' },
   ];
 
-  const userNavItems = [{ icon: Home, label: 'Home', path: '/home' }];
+  const userNavItems = [
+    { icon: Home, label: 'Home', path: '/home' },
+    { icon: Search, label: 'Search', path: '/search' },
+  ];
 
   const menuItems = isAdmin ? adminNavItems : userNavItems;
 
@@ -109,7 +114,11 @@ const Sidebar = ({ onCreatePlaylist }) => {
       <div className={styles.sidebarInner}>
         {/* Logo */}
         <div className={styles.logoSection}>
-          <MelodiaLogo className={styles.melodiaLogo} />
+          <img 
+            src={MelodiaLogo} 
+            alt="Melodia Logo" 
+            className={styles.melodiaLogo} 
+          />
           <span className={styles.logoText}>Melodia</span>
         </div>
 
@@ -135,18 +144,18 @@ const Sidebar = ({ onCreatePlaylist }) => {
           {/* User playlist area */}
           {!isAdmin && (
             <>
+              <div className={styles.sectionDivider} />
+
               <button
                 className={styles.createPlaylistBtn}
                 onClick={onCreatePlaylist}
                 disabled={!initialized || loadingPlaylists || !userId}
               >
-                <span className={styles.navIconWrapper}>
-                  <Plus size={20} />
-                </span>
                 <span className={styles.navLabel}>Create Playlist</span>
+                <span className={styles.navIconWrapper}>
+                  <Plus size={16} strokeWidth={2.5} />
+                </span>
               </button>
-
-              <div className={styles.sectionDivider} />
 
               {!initialized ? (
                 <div className={styles.playlistInfoBox}>
@@ -157,12 +166,6 @@ const Sidebar = ({ onCreatePlaylist }) => {
                 </div>
               ) : (
                 <div className={styles.playlistBlock}>
-                  <div className={styles.playlistHeader}>
-                    <span className={styles.playlistHeaderLabel}>
-                      Your Playlists
-                    </span>
-                  </div>
-
                   {loadingPlaylists ? (
                     <div className={styles.playlistInfoBox}>
                       <span className={styles.playlistEmoji}>⏳</span>
@@ -192,7 +195,9 @@ const Sidebar = ({ onCreatePlaylist }) => {
                             }`
                           }
                         >
-                          <span className={styles.playlistAvatar}>🎵</span>
+                          <span className={styles.playlistAvatar}>
+                            <Music2 size={16} strokeWidth={2.5} />
+                          </span>
                           <span className={styles.playlistName}>
                             {playlist.name}
                           </span>

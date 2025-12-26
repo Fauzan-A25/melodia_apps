@@ -20,6 +20,9 @@ const SongCard = ({ track, onPlay }) => {
   const userId = localStorage.getItem('userId');
   const isCurrentlyPlaying = currentSong?.songId === track?.id && isPlaying;
 
+  // ✅ Normalize artist name
+  const artistName = track?.artist?.name || track?.artist?.username || track?.artistName || track?.artist || 'Unknown Artist';
+
   // Validate track prop
   useEffect(() => {
     if (!track || !track.id) {
@@ -62,33 +65,42 @@ const SongCard = ({ track, onPlay }) => {
     return () => window.removeEventListener('playlist:created', handleRefresh);
   }, [showMenu, userId, fetchUserPlaylists]);
 
-  // Calculate menu position
+  // ✅ CENTERED: Dropdown aligned with center of card
   useEffect(() => {
     if (!showMenu || !buttonRef.current) return;
 
     const calculatePosition = () => {
       const buttonRect = buttonRef.current.getBoundingClientRect();
-      const menuWidth = 320;
-      const menuHeight = 420;
+      const menuWidth = 300;
+      const menuHeight = 380;
       const spacing = 8;
       const viewportWidth = window.innerWidth;
       const viewportHeight = window.innerHeight;
 
-      let top = buttonRect.bottom + spacing;
-      let left = buttonRect.right - menuWidth;
+      // ✅ Get card element (parent of button)
+      const cardElement = buttonRef.current.closest(`.${styles.songCard}`);
+      const cardRect = cardElement ? cardElement.getBoundingClientRect() : buttonRect;
 
+      // ✅ Position below card, centered horizontally
+      let top = cardRect.bottom + spacing;
+      let left = cardRect.left + (cardRect.width / 2) - (menuWidth / 2);
+
+      // ✅ Adjust if overflow left
       if (left < spacing) {
-        left = buttonRect.left;
+        left = spacing;
       }
 
+      // ✅ Adjust if overflow right
       if (left + menuWidth > viewportWidth - spacing) {
         left = viewportWidth - menuWidth - spacing;
       }
 
+      // ✅ Adjust if overflow bottom (stick to visible area)
       if (top + menuHeight > viewportHeight - spacing) {
-        top = buttonRect.top - menuHeight - spacing;
+        top = viewportHeight - menuHeight - spacing;
       }
 
+      // ✅ Ensure not cut off at top
       if (top < spacing) {
         top = spacing;
       }
@@ -106,6 +118,7 @@ const SongCard = ({ track, onPlay }) => {
       window.removeEventListener('resize', calculatePosition);
     };
   }, [showMenu]);
+
 
   // Close menu on outside click
   useEffect(() => {
@@ -256,9 +269,9 @@ const SongCard = ({ track, onPlay }) => {
           aria-label={isCurrentlyPlaying ? `Pause ${track.title}` : `Play ${track.title}`}
         >
           {isCurrentlyPlaying ? (
-            <Pause size={20} fill="#1e3a8a" />
+            <Pause size={20} fill="white" />
           ) : (
-            <Play size={20} fill="#1e3a8a" />
+            <Play size={20} fill="white" />
           )}
         </button>
 
@@ -269,14 +282,14 @@ const SongCard = ({ track, onPlay }) => {
             onClick={handleMenuClick}
             aria-label="More options"
           >
-            <MoreVertical size={24} strokeWidth={3} />
+            <MoreVertical size={18} strokeWidth={2.5} />
           </button>
         </div>
       </div>
 
       <div className={styles.info}>
         <h3 className={styles.title}>{track.title || 'Untitled'}</h3>
-        <p className={styles.artist}>{track.artist || 'Unknown Artist'}</p>
+        <p className={styles.artist}>{artistName}</p>
       </div>
 
       {renderDropdownMenu()}

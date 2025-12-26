@@ -1,12 +1,45 @@
-/* Main flex container: Sidebar + mainArea */
+/* ========== MAIN FLEX CONTAINER ========== */
 .layout {
   display: flex;
   width: 100vw;
   height: 100vh;
-  background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 60%, #0f1729 100%);
+  background: #000;
   overflow: hidden;
   box-sizing: border-box;
-  position: relative; /* ✅ Allow modals to escape */
+  position: relative;
+}
+
+/* ✅ Background Layer - Blurred Image */
+.bgLayer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: -350px center;
+  background-repeat: no-repeat;
+  filter: blur(8px);
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* ✅ Blue Overlay Layer */
+.overlayLayer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    135deg,
+    rgba(10, 14, 39, 0.85) 0%,
+    rgba(26, 31, 58, 0.75) 50%,
+    rgba(15, 23, 39, 0.85) 100%
+  );
+  backdrop-filter: blur(12px);
+  z-index: 1;
+  pointer-events: none;
 }
 
 /* ✅ Sidebar: kiri, TIDAK FIXED */
@@ -43,7 +76,11 @@
   align-items: center;
   justify-content: space-between;
   padding: 0 36px;
-  background: linear-gradient(90deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.95) 100%);
+  background: linear-gradient(
+    90deg,
+    rgba(15, 23, 42, 0.95) 0%,
+    rgba(30, 41, 59, 0.95) 100%
+  );
   backdrop-filter: blur(10px);
   border-bottom: 1px solid rgba(59, 130, 246, 0.12);
   width: 100%;
@@ -109,7 +146,7 @@
   }
 }
 
-/* ✅ MODAL STYLES - CENTER SCREEN (BARU) */
+/* ✅ MODAL STYLES - CENTER SCREEN */
 .modalOverlay {
   position: fixed;
   top: 0;
@@ -120,7 +157,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 9999; /* ⭐ Di atas SEMUA elements */
+  z-index: 9999;
   backdrop-filter: blur(8px);
 }
 
@@ -267,24 +304,24 @@
   transform: none;
 }
 
-/* Responsive */
+/* ========== RESPONSIVE ========== */
 @media (max-width: 900px) {
   .sidebar {
     width: 64px;
     min-width: 64px;
     max-width: 64px;
   }
-  
+
   .pageContent {
     padding: 16px 20px;
     padding-bottom: 120px;
   }
-  
+
   .topbar {
     padding: 0 20px;
     height: 60px;
   }
-  
+
   .playerBarWrapper {
     left: 64px;
   }
@@ -297,7 +334,9 @@
 }
 
 /* Remove default margins */
-body, html, #root {
+body,
+html,
+#root {
   width: 100%;
   height: 100%;
   margin: 0;

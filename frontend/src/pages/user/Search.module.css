@@ -1,146 +1,290 @@
-/* ========== CONTAINER ========== */
+/* ========== CONTAINER - NO SCROLL ========== */
 .container {
-  padding: 32px 36px;
-  max-width: 1400px;
-  margin: 0 auto;
-  min-height: calc(100vh - 200px);
+  padding: 0;
+  max-width: 100%;
+  width: 100%;
+  height: calc(100vh - 180px); /* Fixed height */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* ✅ No vertical scroll */
 }
 
-/* ========== HEADER ========== */
-.header {
-  margin-bottom: 32px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid rgba(59, 130, 246, 0.1);
+/* ========== SEARCH SECTION ========== */
+.searchSection {
+  flex-shrink: 0;
+  padding: 24px 32px 16px;
+  text-align: center;
 }
 
-.title {
-  font-size: 28px;
+.mainTitle {
+  font-size: 56px;
   font-weight: 700;
-  color: #e2e8f0;
-  margin: 0 0 8px 0;
-  letter-spacing: 0.5px;
-}
-
-.query {
-  background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
+  color: #ffffff;
+  margin: 0 0 24px 0;
+  letter-spacing: -0.02em;
+  font-style: italic;
+  background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
-.resultCount {
-  font-size: 14px;
-  color: #94a3b8;
-  font-weight: 500;
+.searchForm {
+  max-width: 600px;
+  margin: 0 auto;
 }
 
-/* ========== RESULTS LIST ========== */
-.resultsList {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+.searchInputWrapper {
+  position: relative;
+  width: 100%;
 }
 
-.resultCard {
-  display: flex;
-  align-items: center;
-  gap: 20px;
+.searchInputIcon {
+  position: absolute;
+  left: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #64748b;
+  pointer-events: none;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 14px 20px 14px 50px;
   background: rgba(15, 23, 42, 0.6);
-  border: 1px solid rgba(59, 130, 246, 0.15);
-  border-radius: 14px;
-  padding: 18px 22px;
-  transition: all 0.3s ease;
-  cursor: pointer;
-}
-
-.resultCard:hover {
-  background: rgba(59, 130, 246, 0.12);
-  border-color: rgba(59, 130, 246, 0.3);
-  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.15);
-  transform: translateY(-2px);
-}
-
-.cover {
-  width: 64px;
-  height: 64px;
-  background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 32px;
-  flex-shrink: 0;
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
-}
-
-.songInfo {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  flex: 1;
-  min-width: 0;
-}
-
-.songTitle {
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: 50px;
   color: #e2e8f0;
-  font-size: 17px;
-  font-weight: 600;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  letter-spacing: 0.3px;
-}
-
-.songArtist {
-  color: #60a5fa;
-  font-size: 14px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.songGenre {
-  color: #94a3b8;
-  font-size: 13px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.playBtn {
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
-  border: none;
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
+  font-size: 15px;
+  outline: none;
   transition: all 0.3s ease;
+}
+
+.searchInput::placeholder {
+  color: #64748b;
+}
+
+.searchInput:focus {
+  background: rgba(15, 23, 42, 0.8);
+  border-color: rgba(59, 130, 246, 0.5);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* ========== HEADER ========== */
+.header {
   flex-shrink: 0;
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  padding: 16px 32px;
 }
 
-.playBtn:hover {
-  transform: scale(1.1);
-  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+.title {
+  font-size: 42px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 8px 0;
+  letter-spacing: -0.02em;
+  font-style: italic;
 }
 
-.playBtn:active {
-  transform: scale(0.95);
+.query {
+  background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
-/* ========== EMPTY STATE ========== */
-.emptyState {
+.subtitle {
+  font-size: 18px;
+  font-weight: 500;
+  color: #94a3b8;
+  margin: 0;
+}
+
+/* ========== RESULTS GRID - SCROLLABLE ========== */
+.resultsGrid {
+  flex: 1; /* Take remaining space */
+  padding: 0 32px 20px;
+  overflow-y: auto; /* ✅ Only grid scrolls */
+  overflow-x: hidden;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  grid-auto-rows: min-content;
+  gap: 20px;
+  align-content: start;
+}
+
+/* Scrollbar styling */
+.resultsGrid::-webkit-scrollbar {
+  width: 8px;
+}
+
+.resultsGrid::-webkit-scrollbar-track {
+  background: rgba(30, 58, 138, 0.2);
+  border-radius: 10px;
+}
+
+.resultsGrid::-webkit-scrollbar-thumb {
+  background: rgba(59, 130, 246, 0.5);
+  border-radius: 10px;
+}
+
+.resultsGrid::-webkit-scrollbar-thumb:hover {
+  background: rgba(59, 130, 246, 0.7);
+}
+
+/* ========== RESPONSIVE GRID ========== */
+@media (min-width: 1600px) {
+  .resultsGrid {
+    grid-template-columns: repeat(6, 1fr);
+    gap: 24px;
+  }
+}
+
+@media (min-width: 1400px) and (max-width: 1599px) {
+  .resultsGrid {
+    grid-template-columns: repeat(5, 1fr);
+    gap: 22px;
+  }
+}
+
+@media (min-width: 1200px) and (max-width: 1399px) {
+  .resultsGrid {
+    grid-template-columns: repeat(5, 1fr);
+    gap: 20px;
+  }
+}
+
+@media (min-width: 1024px) and (max-width: 1199px) {
+  .resultsGrid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .resultsGrid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+  }
+
+  .mainTitle {
+    font-size: 42px;
+  }
+
+  .title {
+    font-size: 36px;
+  }
+
+  .subtitle {
+    font-size: 16px;
+  }
+}
+
+@media (min-width: 600px) and (max-width: 767px) {
+  .resultsGrid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+
+  .mainTitle {
+    font-size: 38px;
+  }
+
+  .title {
+    font-size: 32px;
+  }
+}
+
+@media (min-width: 480px) and (max-width: 599px) {
+  .resultsGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+  }
+
+  .searchSection {
+    padding: 20px 16px 16px;
+  }
+
+  .resultsGrid {
+    padding: 0 16px 20px;
+  }
+
+  .mainTitle {
+    font-size: 32px;
+    margin-bottom: 20px;
+  }
+
+  .title {
+    font-size: 28px;
+  }
+
+  .subtitle {
+    font-size: 14px;
+  }
+
+  .searchInput {
+    font-size: 14px;
+    padding: 12px 18px 12px 46px;
+  }
+}
+
+@media (max-width: 479px) {
+  .container {
+    height: auto;
+    overflow-y: auto;
+  }
+
+  .resultsGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    overflow-y: visible;
+  }
+
+  .searchSection {
+    padding: 16px 12px 16px;
+  }
+
+  .resultsGrid {
+    padding: 0 12px 20px;
+  }
+
+  .header {
+    padding: 16px 12px;
+  }
+
+  .mainTitle {
+    font-size: 28px;
+    margin-bottom: 16px;
+  }
+
+  .title {
+    font-size: 24px;
+  }
+
+  .subtitle {
+    font-size: 13px;
+  }
+
+  .searchInput {
+    font-size: 13px;
+    padding: 10px 16px 10px 42px;
+  }
+
+  .searchInputIcon {
+    left: 14px;
+    width: 18px;
+    height: 18px;
+  }
+}
+
+/* ========== NO RESULTS ========== */
+.noResults {
+  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 80px 24px;
-  min-height: 500px;
+  padding: 40px 24px;
 }
 
 .emptyIcon {
@@ -149,43 +293,11 @@
   margin-bottom: 24px;
 }
 
-.emptyState h2 {
-  font-size: 24px;
-  font-weight: 600;
-  color: #e2e8f0;
-  margin: 0 0 12px 0;
-}
-
-.emptyState p {
-  font-size: 16px;
-  color: #94a3b8;
-  margin: 0;
-  line-height: 1.6;
-  max-width: 500px;
-}
-
-.hint {
-  margin-top: 8px;
-  font-size: 14px;
-  color: #64748b;
-}
-
-/* ========== NO RESULTS ========== */
-.noResults {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 80px 24px;
-  min-height: 500px;
-}
-
 .noResults h2 {
   font-size: 24px;
   font-weight: 600;
   color: #e2e8f0;
-  margin: 24px 0 12px 0;
+  margin: 0 0 12px 0;
 }
 
 .noResults p {
@@ -200,15 +312,21 @@
   color: #60a5fa;
 }
 
+.hint {
+  margin-top: 8px;
+  font-size: 14px;
+  color: #64748b;
+}
+
 /* ========== LOADING STATE ========== */
 .loadingState {
+  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 80px 24px;
-  min-height: 500px;
+  padding: 40px 24px;
 }
 
 .spinner {
@@ -234,13 +352,13 @@
 
 /* ========== ERROR STATE ========== */
 .errorState {
+  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 80px 24px;
-  min-height: 500px;
+  padding: 40px 24px;
 }
 
 .errorMessage {
@@ -258,114 +376,4 @@
   color: #94a3b8;
   font-size: 14px;
   margin: 0;
-}
-
-/* ========== RESPONSIVE ========== */
-@media (max-width: 1024px) {
-  .container {
-    padding: 24px 28px;
-  }
-
-  .title {
-    font-size: 24px;
-  }
-}
-
-@media (max-width: 768px) {
-  .container {
-    padding: 20px 16px;
-  }
-
-  .title {
-    font-size: 20px;
-  }
-
-  .resultCount {
-    font-size: 13px;
-  }
-
-  .resultCard {
-    padding: 14px 16px;
-    gap: 16px;
-  }
-
-  .cover {
-    width: 56px;
-    height: 56px;
-    font-size: 28px;
-    border-radius: 10px;
-  }
-
-  .songTitle {
-    font-size: 15px;
-  }
-
-  .songArtist {
-    font-size: 13px;
-  }
-
-  .songGenre {
-    font-size: 12px;
-  }
-
-  .playBtn {
-    width: 44px;
-    height: 44px;
-  }
-
-  .emptyState,
-  .noResults,
-  .loadingState {
-    padding: 60px 20px;
-    min-height: 400px;
-  }
-
-  .emptyIcon {
-    width: 48px;
-    height: 48px;
-  }
-
-  .emptyState h2,
-  .noResults h2 {
-    font-size: 20px;
-  }
-
-  .emptyState p,
-  .noResults p {
-    font-size: 14px;
-  }
-}
-
-@media (max-width: 480px) {
-  .container {
-    padding: 16px 12px;
-  }
-
-  .header {
-    margin-bottom: 24px;
-  }
-
-  .title {
-    font-size: 18px;
-  }
-
-  .resultCard {
-    padding: 12px;
-    gap: 12px;
-  }
-
-  .cover {
-    width: 50px;
-    height: 50px;
-    font-size: 24px;
-  }
-
-  .songTitle {
-    font-size: 14px;
-  }
-
-  .playBtn {
-    width: 40px;
-    height: 40px;
-  }
 }

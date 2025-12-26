@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from './Settings.module.css';
 import {
@@ -8,22 +8,40 @@ import {
   Save,
   Eye,
   EyeOff,
+  Clock,
+  Upload,
+  LogOut,
+  Play,
+  Pause,
+  User as UserIcon,
 } from 'lucide-react';
 import { useUser } from '../../context/UserContext';
+import { useMusic } from '../../context/MusicContext';
 import { authService } from '../../services/authService';
+import { musicService } from '../../services/musicService';
 
 const Settings = () => {
   const { user, logout, updateUser } = useUser();
+  const {
+    playSong,
+    currentSong,
+    isPlaying,
+    togglePlay,
+  } = useMusic();
   const navigate = useNavigate();
 
   const [activeTab, setActiveTab] = useState('profile');
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+
+  // History state
+  const [historySongs, setHistorySongs] = useState([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
 
   const [profileForm, setProfileForm] = useState({
     username: user?.username || '',
     email: user?.email || '',
-    bio: user?.accountType === 'ARTIST' ? user?.bio || '' : '',
   });
 
   useEffect(() => {
@@ -31,7 +49,6 @@ const Settings = () => {
     setProfileForm({
       username: user.username || '',
       email: user.email || '',
-      bio: user.accountType === 'ARTIST' ? user.bio || '' : '',
     });
   }, [user]);
 
@@ -40,16 +57,46 @@ const Settings = () => {
     newPassword: '',
     confirmPassword: '',
   });
+
   const [showPasswords, setShowPasswords] = useState({
     current: false,
     new: false,
     confirm: false,
   });
 
+  // ✅ Load history when History tab is active
+  useEffect(() => {
+    const loadHistory = async () => {
+      if (activeTab !== 'history') return;
+      if (!user?.accountId) return;
+
+      try {
+        setLoadingHistory(true);
+        const response = await musicService.getPlayedSongs(user.accountId);
+        setHistorySongs(response.songs || []);
+      } catch (err) {
+        console.error('Failed to fetch history:', err);
+        setHistorySongs([]);
+      } finally {
+        setLoadingHistory(false);
+      }
+    };
+
+    loadHistory();
+  }, [activeTab, user]);
+
+  // ✅ Dynamic tabs based on user type
   const tabs = [
     { id: 'profile', icon: User, label: 'Profile' },
+    ...(user?.accountType !== 'ADMIN'
+      ? [{ id: 'history', icon: Clock, label: 'History' }]
+      : []),
+    ...(user?.accountType === 'ADMIN'
+      ? [{ id: 'upload', icon: Upload, label: 'Upload Song' }]
+      : []),
     { id: 'security', icon: Lock, label: 'Security' },
-    { id: 'danger', icon: Trash2, label: 'Account' },
+    { id: 'danger', icon: Trash2, label: 'Delete Account' },
+    { id: 'logout', icon: LogOut, label: 'Logout' },
   ];
 
   const showMessage = (type, text) => {
@@ -62,7 +109,10 @@ const Settings = () => {
     setIsLoading(true);
 
     try {
-      const response = await authService.updateProfile(profileForm, user?.accountType);
+      const response = await authService.updateProfile(
+        profileForm,
+        user?.accountType
+      );
       updateUser(response);
       showMessage('success', 'Profile updated successfully!');
     } catch (error) {
@@ -108,7 +158,7 @@ const Settings = () => {
 
   const handleDeleteAccount = async () => {
     const confirmed = window.confirm(
-      'Are you sure you want to delete your account? This action cannot be undone!',
+      'Are you sure you want to delete your account? This action cannot be undone!'
     );
 
     if (!confirmed) return;
@@ -131,11 +181,72 @@ const Settings = () => {
     }
   };
 
+  const handleLogout = () => {
+    logout();
+    navigate('/auth');
+  };
+
+  const handleTabClick = (tabId) => {
+    if (tabId === 'logout') {
+      setShowLogoutModal(true);
+    } else if (tabId === 'upload') {
+      navigate('/admin/upload');
+    } else {
+      setActiveTab(tabId);
+    }
+  };
+
+  // ✅ History playlist
+  const historyPlaylist = useMemo(
+    () =>
+      (historySongs || []).map((track) => ({
+        ...track,
+        songId: track.songId || track.id,
+        id: track.songId || track.id,
+        title: track.title,
+        artist:
+          track.artist?.name ||
+          track.artistName ||
+          track.artist?.username ||
+          'Unknown Artist',
+        coverEmoji: track.coverEmoji || '🎵',
+        cover: track.coverEmoji || '🎵',
+        audioUrl: musicService.getStreamUrl(track.songId || track.id),
+      })),
+    [historySongs]
+  );
+
+  // ✅ Play handler for history
+  const handlePlayHistory = (songIndex) => {
+    const song = historyPlaylist[songIndex];
+    if (!song) return;
+
+    const currentId = currentSong?.songId || currentSong?.id;
+    const clickedId = song.songId || song.id;
+
+    if (clickedId && currentId && clickedId === currentId && isPlaying) {
+      togglePlay();
+      return;
+    }
+
+    playSong(song, historyPlaylist, songIndex);
+  };
+
+  const isTrackPlaying = (track) => {
+    const trackId = track.songId || track.id;
+    const currentId = currentSong?.songId || currentSong?.id;
+    return !!trackId && !!currentId && trackId === currentId && isPlaying;
+  };
+
   return (
     <div className={styles.settingsContainer}>
       <div className={styles.header}>
-        <h1>Settings</h1>
-        <p>Manage your account settings</p>
+        <h1>{activeTab === 'history' ? 'Your History' : 'Settings'}</h1>
+        <p>
+          {activeTab === 'history'
+            ? 'View your recently played songs'
+            : 'Manage your account settings'}
+        </p>
       </div>
 
       {message.text && (
@@ -151,8 +262,8 @@ const Settings = () => {
               key={tab.id}
               className={`${styles.tabBtn} ${
                 activeTab === tab.id ? styles.active : ''
-              }`}
-              onClick={() => setActiveTab(tab.id)}
+              } ${tab.id === 'logout' ? styles.logoutBtn : ''}`}
+              onClick={() => handleTabClick(tab.id)}
             >
               <tab.icon size={20} />
               <span>{tab.label}</span>
@@ -186,23 +297,6 @@ const Settings = () => {
                   />
                 </div>
 
-                {user?.accountType === 'ARTIST' && (
-                  <div className={styles.formGroup}>
-                    <label>Bio</label>
-                    <textarea
-                      value={profileForm.bio}
-                      onChange={(e) =>
-                        setProfileForm({
-                          ...profileForm,
-                          bio: e.target.value,
-                        })
-                      }
-                      rows="4"
-                      placeholder="Tell us about yourself..."
-                    />
-                  </div>
-                )}
-
                 <div className={styles.formGroup}>
                   <label>Account Type</label>
                   <input
@@ -222,6 +316,62 @@ const Settings = () => {
                   {isLoading ? 'Saving...' : 'Save Changes'}
                 </button>
               </form>
+            </div>
+          )}
+
+          {/* ✅ HISTORY TAB */}
+          {activeTab === 'history' && (
+            <div className={styles.historySection}>
+              {loadingHistory ? (
+                <div className={styles.historyEmpty}>⏳ Loading history...</div>
+              ) : historySongs.length > 0 ? (
+                <div className={styles.historyGrid}>
+                  {historySongs.map((track, index) => {
+                    const playing = isTrackPlaying(track);
+
+                    return (
+                      <div
+                        className={`${styles.historyCard} ${
+                          playing ? styles.playingCard : ''
+                        }`}
+                        key={track.id || track.songId}
+                      >
+                        <div className={styles.historyCover}>
+                          {track.coverEmoji || '🎵'}
+                        </div>
+
+                        <button
+                          className={`${styles.historyPlayBtn} ${
+                            playing ? styles.playingBtn : ''
+                          }`}
+                          onClick={() => handlePlayHistory(index)}
+                          title={playing ? 'Pause' : 'Play song'}
+                        >
+                          {playing ? (
+                            <Pause size={20} fill="currentColor" />
+                          ) : (
+                            <Play size={20} fill="currentColor" />
+                          )}
+                        </button>
+
+                        <div className={styles.historyInfo}>
+                          <span className={styles.historyTitle}>
+                            {track.title || 'Untitled'}
+                          </span>
+                          <span className={styles.historyArtist}>
+                            {track.artist?.name ||
+                              track.artistName ||
+                              track.artist?.username ||
+                              'Unknown Artist'}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className={styles.historyEmpty}>📭 No history yet.</div>
+              )}
             </div>
           )}
 
@@ -368,6 +518,29 @@ const Settings = () => {
           )}
         </div>
       </div>
+
+      {/* ✅ LOGOUT MODAL */}
+      {showLogoutModal && (
+        <div
+          className={styles.modalOverlay}
+          onClick={() => setShowLogoutModal(false)}
+        >
+          <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+            <h2>Are you sure wanna logout?</h2>
+            <div className={styles.modalButtons}>
+              <button
+                className={styles.modalNoBtn}
+                onClick={() => setShowLogoutModal(false)}
+              >
+                No
+              </button>
+              <button className={styles.modalYesBtn} onClick={handleLogout}>
+                Yes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

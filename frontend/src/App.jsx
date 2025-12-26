@@ -10,7 +10,6 @@ import SessionTimeoutWarning from './components/Auth/SessionTimeoutWarning';
 import AuthPage from './pages/auth/AuthPage';
 import Home from './pages/user/Home';
 import PlaylistDetail from './pages/user/PlaylistDetail';
-import History from './pages/Settings/History';
 import Search from './pages/user/Search';
 import Settings from './pages/Settings/Settings';
 
@@ -23,16 +22,16 @@ import AdminUpload from './pages/admin/AdminUpload';
 import ArtistManagement from './pages/admin/ArtistManagement';
 import AlbumManagement from './pages/admin/AlbumManagement';
 
-// ✨ ENHANCED Page Transition - LEBIH TERLIHAT!
+// ✨ FASTER Page Transition - Quick & Smooth
 const PageTransition = ({ children }) => {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 50, scale: 0.96 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: -50, scale: 0.96 }}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
       transition={{
-        duration: 0.5,
-        ease: [0.6, 0.05, 0.01, 0.9]
+        duration: 0.2,        // ✅ Reduced from 0.5s to 0.2s
+        ease: "easeOut",      // ✅ Simpler easing
       }}
       style={{ width: '100%', height: '100%' }}
     >
@@ -208,19 +207,6 @@ const RoleBasedRoutes = () => {
         />
 
         <Route
-          path="/history"
-          element={
-            <ProtectedRoute>
-              <MainLayout>
-                <PageTransition>
-                  <History />
-                </PageTransition>
-              </MainLayout>
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
           path="/search"
           element={
             <ProtectedRoute>
@@ -262,13 +248,9 @@ const App = () => {
         <MusicProvider>
           <SessionTimeoutWarning />
 
-          {/* ✅ PERBAIKAN: AuthPage TIDAK dibungkus AnimatePresence */}
-          {/* Ini memastikan terminal loading animation tidak di-interrupt */}
+          {/* ✅ AuthPage tanpa AnimatePresence */}
           <Routes location={location} key={location.pathname}>
-            <Route 
-              path="/auth" 
-              element={<AuthPage />} 
-            />
+            <Route path="/auth" element={<AuthPage />} />
             <Route path="*" element={<RoleBasedRoutes />} />
           </Routes>
         </MusicProvider>

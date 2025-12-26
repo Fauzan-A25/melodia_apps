@@ -9,6 +9,9 @@ import { useMusic } from '../../context/MusicContext';
 import { useState, useEffect, useMemo } from 'react';
 import { musicService } from '../../services/musicService';
 
+// ✅ Import background image
+import bgImage from '../../assets/images/common/bg.png';
+
 const MainLayout = ({ children }) => {
   const { user } = useUser();
   const { currentSong } = useMusic();
@@ -76,6 +79,18 @@ const MainLayout = ({ children }) => {
 
   return (
     <div className={styles.layout}>
+      {/* ✅ Background Layer - Blurred Windows XP Wallpaper */}
+      <div 
+        className={styles.bgLayer}
+        style={{
+          backgroundImage: `url(${bgImage})`,
+        }}
+      />
+      
+      {/* ✅ Blue Overlay Layer */}
+      <div className={styles.overlayLayer} />
+
+      {/* ✅ Content Layers (above background) */}
       <Sidebar onCreatePlaylist={() => setShowCreateModal(true)} />
 
       <div className={styles.mainArea}>
