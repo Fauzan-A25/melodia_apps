@@ -1,43 +1,66 @@
+// src/App.jsx - NO LAZY USER PAGES
+import { useEffect, useRef, lazy, Suspense } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
-// eslint-disable-next-line no-unused-vars
-import { AnimatePresence, motion } from 'framer-motion';
 import { UserProvider, useUser } from './context/UserContext';
 import { MusicProvider } from './context/MusicContext';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import MainLayout from './components/Layout/MainLayout';
 import SessionTimeoutWarning from './components/Auth/SessionTimeoutWarning';
+import NProgress from 'nprogress';
+import 'nprogress/nprogress.css';
+import './components/LoadingBar/LoadingBar.module.css';
+
+// ✅ NO LAZY - Direct import untuk instant page transitions
 import AuthPage from './pages/auth/AuthPage';
 import Home from './pages/user/Home';
 import PlaylistDetail from './pages/user/PlaylistDetail';
 import Search from './pages/user/Search';
 import Settings from './pages/Settings/Settings';
 
-// Admin Pages
-import AdminDashboard from './pages/admin/AdminDashboard';
-import GenreManagement from './pages/admin/GenreManagement';
-import UserManagement from './pages/admin/UserManagement';
-import AdminSong from './pages/admin/AdminSong';
-import AdminUpload from './pages/admin/AdminUpload';
-import ArtistManagement from './pages/admin/ArtistManagement';
-import AlbumManagement from './pages/admin/AlbumManagement';
+// ✅ Admin Pages tetap lazy (jarang diakses)
+const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
+const GenreManagement = lazy(() => import('./pages/admin/GenreManagement'));
+const UserManagement = lazy(() => import('./pages/admin/UserManagement'));
+const AdminSong = lazy(() => import('./pages/admin/AdminSong'));
+const AdminUpload = lazy(() => import('./pages/admin/AdminUpload'));
+const ArtistManagement = lazy(() => import('./pages/admin/ArtistManagement'));
+const AlbumManagement = lazy(() => import('./pages/admin/AlbumManagement'));
 
-// ✨ FASTER Page Transition - Quick & Smooth
-const PageTransition = ({ children }) => {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      transition={{
-        duration: 0.2,        // ✅ Reduced from 0.5s to 0.2s
-        ease: "easeOut",      // ✅ Simpler easing
-      }}
-      style={{ width: '100%', height: '100%' }}
-    >
-      {children}
-    </motion.div>
-  );
+// ✅ Configure NProgress
+NProgress.configure({ 
+  showSpinner: false,
+  minimum: 0.1,
+  speed: 200,
+  trickleSpeed: 100,
+});
+
+// ✅ Route Progress Tracker
+const RouteProgressTracker = () => {
+  const location = useLocation();
+  const prevLocationRef = useRef(location.pathname);
+
+  useEffect(() => {
+    const currentPath = location.pathname;
+    const prevPath = prevLocationRef.current;
+
+    if (currentPath !== prevPath) {
+      NProgress.start();
+      
+      const timer = setTimeout(() => {
+        NProgress.done();
+      }, 200);
+
+      prevLocationRef.current = currentPath;
+
+      return () => {
+        clearTimeout(timer);
+        NProgress.done();
+      };
+    }
+  }, [location.pathname]);
+
+  return null;
 };
 
 // Role-based Route Wrapper
@@ -52,16 +75,17 @@ const RoleBasedRoutes = () => {
   // Jika ADMIN
   if (effectiveAccountType === 'ADMIN') {
     return (
-      <AnimatePresence mode="wait">
+      <>
+        <RouteProgressTracker />
         <Routes location={location} key={location.pathname}>
           <Route
             path="/admin/dashboard"
             element={
               <ProtectedRoute>
                 <MainLayout>
-                  <PageTransition>
+                  <Suspense fallback={<div style={{ minHeight: '100vh' }} />}>
                     <AdminDashboard />
-                  </PageTransition>
+                  </Suspense>
                 </MainLayout>
               </ProtectedRoute>
             }
@@ -72,9 +96,9 @@ const RoleBasedRoutes = () => {
             element={
               <ProtectedRoute>
                 <MainLayout>
-                  <PageTransition>
+                  <Suspense fallback={<div style={{ minHeight: '100vh' }} />}>
                     <GenreManagement />
-                  </PageTransition>
+                  </Suspense>
                 </MainLayout>
               </ProtectedRoute>
             }
@@ -85,9 +109,9 @@ const RoleBasedRoutes = () => {
             element={
               <ProtectedRoute>
                 <MainLayout>
-                  <PageTransition>
+                  <Suspense fallback={<div style={{ minHeight: '100vh' }} />}>
                     <UserManagement />
-                  </PageTransition>
+                  </Suspense>
                 </MainLayout>
               </ProtectedRoute>
             }
@@ -98,9 +122,9 @@ const RoleBasedRoutes = () => {
             element={
               <ProtectedRoute>
                 <MainLayout>
-                  <PageTransition>
+                  <Suspense fallback={<div style={{ minHeight: '100vh' }} />}>
                     <ArtistManagement />
-                  </PageTransition>
+                  </Suspense>
                 </MainLayout>
               </ProtectedRoute>
             }
@@ -111,9 +135,9 @@ const RoleBasedRoutes = () => {
             element={
               <ProtectedRoute>
                 <MainLayout>
-                  <PageTransition>
+                  <Suspense fallback={<div style={{ minHeight: '100vh' }} />}>
                     <AlbumManagement />
-                  </PageTransition>
+                  </Suspense>
                 </MainLayout>
               </ProtectedRoute>
             }
@@ -124,9 +148,9 @@ const RoleBasedRoutes = () => {
             element={
               <ProtectedRoute>
                 <MainLayout>
-                  <PageTransition>
+                  <Suspense fallback={<div style={{ minHeight: '100vh' }} />}>
                     <AdminSong />
-                  </PageTransition>
+                  </Suspense>
                 </MainLayout>
               </ProtectedRoute>
             }
@@ -137,9 +161,9 @@ const RoleBasedRoutes = () => {
             element={
               <ProtectedRoute>
                 <MainLayout>
-                  <PageTransition>
+                  <Suspense fallback={<div style={{ minHeight: '100vh' }} />}>
                     <AdminUpload />
-                  </PageTransition>
+                  </Suspense>
                 </MainLayout>
               </ProtectedRoute>
             }
@@ -150,9 +174,7 @@ const RoleBasedRoutes = () => {
             element={
               <ProtectedRoute>
                 <MainLayout>
-                  <PageTransition>
-                    <Settings />
-                  </PageTransition>
+                  <Settings />
                 </MainLayout>
               </ProtectedRoute>
             }
@@ -161,22 +183,21 @@ const RoleBasedRoutes = () => {
           <Route path="/" element={<Navigate to="/admin/dashboard" replace />} />
           <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
         </Routes>
-      </AnimatePresence>
+      </>
     );
   }
 
-  // Jika USER
+  // ✅ USER ROUTES - NO LAZY, INSTANT TRANSITIONS
   return (
-    <AnimatePresence mode="wait">
+    <>
+      <RouteProgressTracker />
       <Routes location={location} key={location.pathname}>
         <Route
           path="/home"
           element={
             <ProtectedRoute>
               <MainLayout>
-                <PageTransition>
-                  <Home />
-                </PageTransition>
+                <Home />
               </MainLayout>
             </ProtectedRoute>
           }
@@ -187,9 +208,7 @@ const RoleBasedRoutes = () => {
           element={
             <ProtectedRoute>
               <MainLayout>
-                <PageTransition>
-                  <PlaylistDetail />
-                </PageTransition>
+                <PlaylistDetail />
               </MainLayout>
             </ProtectedRoute>
           }
@@ -211,9 +230,7 @@ const RoleBasedRoutes = () => {
           element={
             <ProtectedRoute>
               <MainLayout>
-                <PageTransition>
-                  <Search />
-                </PageTransition>
+                <Search />
               </MainLayout>
             </ProtectedRoute>
           }
@@ -224,9 +241,7 @@ const RoleBasedRoutes = () => {
           element={
             <ProtectedRoute>
               <MainLayout>
-                <PageTransition>
-                  <Settings />
-                </PageTransition>
+                <Settings />
               </MainLayout>
             </ProtectedRoute>
           }
@@ -235,7 +250,7 @@ const RoleBasedRoutes = () => {
         <Route path="/" element={<Navigate to="/home" replace />} />
         <Route path="*" element={<Navigate to="/home" replace />} />
       </Routes>
-    </AnimatePresence>
+    </>
   );
 };
 
@@ -248,7 +263,6 @@ const App = () => {
         <MusicProvider>
           <SessionTimeoutWarning />
 
-          {/* ✅ AuthPage tanpa AnimatePresence */}
           <Routes location={location} key={location.pathname}>
             <Route path="/auth" element={<AuthPage />} />
             <Route path="*" element={<RoleBasedRoutes />} />

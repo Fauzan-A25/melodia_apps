@@ -10,6 +10,12 @@
   flex-shrink: 0;
   overflow: hidden;
   z-index: 100;
+  position: relative;
+}
+
+/* ✅ HAPUS Mobile Close Button */
+.mobileCloseBtn {
+  display: none;
 }
 
 /* Panel scrollable di dalam */
@@ -81,7 +87,7 @@
   margin-bottom: 20px;
 }
 
-/* ✅ Item nav dasar - tanpa border, lebih clean */
+/* Item nav dasar */
 .navItem {
   display: flex;
   align-items: center;
@@ -103,7 +109,7 @@
   color: #e2e8f0;
 }
 
-/* ✅ Active state - gradient smooth tanpa border */
+/* Active state */
 .navItemActive {
   background: linear-gradient(
     to right,
@@ -143,7 +149,7 @@
   background: rgba(30, 58, 138, 0.3);
 }
 
-/* ========== CREATE PLAYLIST BUTTON (PILL SHAPE) ========== */
+/* ========== CREATE PLAYLIST BUTTON ========== */
 .createPlaylistBtn {
   display: flex;
   align-items: center;
@@ -151,7 +157,7 @@
   gap: 12px;
   padding: 13px 20px;
   margin-top: 0;
-  border-radius: 30px; /* ✅ Full rounded (pill shape) */
+  border-radius: 30px;
   border: 1px solid rgba(59, 130, 246, 0.35);
   width: 100%;
   background: transparent;
@@ -168,11 +174,10 @@
   text-align: center;
 }
 
-/* ✅ Plus icon dalam lingkaran solid */
 .createPlaylistBtn .navIconWrapper {
   width: 24px;
   height: 24px;
-  border-radius: 50%; /* ✅ Lingkaran penuh */
+  border-radius: 50%;
   background: rgba(59, 130, 246, 0.85);
   display: flex;
   align-items: center;
@@ -191,7 +196,7 @@
 }
 
 .createPlaylistBtn:hover:not(:disabled) .navIconWrapper {
-  background: rgba(59, 130, 246, 1); /* ✅ Solid blue on hover */
+  background: rgba(59, 130, 246, 1);
   box-shadow: 0 0 10px rgba(59, 130, 246, 0.6);
 }
 
@@ -255,7 +260,7 @@
   background: rgba(59, 130, 246, 0.5);
 }
 
-/* ✅ Item playlist - tanpa border, lebih clean */
+/* Item playlist */
 .playlistItem {
   display: flex;
   align-items: center;
@@ -277,7 +282,7 @@
   color: #e2e8f0;
 }
 
-/* ✅ Active playlist - gradient smooth tanpa border */
+/* Active playlist */
 .playlistItemActive {
   background: linear-gradient(
     to right,
@@ -293,7 +298,7 @@
   box-shadow: none;
 }
 
-/* ✅ Icon playlist - music note dalam kotak */
+/* Icon playlist */
 .playlistAvatar {
   width: 32px;
   height: 32px;
@@ -321,7 +326,7 @@
   flex: 1;
 }
 
-/* ========== INFO BOX (loading / empty) ========== */
+/* ========== INFO BOX ========== */
 .playlistInfoBox {
   margin-top: 8px;
   padding: 14px 12px;
@@ -515,8 +520,10 @@
   cursor: not-allowed;
 }
 
-/* ========== RESPONSIVE ========== */
-@media (max-width: 900px) {
+/* ========== RESPONSIVE - TIDAK ADA SLIDE ========== */
+
+/* ✅ Tablet - Icon Only */
+@media (max-width: 1024px) and (min-width: 769px) {
   .sidebar {
     width: 72px;
   }
@@ -565,18 +572,126 @@
   }
 }
 
+/* ✅ Mobile & Small Tablet - Icon Only, Lebih Kecil */
 @media (max-width: 768px) {
   .sidebar {
-    position: fixed;
-    left: 0;
-    top: 0;
-    width: 260px;
-    transform: translateX(-100%);
-    transition: transform 0.3s ease;
-    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.5);
+    width: 60px; /* ✅ Lebih kecil di mobile */
   }
 
-  .sidebar.open {
-    transform: translateX(0);
+  .sidebarInner {
+    padding: 16px 4px;
+    align-items: center;
+  }
+
+  .logoSection {
+    justify-content: center;
+    padding-bottom: 12px;
+    margin-bottom: 20px;
+  }
+
+  .melodiaLogo {
+    width: 32px; /* ✅ Logo lebih kecil */
+  }
+
+  .logoText,
+  .navLabel,
+  .playlistHeaderLabel,
+  .playlistName,
+  .playlistInfoText,
+  .playlistInfoSub {
+    display: none;
+  }
+
+  .navItem,
+  .playlistItem {
+    justify-content: center;
+    padding: 10px 8px;
+    border-radius: 10px;
+  }
+
+  .navIconWrapper {
+    width: 24px;
+    height: 24px;
+  }
+
+  .createPlaylistBtn {
+    justify-content: center;
+    padding: 10px 8px;
+    border-radius: 10px; /* ✅ Square shape di mobile */
+  }
+
+  .createPlaylistBtn .navLabel {
+    display: none;
+  }
+
+  .createPlaylistBtn .navIconWrapper {
+    position: static;
+    width: 20px;
+    height: 20px;
+  }
+
+  .playlistAvatar {
+    width: 28px;
+    height: 28px;
+  }
+
+  .playlistInfoBox {
+    align-items: center;
+    padding: 10px 6px;
+  }
+
+  .playlistEmoji {
+    font-size: 20px;
+  }
+
+  .sectionDivider {
+    width: 70%;
+    margin: 16px 0;
+  }
+
+  .playlistList {
+    max-height: 200px;
+  }
+}
+
+/* ✅ Extra Small Mobile */
+@media (max-width: 480px) {
+  .sidebar {
+    width: 56px; /* ✅ Sangat kecil di HP kecil */
+  }
+
+  .sidebarInner {
+    padding: 12px 2px;
+  }
+
+  .melodiaLogo {
+    width: 28px;
+  }
+
+  .navItem,
+  .playlistItem,
+  .createPlaylistBtn {
+    padding: 8px 6px;
+    gap: 0;
+  }
+
+  .navIconWrapper {
+    width: 22px;
+    height: 22px;
+  }
+
+  .createPlaylistBtn .navIconWrapper {
+    width: 18px;
+    height: 18px;
+  }
+
+  .playlistAvatar {
+    width: 24px;
+    height: 24px;
+  }
+
+  .playlistAvatar svg {
+    width: 14px;
+    height: 14px;
   }
 }

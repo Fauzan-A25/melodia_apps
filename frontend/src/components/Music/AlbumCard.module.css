@@ -1,25 +1,27 @@
-/* AlbumCard.module.css */
+/* AlbumCard.module.css - Fixed Version */
 
 .albumCard {
-  background: rgba(15, 23, 42, 0.8);
+  background: transparent; /* ✅ Background transparan */
   border-radius: 12px;
-  padding: 20px;
+  padding: 16px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  border: 1px solid rgba(59, 130, 246, 0.15);
+  border: 1px solid transparent; /* ✅ Border transparan default */
   cursor: pointer;
   position: relative;
 }
 
+/* ✅ Hover - subtle background dengan border glow */
 .albumCard:hover {
-  background: rgba(59, 130, 246, 0.12);
-  border-color: rgba(59, 130, 246, 0.4);
+  background: rgba(59, 130, 246, 0.08); /* ✅ Lebih subtle */
+  border-color: rgba(59, 130, 246, 0.3);
   transform: translateY(-4px);
-  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 12px 32px rgba(59, 130, 246, 0.2);
 }
 
+/* ✅ Playing state - purple accent */
 .albumCard.playing {
-  background: rgba(159, 122, 234, 0.15);
-  border-color: rgba(159, 122, 234, 0.5);
+  background: rgba(159, 122, 234, 0.1);
+  border-color: rgba(159, 122, 234, 0.4);
 }
 
 .coverWrapper {
@@ -40,21 +42,23 @@
   transition: all 0.3s ease;
 }
 
+/* ✅ Cover hover - lebih subtle */
 .albumCard:hover .cover {
-  box-shadow: 0 12px 32px rgba(59, 130, 246, 0.5);
-  transform: scale(1.02);
+  box-shadow: 0 12px 32px rgba(59, 130, 246, 0.4);
+  transform: scale(1.03); /* ✅ Sedikit lebih kecil */
 }
 
 .albumCard.playing .cover {
-  box-shadow: 0 12px 32px rgba(159, 122, 234, 0.6);
+  box-shadow: 0 12px 32px rgba(159, 122, 234, 0.5);
 }
 
+/* ✅ Play Button - Better positioning & animation */
 .playButton {
   position: absolute;
   bottom: 12px;
   right: 12px;
-  width: 56px;
-  height: 56px;
+  width: 52px; /* ✅ Sedikit lebih kecil */
+  height: 52px;
   border-radius: 50%;
   border: none;
   background: rgba(255, 255, 255, 0.95);
@@ -64,7 +68,7 @@
   justify-content: center;
   cursor: pointer;
   opacity: 0;
-  transform: translateY(12px) scale(0.8);
+  transform: translateY(8px) scale(0.85); /* ✅ Smoother entrance */
   transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
   z-index: 10;
@@ -76,10 +80,15 @@
   transform: translateY(0) scale(1);
 }
 
+/* ✅ Hover - smaller scale untuk avoid overflow */
 .playButton:hover:not(:disabled) {
-  transform: translateY(0) scale(1.15);
+  transform: translateY(0) scale(1.1); /* ✅ 1.1 instead of 1.15 */
   background: white;
-  box-shadow: 0 12px 32px rgba(59, 130, 246, 0.6);
+  box-shadow: 0 12px 32px rgba(59, 130, 246, 0.5);
+}
+
+.playButton:active:not(:disabled) {
+  transform: translateY(0) scale(0.95);
 }
 
 .playButton:disabled {
@@ -94,10 +103,10 @@
 
 .playButton.active:hover {
   background: #9f7aea;
-  box-shadow: 0 12px 32px rgba(159, 122, 234, 0.7);
+  box-shadow: 0 12px 32px rgba(159, 122, 234, 0.6);
 }
 
-/* Spinner animation untuk loading state */
+/* Spinner animation */
 .spinner {
   animation: spin 1s linear infinite;
 }
@@ -111,11 +120,12 @@
   }
 }
 
+/* ✅ Song Count Badge */
 .songCount {
   position: absolute;
-  top: 8px;
-  right: 8px;
-  background: rgba(15, 23, 42, 0.9);
+  top: 10px;
+  right: 10px;
+  background: rgba(15, 23, 42, 0.85);
   backdrop-filter: blur(12px);
   padding: 6px 12px;
   border-radius: 20px;
@@ -131,7 +141,7 @@
 }
 
 .albumCard.playing .songCount {
-  background: rgba(159, 122, 234, 0.9);
+  background: rgba(159, 122, 234, 0.85);
   color: white;
   border-color: rgba(159, 122, 234, 0.5);
 }
@@ -145,13 +155,14 @@
   color: white;
 }
 
+/* ✅ Info Section */
 .info {
   text-align: left;
 }
 
 .title {
   color: white;
-  font-size: 17px;
+  font-size: 16px;
   font-weight: 700;
   margin-bottom: 6px;
   white-space: nowrap;
@@ -163,7 +174,7 @@
 
 .artist {
   color: #94a3b8;
-  font-size: 14px;
+  font-size: 13px;
   margin-bottom: 4px;
   white-space: nowrap;
   overflow: hidden;
@@ -174,57 +185,126 @@
 
 .year {
   color: #64748b;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 400;
   margin-top: 4px;
 }
 
+/* ✅ Hover effects pada text */
 .albumCard:hover .title {
   color: #60a5fa;
 }
 
 .albumCard.playing .title {
-  color: #9f7aea;
-}
-
-.albumCard.playing .artist {
   color: #c4b5fd;
 }
 
-@media (max-width: 768px) {
+.albumCard.playing .artist {
+  color: #a78bfa;
+}
+
+/* ========== RESPONSIVE ========== */
+
+@media (max-width: 1024px) {
   .albumCard {
-    padding: 16px;
+    padding: 14px;
   }
-  
+
   .cover {
-    font-size: 52px;
+    font-size: 56px;
   }
-  
+
   .playButton {
     width: 48px;
     height: 48px;
   }
-  
-  .playButton.visible {
-    opacity: 1;
-    transform: translateY(0) scale(1);
+
+  .title {
+    font-size: 15px;
+  }
+
+  .artist {
+    font-size: 12px;
   }
 }
 
-@media (max-width: 480px) {
-  .cover {
-    font-size: 44px;
+@media (max-width: 768px) {
+  .albumCard {
+    padding: 12px;
   }
-  
+
+  .cover {
+    font-size: 48px;
+  }
+
   .playButton {
     width: 44px;
     height: 44px;
     bottom: 8px;
     right: 8px;
   }
-  
+
+  /* ✅ Always visible di mobile */
+  .playButton {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
+  .songCount {
+    padding: 5px 10px;
+    font-size: 11px;
+    top: 8px;
+    right: 8px;
+  }
+
+  .title {
+    font-size: 14px;
+  }
+
+  .artist {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .albumCard {
+    padding: 10px;
+  }
+
+  .cover {
+    font-size: 40px;
+  }
+
+  .playButton {
+    width: 40px;
+    height: 40px;
+  }
+
+  .playButton svg {
+    width: 20px;
+    height: 20px;
+  }
+
   .songCount {
     padding: 4px 8px;
+    font-size: 10px;
+    gap: 4px;
+  }
+
+  .songCount svg {
+    width: 12px;
+    height: 12px;
+  }
+
+  .title {
+    font-size: 13px;
+  }
+
+  .artist {
     font-size: 11px;
+  }
+
+  .year {
+    font-size: 10px;
   }
 }

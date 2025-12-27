@@ -1,13 +1,20 @@
-/* ========== CONTAINER - NO SCROLL ========== */
+html, body {
+  overflow: hidden;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+}
+
 .settingsContainer {
   padding: 0;
   max-width: 100%;
   width: 100%;
-  height: calc(100vh - 180px);
+  height: 100vh; /* Ubah dari calc(100vh - 180px) */
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow: hidden; /* Pastikan tidak ada scroll */
 }
+
 
 .header {
   flex-shrink: 0;
@@ -84,6 +91,7 @@
   cursor: pointer;
   transition: all 0.2s;
   text-align: left;
+  outline: none;
 }
 
 .tabBtn:hover {
@@ -96,16 +104,97 @@
   color: #3b82f6;
 }
 
+.tabBtn:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+.tabBtn:focus-visible {
+  outline: 2px solid rgba(59, 130, 246, 0.3);
+  outline-offset: 2px;
+}
+
+/* ✅ LOGOUT BUTTON - COMPLETE RESET WITH !important */
 .logoutBtn {
+  /* Reset ALL borders */
+  border: none !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-left: none !important;
+  border-right: none !important;
+  border-bottom: none !important;
+  
+  /* Reset outline and shadows */
+  outline: none !important;
+  outline-offset: 0 !important;
+  box-shadow: none !important;
+  
+  /* Spacing */
   margin-top: 8px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
   padding-top: 16px;
-  color: #ef4444;
+  padding-left: 16px;
+  padding-right: 16px;
+  padding-bottom: 12px;
+  
+  /* Colors */
+  background: transparent !important;
+  color: #ef4444 !important;
+  
+  /* Layout */
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+  border-radius: 8px;
 }
 
 .logoutBtn:hover {
-  background: rgba(239, 68, 68, 0.1);
-  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1) !important;
+  color: #ef4444 !important;
+  border: none !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.logoutBtn:focus {
+  background: rgba(239, 68, 68, 0.1) !important;
+  color: #ef4444 !important;
+  border: none !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.logoutBtn:active {
+  background: rgba(239, 68, 68, 0.15) !important;
+  color: #ef4444 !important;
+  border: none !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.logoutBtn:focus-visible {
+  background: rgba(239, 68, 68, 0.1) !important;
+  color: #ef4444 !important;
+  border: none !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+  outline: 2px solid rgba(239, 68, 68, 0.4) !important;
+  outline-offset: 2px !important;
+  box-shadow: none !important;
+}
+
+.logoutBtn.active {
+  background: rgba(239, 68, 68, 0.1) !important;
+  color: #ef4444 !important;
+  border: none !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+  outline: none !important;
+  box-shadow: none !important;
 }
 
 /* ========== CONTENT - SCROLLABLE ========== */
@@ -247,7 +336,7 @@
 
 .historyCard {
   position: relative;
-  background: rgba(15, 23, 42, 0.6);
+  background: transparent;
   border: 1px solid rgba(59, 130, 246, 0.15);
   border-radius: 14px;
   padding: 16px;
@@ -256,24 +345,25 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
+  backdrop-filter: blur(10px);
 }
 
 .historyCard:hover {
-  background: rgba(59, 130, 246, 0.12);
+  background: rgba(59, 130, 246, 0.08);
   border-color: rgba(59, 130, 246, 0.3);
   transform: translateY(-2px);
   box-shadow: 0 8px 24px rgba(59, 130, 246, 0.15);
 }
 
 .historyCard.playingCard {
-  background: rgba(59, 130, 246, 0.15);
+  background: rgba(59, 130, 246, 0.12);
   border-color: rgba(59, 130, 246, 0.4);
 }
 
 .historyCover {
   width: 100%;
   aspect-ratio: 1;
-  background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.3) 0%, rgba(99, 102, 241, 0.3) 100%);
   border-radius: 12px;
   display: flex;
   align-items: center;
@@ -281,6 +371,8 @@
   font-size: 64px;
   box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
   position: relative;
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .historyPlayBtn {
@@ -315,22 +407,27 @@
 .historyInfo {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
   min-width: 0;
+  padding-right: 0;
 }
 
 .historyTitle {
   color: #e2e8f0;
   font-size: 15px;
   font-weight: 600;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  word-break: break-word;
 }
 
 .historyArtist {
   color: #94a3b8;
   font-size: 13px;
+  line-height: 1.3;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -343,6 +440,675 @@
   height: 100%;
   font-size: 18px;
   color: #9ca3af;
+}
+
+/* ========== CONTAINER - NO SCROLL ========== */
+.settingsContainer {
+  padding: 0;
+  max-width: 100%;
+  width: 100%;
+  height: calc(100vh - 180px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.header {
+  flex-shrink: 0;
+  padding: 24px 32px 16px;
+}
+
+.header h1 {
+  font-size: 32px;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 8px;
+}
+
+.header p {
+  color: #9ca3af;
+  font-size: 15px;
+}
+
+.message {
+  flex-shrink: 0;
+  padding: 14px 20px;
+  border-radius: 10px;
+  margin: 0 32px 16px;
+  font-weight: 500;
+  animation: slideIn 0.3s ease;
+}
+
+.message.success {
+  background: rgba(34, 197, 94, 0.15);
+  border: 1px solid #22c55e;
+  color: #22c55e;
+}
+
+.message.error {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid #ef4444;
+  color: #ef4444;
+}
+
+.settingsContent {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 24px;
+  padding: 0 32px 24px;
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* ========== SIDEBAR ========== */
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  padding: 12px;
+  height: fit-content;
+  max-height: 100%;
+  overflow-y: auto;
+}
+
+.tabBtn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  color: #9ca3af;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+  outline: none;
+}
+
+.tabBtn:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+}
+
+.tabBtn.active {
+  background: rgba(59, 130, 246, 0.15);
+  color: #3b82f6;
+}
+
+.tabBtn:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+.tabBtn:focus-visible {
+  outline: 2px solid rgba(59, 130, 246, 0.3);
+  outline-offset: 2px;
+}
+
+/* ✅ LOGOUT BUTTON - COMPLETE RESET WITH !important */
+.logoutBtn {
+  border: none !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-left: none !important;
+  border-right: none !important;
+  border-bottom: none !important;
+  outline: none !important;
+  outline-offset: 0 !important;
+  box-shadow: none !important;
+  margin-top: 8px;
+  padding-top: 16px;
+  padding-left: 16px;
+  padding-right: 16px;
+  padding-bottom: 12px;
+  background: transparent !important;
+  color: #ef4444 !important;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+  border-radius: 8px;
+}
+
+.logoutBtn:hover {
+  background: rgba(239, 68, 68, 0.1) !important;
+  color: #ef4444 !important;
+  border: none !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.logoutBtn:focus {
+  background: rgba(239, 68, 68, 0.1) !important;
+  color: #ef4444 !important;
+  border: none !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.logoutBtn:active {
+  background: rgba(239, 68, 68, 0.15) !important;
+  color: #ef4444 !important;
+  border: none !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.logoutBtn:focus-visible {
+  background: rgba(239, 68, 68, 0.1) !important;
+  color: #ef4444 !important;
+  border: none !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+  outline: 2px solid rgba(239, 68, 68, 0.4) !important;
+  outline-offset: 2px !important;
+  box-shadow: none !important;
+}
+
+.logoutBtn.active {
+  background: rgba(239, 68, 68, 0.1) !important;
+  color: #ef4444 !important;
+  border: none !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* ========== CONTENT - SCROLLABLE ========== */
+.content {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  padding: 32px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  min-height: 0;
+}
+
+.content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.content::-webkit-scrollbar-track {
+  background: rgba(30, 58, 138, 0.2);
+  border-radius: 10px;
+}
+
+.content::-webkit-scrollbar-thumb {
+  background: rgba(59, 130, 246, 0.5);
+  border-radius: 10px;
+}
+
+.content::-webkit-scrollbar-thumb:hover {
+  background: rgba(59, 130, 246, 0.7);
+}
+
+.section h2 {
+  font-size: 24px;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 24px;
+}
+
+.formGroup {
+  margin-bottom: 24px;
+}
+
+.formGroup label {
+  display: block;
+  margin-bottom: 8px;
+  color: #d1d5db;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.formGroup input,
+.formGroup textarea {
+  width: 100%;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: #fff;
+  font-size: 15px;
+  transition: all 0.2s;
+}
+
+.formGroup input:focus,
+.formGroup textarea:focus {
+  outline: none;
+  border-color: #3b82f6;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.formGroup input.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.passwordInput {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.passwordInput input {
+  padding-right: 48px;
+}
+
+.eyeBtn {
+  position: absolute;
+  right: 12px;
+  background: none;
+  border: none;
+  color: #9ca3af;
+  cursor: pointer;
+  padding: 6px;
+  display: flex;
+  align-items: center;
+}
+
+.eyeBtn:hover {
+  color: #fff;
+}
+
+.saveBtn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 28px;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 8px;
+}
+
+.saveBtn:hover:not(:disabled) {
+  background: #2563eb;
+  transform: translateY(-1px);
+}
+
+.saveBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ========== HISTORY SECTION ========== */
+.historySection {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.historyGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  width: 100%;
+}
+
+.historyCard {
+  position: relative;
+  background: transparent;
+  border: 1px solid rgba(59, 130, 246, 0.15);
+  border-radius: 14px;
+  padding: 16px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  backdrop-filter: blur(10px);
+}
+
+.historyCard:hover {
+  background: rgba(59, 130, 246, 0.08);
+  border-color: rgba(59, 130, 246, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.15);
+}
+
+.historyCard.playingCard {
+  background: rgba(59, 130, 246, 0.12);
+  border-color: rgba(59, 130, 246, 0.4);
+}
+
+.historyCover {
+  width: 100%;
+  aspect-ratio: 1;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.3) 0%, rgba(99, 102, 241, 0.3) 100%);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 64px;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+  position: relative;
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.historyPlayBtn {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.95);
+  border: none;
+  color: #1e3a8a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  z-index: 2;
+}
+
+.historyPlayBtn:hover {
+  transform: scale(1.1);
+  background: white;
+}
+
+.historyPlayBtn.playingBtn {
+  background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
+  color: white;
+}
+
+.historyInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  padding-right: 0;
+}
+
+.historyTitle {
+  color: #e2e8f0;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  word-break: break-word;
+}
+
+.historyArtist {
+  color: #94a3b8;
+  font-size: 13px;
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.historyEmpty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  font-size: 18px;
+  color: #9ca3af;
+}
+
+/* ========== UPLOAD SECTION ========== */
+.uploadSection {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.uploadForm {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* File Upload */
+.fileSection {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.fileLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #e2e8f0;
+  margin-bottom: 4px;
+}
+
+.fileUploadBox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  border: 2px dashed rgba(59, 130, 246, 0.4);
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.4);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.fileUploadBox:hover {
+  border-color: #3b82f6;
+  background: rgba(59, 130, 246, 0.05);
+  transform: translateY(-2px);
+}
+
+.fileInput {
+  display: none;
+}
+
+.uploadIcon {
+  color: #3b82f6;
+  margin-bottom: 16px;
+  filter: drop-shadow(0 0 15px rgba(59, 130, 246, 0.4));
+}
+
+.fileUploadBox p {
+  color: #e2e8f0;
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.fileUploadBox span {
+  color: #94a3b8;
+  font-size: 13px;
+}
+
+/* File Preview */
+.filePreview {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: 12px;
+  animation: fadeIn 0.3s ease;
+}
+
+.filePreview svg {
+  color: #3b82f6;
+  flex-shrink: 0;
+}
+
+.fileInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.fileName {
+  color: #e2e8f0;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fileSize {
+  color: #94a3b8;
+  font-size: 13px;
+  margin: 0;
+}
+
+.removeBtn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: none;
+  background: rgba(239, 68, 68, 0.2);
+  color: #fca5a5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.removeBtn:hover {
+  background: rgba(239, 68, 68, 0.3);
+  transform: scale(1.1);
+}
+
+/* Input Fields for Upload */
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.inputGroup label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #e2e8f0;
+}
+
+.input,
+.select {
+  width: 100%;
+  padding: 12px 16px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: 8px;
+  color: white;
+  font-size: 14px;
+  font-family: inherit;
+  transition: all 0.3s ease;
+}
+
+.input:focus,
+.select:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  background: rgba(15, 23, 42, 0.8);
+}
+
+.input::placeholder {
+  color: #64748b;
+}
+
+.select {
+  cursor: pointer;
+}
+
+.select option {
+  background: #0f172a;
+  color: white;
+}
+
+/* Input Row for Upload */
+.inputRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+/* Upload Button */
+.uploadBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 14px 28px;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 8px;
+  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);
+}
+
+.uploadBtn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.5);
+}
+
+.uploadBtn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.uploadBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 /* ========== DANGER ZONE ========== */
@@ -484,15 +1250,6 @@
   }
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
 @keyframes slideUp {
   from {
     opacity: 0;
@@ -546,12 +1303,17 @@
   }
 
   .logoutBtn {
-    border-top: none;
+    border: none !important;
+    border-left: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-top: none !important;
+    border-right: none !important;
+    border-bottom: none !important;
     padding-top: 10px;
     margin-top: 0;
-    border-left: 1px solid rgba(255, 255, 255, 0.1);
     margin-left: 8px;
     padding-left: 16px;
+    outline: none !important;
+    box-shadow: none !important;
   }
 
   .content {
@@ -562,6 +1324,14 @@
   .historyGrid {
     grid-template-columns: repeat(2, 1fr);
     gap: 16px;
+  }
+
+  .inputRow {
+    grid-template-columns: 1fr;
+  }
+
+  .fileUploadBox {
+    padding: 32px 16px;
   }
 
   .modal {
@@ -591,6 +1361,10 @@
 
   .historyGrid {
     grid-template-columns: 1fr;
+  }
+
+  .uploadForm {
+    gap: 20px;
   }
 
   .dangerZone {

@@ -1,12 +1,13 @@
-/* ========== CONTAINER - NO SCROLL ========== */
+/* ========== CONTAINER - FLEXIBLE HEIGHT ========== */
 .container {
   padding: 0;
   max-width: 100%;
   width: 100%;
-  height: calc(100vh - 180px); /* Fixed height */
+  min-height: calc(100vh - 180px);
   display: flex;
   flex-direction: column;
-  overflow: hidden; /* ✅ No vertical scroll */
+  overflow-y: auto; /* ✅ Allow scroll */
+  overflow-x: hidden;
 }
 
 /* ========== SEARCH SECTION ========== */
@@ -73,7 +74,7 @@
 /* ========== HEADER ========== */
 .header {
   flex-shrink: 0;
-  padding: 16px 32px;
+  padding: 16px 32px 8px;
 }
 
 .title {
@@ -99,36 +100,19 @@
   margin: 0;
 }
 
-/* ========== RESULTS GRID - SCROLLABLE ========== */
+/* ========== RESULTS GRID - WITH PADDING FOR HOVER ========== */
 .resultsGrid {
-  flex: 1; /* Take remaining space */
-  padding: 0 32px 20px;
-  overflow-y: auto; /* ✅ Only grid scrolls */
-  overflow-x: hidden;
+  flex: 1;
+  padding: 16px 32px 32px; /* ✅ Extra padding bottom */
   display: grid;
   grid-template-columns: repeat(6, 1fr);
   grid-auto-rows: min-content;
   gap: 20px;
   align-content: start;
-}
-
-/* Scrollbar styling */
-.resultsGrid::-webkit-scrollbar {
-  width: 8px;
-}
-
-.resultsGrid::-webkit-scrollbar-track {
-  background: rgba(30, 58, 138, 0.2);
-  border-radius: 10px;
-}
-
-.resultsGrid::-webkit-scrollbar-thumb {
-  background: rgba(59, 130, 246, 0.5);
-  border-radius: 10px;
-}
-
-.resultsGrid::-webkit-scrollbar-thumb:hover {
-  background: rgba(59, 130, 246, 0.7);
+  
+  /* ✅ Padding untuk hover space */
+  padding-top: 20px;
+  padding-bottom: 40px;
 }
 
 /* ========== RESPONSIVE GRID ========== */
@@ -136,6 +120,7 @@
   .resultsGrid {
     grid-template-columns: repeat(6, 1fr);
     gap: 24px;
+    padding: 20px 32px 40px;
   }
 }
 
@@ -164,6 +149,15 @@
   .resultsGrid {
     grid-template-columns: repeat(4, 1fr);
     gap: 18px;
+    padding: 16px 24px 32px;
+  }
+
+  .searchSection {
+    padding: 20px 24px 16px;
+  }
+
+  .header {
+    padding: 16px 24px 8px;
   }
 
   .mainTitle {
@@ -183,6 +177,15 @@
   .resultsGrid {
     grid-template-columns: repeat(3, 1fr);
     gap: 16px;
+    padding: 16px 20px 32px;
+  }
+
+  .searchSection {
+    padding: 20px 20px 16px;
+  }
+
+  .header {
+    padding: 16px 20px 8px;
   }
 
   .mainTitle {
@@ -198,14 +201,15 @@
   .resultsGrid {
     grid-template-columns: repeat(2, 1fr);
     gap: 14px;
+    padding: 16px 16px 32px;
   }
 
   .searchSection {
     padding: 20px 16px 16px;
   }
 
-  .resultsGrid {
-    padding: 0 16px 20px;
+  .header {
+    padding: 16px 16px 8px;
   }
 
   .mainTitle {
@@ -229,26 +233,21 @@
 
 @media (max-width: 479px) {
   .container {
-    height: auto;
-    overflow-y: auto;
+    min-height: auto;
   }
 
   .resultsGrid {
     grid-template-columns: repeat(2, 1fr);
     gap: 12px;
-    overflow-y: visible;
+    padding: 16px 12px 32px;
   }
 
   .searchSection {
-    padding: 16px 12px 16px;
-  }
-
-  .resultsGrid {
-    padding: 0 12px 20px;
+    padding: 16px 12px 12px;
   }
 
   .header {
-    padding: 16px 12px;
+    padding: 12px 12px 8px;
   }
 
   .mainTitle {
@@ -284,7 +283,8 @@
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 40px 24px;
+  padding: 60px 24px;
+  min-height: 400px;
 }
 
 .emptyIcon {
@@ -326,7 +326,8 @@
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 40px 24px;
+  padding: 60px 24px;
+  min-height: 400px;
 }
 
 .spinner {
@@ -358,7 +359,8 @@
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 40px 24px;
+  padding: 60px 24px;
+  min-height: 400px;
 }
 
 .errorMessage {

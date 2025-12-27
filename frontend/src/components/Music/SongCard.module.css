@@ -1,4 +1,4 @@
-/* ========== SONG CARD - STRICT EQUAL SIZE ========== */
+/* ========== SONG CARD - FLEXIBLE HEIGHT ========== */
 .songCard {
   background: transparent;
   border-radius: 14px;
@@ -11,17 +11,21 @@
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  
-  /* ✅ STRICT SIZE - NO FLEXIBILITY */
-  height: 280px;
   min-height: 280px;
-  max-height: 280px;
+  height: auto;
 }
 
 .songCard:hover {
+  background: rgba(59, 130, 246, 0.08);
+  border-color: rgba(59, 130, 246, 0.3);
   transform: translateY(-4px);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 12px 32px rgba(59, 130, 246, 0.2);
   z-index: 5;
+}
+
+.songCard.playing {
+  background: rgba(159, 122, 234, 0.1);
+  border-color: rgba(159, 122, 234, 0.4);
 }
 
 /* ========== COVER SECTION ========== */
@@ -47,6 +51,16 @@
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
   position: relative;
   z-index: 1;
+  transition: all 0.3s ease;
+}
+
+.songCard:hover .cover {
+  box-shadow: 0 12px 32px rgba(59, 130, 246, 0.4);
+  transform: scale(1.03);
+}
+
+.songCard.playing .cover {
+  box-shadow: 0 12px 32px rgba(159, 122, 234, 0.5);
 }
 
 /* ========== PLAY BUTTON - POJOK KANAN BAWAH ========== */
@@ -79,9 +93,13 @@
 }
 
 .playButton:hover {
-  transform: translateY(0) scale(1.15);
+  transform: translateY(0) scale(1.1);
   background: #3b82f6;
   box-shadow: 0 12px 32px rgba(59, 130, 246, 0.8);
+}
+
+.playButton:active {
+  transform: translateY(0) scale(0.95);
 }
 
 .playButton.active {
@@ -113,7 +131,7 @@
   }
 }
 
-/* ========== MENU BUTTON - POJOK KANAN ATAS ========== */
+/* ========== MENU BUTTON - YOUTUBE MUSIC STYLE ========== */
 .menuContainer {
   position: absolute;
   top: 8px;
@@ -121,61 +139,68 @@
   z-index: 25;
 }
 
+/* ✅ Menu Button - Always visible, no background default */
 .menuButton {
-  width: 32px !important;
-  height: 32px !important;
+  width: 36px !important;
+  height: 36px !important;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.1) !important;
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: white !important;
+  background: transparent !important; /* ✅ Transparent default */
+  backdrop-filter: none;
+  border: none !important;
+  color: rgba(255, 255, 255, 0.9) !important; /* ✅ White dots visible */
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  opacity: 0;
-  transform: scale(0.8);
+  transition: all 0.2s ease;
+  box-shadow: none;
+  opacity: 1; /* ✅ Always visible */
+  transform: scale(1);
+  padding: 0;
 }
 
-.songCard:hover .menuButton,
-.songCard.playing .menuButton {
-  opacity: 1 !important;
-  transform: scale(1) !important;
-}
-
+/* ✅ Hover - Show circular background */
 .menuButton:hover {
-  background: rgba(59, 130, 246, 0.3) !important;
-  border-color: rgba(59, 130, 246, 0.5) !important;
-  transform: scale(1.1) !important;
-  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+  background: rgba(255, 255, 255, 0.15) !important; /* ✅ Subtle circle */
+  backdrop-filter: blur(10px);
+  transform: scale(1) !important;
+  box-shadow: none;
+  color: white !important;
 }
 
+/* ✅ Active/Pressed */
 .menuButton:active {
+  background: rgba(255, 255, 255, 0.25) !important;
   transform: scale(0.95) !important;
 }
 
+/* ✅ Playing state */
 .menuButton.playingMenu {
-  background: rgba(59, 130, 246, 0.3) !important;
-  border-color: rgba(59, 130, 246, 0.5) !important;
-  opacity: 1 !important;
+  color: rgba(255, 255, 255, 0.9) !important; /* ✅ Same as default */
 }
 
-/* ========== INFO SECTION - ABSOLUTE FIXED HEIGHT ========== */
+.menuButton.playingMenu:hover {
+  background: rgba(59, 130, 246, 0.2) !important;
+  color: #60a5fa !important;
+}
+
+/* ✅ Icon size - visible dots */
+.menuButton svg {
+  width: 20px !important;
+  height: 20px !important;
+  stroke-width: 2.5 !important;
+}
+
+/* ========== INFO SECTION - MULTI-LINE TEXT ========== */
 .info {
   text-align: left;
   z-index: 1;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
   padding-top: 4px;
-  
-  /* ✅ STRICT HEIGHT - NO GROWTH */
-  height: 42px;
   min-height: 42px;
-  max-height: 42px;
-  overflow: hidden;
+  flex: 1;
 }
 
 .title {
@@ -184,14 +209,15 @@
   font-weight: 600;
   margin: 0;
   padding: 0;
-  white-space: nowrap;
+  line-height: 1.4;
+  transition: color 0.3s ease;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
-  line-height: 1.3;
-  
-  /* ✅ EXACT HEIGHT */
-  height: 19px;
-  max-height: 19px;
+  word-break: break-word;
+  max-height: 42px;
 }
 
 .artist {
@@ -199,23 +225,27 @@
   font-size: 13px;
   margin: 0;
   padding: 0;
-  white-space: nowrap;
+  line-height: 1.4;
+  transition: color 0.3s ease;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
-  line-height: 1.3;
-  
-  /* ✅ EXACT HEIGHT */
-  height: 17px;
-  max-height: 17px;
+  word-break: break-word;
+  max-height: 36px;
 }
 
-/* ========== PLAYING STATE ========== */
-.songCard.playing .title {
+.songCard:hover .title {
   color: #60a5fa;
 }
 
-.songCard.playing .cover {
-  box-shadow: 0 8px 32px rgba(59, 130, 246, 0.4);
+.songCard.playing .title {
+  color: #c4b5fd;
+}
+
+.songCard.playing .artist {
+  color: #a78bfa;
 }
 
 /* ========== DROPDOWN MENU ========== */
@@ -385,9 +415,7 @@
 @media (max-width: 768px) {
   .songCard {
     padding: 14px;
-    height: 260px;
     min-height: 260px;
-    max-height: 260px;
   }
 
   .cover {
@@ -399,6 +427,8 @@
     height: 44px;
     bottom: 10px;
     right: 10px;
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
 
   .menuContainer {
@@ -407,8 +437,13 @@
   }
 
   .menuButton {
-    width: 30px !important;
-    height: 30px !important;
+    width: 34px !important;
+    height: 34px !important;
+  }
+
+  .menuButton svg {
+    width: 18px !important;
+    height: 18px !important;
   }
 
   .dropdownMenu {
@@ -416,29 +451,24 @@
   }
 
   .info {
-    height: 38px;
     min-height: 38px;
-    max-height: 38px;
   }
 
   .title {
     font-size: 14px;
-    height: 18px;
-    max-height: 18px;
+    max-height: 39px;
   }
 
   .artist {
     font-size: 12px;
-    height: 16px;
-    max-height: 16px;
+    max-height: 34px;
   }
 }
 
 @media (max-width: 480px) {
   .songCard {
-    height: 240px;
+    padding: 12px;
     min-height: 240px;
-    max-height: 240px;
   }
 
   .cover {
@@ -453,7 +483,55 @@
   }
 
   .menuButton {
-    width: 28px !important;
-    height: 28px !important;
+    width: 32px !important;
+    height: 32px !important;
+  }
+
+  .menuButton svg {
+    width: 18px !important;
+    height: 18px !important;
+  }
+
+  .title {
+    font-size: 13px;
+    max-height: 36px;
+  }
+
+  .artist {
+    font-size: 11px;
+    max-height: 31px;
+  }
+
+  .dropdownMenu {
+    width: 260px;
+    max-height: 340px;
+  }
+
+  .menuList {
+    max-height: 240px;
+  }
+}
+
+@media (max-width: 360px) {
+  .songCard {
+    padding: 10px;
+    min-height: 220px;
+  }
+
+  .cover {
+    font-size: 32px;
+  }
+
+  .menuButton {
+    width: 30px !important;
+    height: 30px !important;
+  }
+
+  .title {
+    font-size: 12px;
+  }
+
+  .artist {
+    font-size: 11px;
   }
 }

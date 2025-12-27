@@ -1,3 +1,4 @@
+/* src/index.css */
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -13,7 +14,7 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* ✅ TAMBAHKAN: Smooth scrolling */
+/* ✅ Smooth scrolling */
 html {
   scroll-behavior: smooth;
 }
@@ -33,7 +34,6 @@ body {
   padding: 0;
   min-width: 320px;
   min-height: 100vh;
-  /* ✅ TAMBAHKAN: Prevent overflow saat transition */
   overflow-x: hidden;
 }
 
@@ -42,7 +42,6 @@ body {
   min-height: 100vh;
   margin: 0;
   padding: 0;
-  /* ✅ TAMBAHKAN: Untuk framer motion */
   position: relative;
 }
 
@@ -72,7 +71,7 @@ button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
 
-/* ✅ TAMBAHKAN: Reduce motion untuk accessibility */
+/* ✅ Reduce motion untuk accessibility */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -84,6 +83,11 @@ button:focus-visible {
   
   html {
     scroll-behavior: auto;
+  }
+  
+  /* ✅ Disable NProgress animation */
+  #nprogress .bar {
+    animation: none !important;
   }
 }
 

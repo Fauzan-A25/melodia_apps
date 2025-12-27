@@ -5,6 +5,61 @@
     <link rel="icon" type="image/svg+xml" href="/images/common/logo_sidebar.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Melodia</title>
+    
+    <style>
+      /* ✅ Base styles */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      
+      body {
+        background: linear-gradient(135deg, #0a1929 0%, #1a2332 100%);
+        min-height: 100vh;
+        font-family: system-ui, -apple-system, sans-serif;
+      }
+      
+      /* ✅ Progress bar - hanya muncul saat root kosong (first load) */
+      #root:empty::before {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #3b82f6 0%, #60a5fa 100%);
+        box-shadow: 0 0 10px rgba(59, 130, 246, 0.8), 0 0 5px rgba(59, 130, 246, 0.6);
+        animation: initialLoad 1.2s ease-in-out infinite;
+        z-index: 99999;
+      }
+      
+      /* ✅ Smooth loading animation */
+      @keyframes initialLoad {
+        0% {
+          transform: translateX(-100%);
+          opacity: 1;
+        }
+        50% {
+          transform: translateX(0%);
+          opacity: 1;
+        }
+        100% {
+          transform: translateX(100%);
+          opacity: 1;
+        }
+      }
+      
+      /* ✅ Hide progress bar setelah React mount */
+      #root:not(:empty)::before {
+        display: none;
+      }
+      
+      /* ✅ Prevent flash of unstyled content */
+      #root:empty {
+        min-height: 100vh;
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>

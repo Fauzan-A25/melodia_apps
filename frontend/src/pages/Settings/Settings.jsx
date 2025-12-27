@@ -9,25 +9,24 @@ import {
   Eye,
   EyeOff,
   Clock,
-  Upload,
+  Upload as UploadIcon,
   LogOut,
   Play,
   Pause,
-  User as UserIcon,
+  Music,
+  X,
+  Loader,
 } from 'lucide-react';
 import { useUser } from '../../context/UserContext';
 import { useMusic } from '../../context/MusicContext';
 import { authService } from '../../services/authService';
 import { musicService } from '../../services/musicService';
+import { adminService, handleApiError } from '../../services/api';
+import MultiSelect from '../../components/Common/MultiSelect';
 
 const Settings = () => {
   const { user, logout, updateUser } = useUser();
-  const {
-    playSong,
-    currentSong,
-    isPlaying,
-    togglePlay,
-  } = useMusic();
+  const { playSong, currentSong, isPlaying, togglePlay } = useMusic();
   const navigate = useNavigate();
 
   const [activeTab, setActiveTab] = useState('profile');
@@ -38,6 +37,21 @@ const Settings = () => {
   // History state
   const [historySongs, setHistorySongs] = useState([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
+
+  // ✅ Upload state
+  const [uploadForm, setUploadForm] = useState({
+    title: '',
+    artistId: '',
+    genreIds: [],
+    releaseYear: new Date().getFullYear(),
+    duration: 0,
+  });
+  const [audioFile, setAudioFile] = useState(null);
+  const [audioPreview, setAudioPreview] = useState(null);
+  const [genres, setGenres] = useState([]);
+  const [artists, setArtists] = useState([]);
+  const [loadingGenres, setLoadingGenres] = useState(false);
+  const [loadingArtists, setLoadingArtists] = useState(false);
 
   const [profileForm, setProfileForm] = useState({
     username: user?.username || '',
@@ -64,7 +78,7 @@ const Settings = () => {
     confirm: false,
   });
 
-  // ✅ Load history when History tab is active
+  // ✅ Load history
   useEffect(() => {
     const loadHistory = async () => {
       if (activeTab !== 'history') return;
@@ -85,14 +99,43 @@ const Settings = () => {
     loadHistory();
   }, [activeTab, user]);
 
-  // ✅ Dynamic tabs based on user type
+  // ✅ Load genres & artists for upload tab
+  useEffect(() => {
+    const loadUploadData = async () => {
+      if (activeTab !== 'upload') return;
+      if (!user || user.accountType !== 'ADMIN') return;
+
+      try {
+        setLoadingGenres(true);
+        setLoadingArtists(true);
+
+        const [genresData, artistsData] = await Promise.all([
+          adminService.getAllGenres(),
+          adminService.getArtistsForDropdown(),
+        ]);
+
+        setGenres(genresData || []);
+        setArtists(artistsData || []);
+      } catch (err) {
+        console.error('Failed to load upload data:', err);
+        showMessage('error', 'Failed to load genres and artists');
+      } finally {
+        setLoadingGenres(false);
+        setLoadingArtists(false);
+      }
+    };
+
+    loadUploadData();
+  }, [activeTab, user]);
+
+  // ✅ Dynamic tabs
   const tabs = [
     { id: 'profile', icon: User, label: 'Profile' },
     ...(user?.accountType !== 'ADMIN'
       ? [{ id: 'history', icon: Clock, label: 'History' }]
       : []),
     ...(user?.accountType === 'ADMIN'
-      ? [{ id: 'upload', icon: Upload, label: 'Upload Song' }]
+      ? [{ id: 'upload', icon: UploadIcon, label: 'Upload Song' }]
       : []),
     { id: 'security', icon: Lock, label: 'Security' },
     { id: 'danger', icon: Trash2, label: 'Delete Account' },
@@ -181,6 +224,111 @@ const Settings = () => {
     }
   };
 
+  // ✅ Upload handlers
+  const handleUploadChange = (e) => {
+    setUploadForm((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
+  };
+
+  const handleAudioFile = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (!file.type.startsWith('audio/')) {
+        showMessage('error', 'Please select a valid audio file');
+        return;
+      }
+
+      if (file.size > 50 * 1024 * 1024) {
+        showMessage('error', 'Audio file too large (max 50MB)');
+        return;
+      }
+
+      setAudioFile(file);
+      const previewUrl = URL.createObjectURL(file);
+      setAudioPreview(previewUrl);
+
+      const audio = new Audio(previewUrl);
+      audio.onloadedmetadata = () => {
+        setUploadForm((prev) => ({
+          ...prev,
+          duration: Math.floor(audio.duration),
+        }));
+      };
+    }
+  };
+
+  const removeAudioFile = () => {
+    if (audioPreview) {
+      URL.revokeObjectURL(audioPreview);
+    }
+    setAudioFile(null);
+    setAudioPreview(null);
+    setUploadForm((prev) => ({ ...prev, duration: 0 }));
+  };
+
+  const handleUploadSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!audioFile) {
+      showMessage('error', 'Please select an audio file');
+      return;
+    }
+
+    if (!uploadForm.title.trim()) {
+      showMessage('error', 'Please enter song title');
+      return;
+    }
+
+    if (!uploadForm.artistId) {
+      showMessage('error', 'Please select an artist');
+      return;
+    }
+
+    if (!uploadForm.genreIds.length) {
+      showMessage('error', 'Please select at least one genre');
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      await adminService.uploadSong({
+        audioFile,
+        title: uploadForm.title.trim(),
+        artistId: uploadForm.artistId,
+        genreIds: uploadForm.genreIds,
+        releaseYear: uploadForm.releaseYear,
+        duration: uploadForm.duration,
+      });
+
+      showMessage('success', 'Song uploaded successfully!');
+
+      setTimeout(() => {
+        removeAudioFile();
+        setUploadForm({
+          title: '',
+          artistId: '',
+          genreIds: [],
+          releaseYear: new Date().getFullYear(),
+          duration: 0,
+        });
+      }, 1500);
+    } catch (err) {
+      console.error('Upload error:', err);
+      showMessage('error', handleApiError(err) || 'Failed to upload song');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const formatDuration = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
   const handleLogout = () => {
     logout();
     navigate('/auth');
@@ -189,8 +337,6 @@ const Settings = () => {
   const handleTabClick = (tabId) => {
     if (tabId === 'logout') {
       setShowLogoutModal(true);
-    } else if (tabId === 'upload') {
-      navigate('/admin/upload');
     } else {
       setActiveTab(tabId);
     }
@@ -241,10 +387,18 @@ const Settings = () => {
   return (
     <div className={styles.settingsContainer}>
       <div className={styles.header}>
-        <h1>{activeTab === 'history' ? 'Your History' : 'Settings'}</h1>
+        <h1>
+          {activeTab === 'history'
+            ? 'Your History'
+            : activeTab === 'upload'
+            ? 'Upload Song'
+            : 'Settings'}
+        </h1>
         <p>
           {activeTab === 'history'
             ? 'View your recently played songs'
+            : activeTab === 'upload'
+            ? 'Upload new songs to the platform'
             : 'Manage your account settings'}
         </p>
       </div>
@@ -372,6 +526,156 @@ const Settings = () => {
               ) : (
                 <div className={styles.historyEmpty}>📭 No history yet.</div>
               )}
+            </div>
+          )}
+
+          {/* ✅ UPLOAD TAB */}
+          {activeTab === 'upload' && user?.accountType === 'ADMIN' && (
+            <div className={styles.uploadSection}>
+              <form onSubmit={handleUploadSubmit} className={styles.uploadForm}>
+                {/* Audio File */}
+                <div className={styles.fileSection}>
+                  <label className={styles.fileLabel}>
+                    <Music size={20} />
+                    Audio File *
+                  </label>
+
+                  {!audioFile ? (
+                    <label className={styles.fileUploadBox}>
+                      <input
+                        type="file"
+                        accept="audio/*"
+                        onChange={handleAudioFile}
+                        className={styles.fileInput}
+                      />
+                      <UploadIcon size={48} className={styles.uploadIcon} />
+                      <p>Click to upload or drag and drop</p>
+                      <span>MP3, WAV, FLAC (max 50MB)</span>
+                    </label>
+                  ) : (
+                    <div className={styles.filePreview}>
+                      <Music size={24} />
+                      <div className={styles.fileInfo}>
+                        <p className={styles.fileName}>{audioFile.name}</p>
+                        <p className={styles.fileSize}>
+                          {(audioFile.size / (1024 * 1024)).toFixed(2)} MB
+                          {uploadForm.duration > 0 &&
+                            ` • ${formatDuration(uploadForm.duration)}`}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={removeAudioFile}
+                        className={styles.removeBtn}
+                        aria-label="Remove audio file"
+                      >
+                        <X size={20} />
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Song Title */}
+                <div className={styles.inputGroup}>
+                  <label htmlFor="title">Song Title *</label>
+                  <input
+                    id="title"
+                    type="text"
+                    name="title"
+                    value={uploadForm.title}
+                    onChange={handleUploadChange}
+                    placeholder="Enter song title"
+                    className={styles.input}
+                    required
+                    disabled={isLoading}
+                  />
+                </div>
+
+                {/* Artist Dropdown */}
+                <div className={styles.inputGroup}>
+                  <label htmlFor="artistId">Artist *</label>
+                  <select
+                    id="artistId"
+                    name="artistId"
+                    value={uploadForm.artistId}
+                    onChange={handleUploadChange}
+                    className={styles.input}
+                    disabled={isLoading || loadingArtists}
+                  >
+                    <option value="">
+                      {loadingArtists ? 'Loading artists...' : 'Select artist'}
+                    </option>
+                    {artists.map((artist) => (
+                      <option key={artist.artistId} value={artist.artistId}>
+                        {artist.artistName}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Genres + Release Year */}
+                <div className={styles.inputRow}>
+                  <div className={styles.inputGroup}>
+                    <MultiSelect
+                      label="Genres *"
+                      placeholder={
+                        loadingGenres ? 'Loading genres...' : 'Select genres'
+                      }
+                      values={uploadForm.genreIds}
+                      options={genres.map((g) => ({
+                        value: g.genreId ?? g.id,
+                        label: g.name,
+                      }))}
+                      disabled={isLoading || loadingGenres}
+                      onChange={(vals) =>
+                        setUploadForm((prev) => ({
+                          ...prev,
+                          genreIds: vals,
+                        }))
+                      }
+                    />
+                  </div>
+
+                  <div className={styles.inputGroup}>
+                    <label htmlFor="releaseYear">Release Year</label>
+                    <input
+                      id="releaseYear"
+                      type="number"
+                      name="releaseYear"
+                      value={uploadForm.releaseYear}
+                      onChange={handleUploadChange}
+                      min="1900"
+                      max={new Date().getFullYear()}
+                      className={styles.input}
+                      disabled={isLoading}
+                    />
+                  </div>
+                </div>
+
+                {/* Submit Button */}
+                <button
+                  type="submit"
+                  className={styles.uploadBtn}
+                  disabled={
+                    isLoading ||
+                    !audioFile ||
+                    loadingGenres ||
+                    loadingArtists
+                  }
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader size={20} className={styles.spinner} />
+                      Uploading...
+                    </>
+                  ) : (
+                    <>
+                      <UploadIcon size={20} />
+                      Upload Song
+                    </>
+                  )}
+                </button>
+              </form>
             </div>
           )}
 

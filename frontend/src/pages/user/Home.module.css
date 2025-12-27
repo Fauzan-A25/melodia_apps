@@ -1,13 +1,14 @@
-/* Container utama - fixed height, no overflow */
+/* Container utama - auto height untuk mobile, fixed untuk desktop */
 .homeContainer {
   width: 100%;
   max-width: 100%;
-  height: calc(100vh - 180px);
-  padding: 0;
+  min-height: calc(100vh - 180px);
+  padding: 24px; /* ✅ Padding untuk breathing room */
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow-y: auto; /* ✅ Scroll vertikal */
+  overflow-x: hidden;
 }
 
 /* Loading & Error States */
@@ -17,7 +18,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100%;
+  min-height: calc(100vh - 180px);
   color: white;
 }
 
@@ -81,7 +82,7 @@
 /* ========== HERO SECTION (LISTEN AGAIN) ========== */
 .heroSection {
   flex-shrink: 0;
-  margin-bottom: 32px;
+  margin-bottom: 40px;
   width: 100%;
 }
 
@@ -89,17 +90,18 @@
   font-size: 28px;
   font-weight: 700;
   color: #ffffff;
-  margin: 0 0 16px 0;
+  margin: 0 0 20px 0;
   letter-spacing: -0.02em;
 }
 
-/* Horizontal scroll container */
+/* ✅ Horizontal scroll - dengan padding untuk hover */
 .heroScroll {
   display: flex;
   gap: 16px;
   overflow-x: auto;
-  overflow-y: hidden;
-  padding-bottom: 12px;
+  overflow-y: visible; /* ✅ Biarkan hover keluar vertikal */
+  padding: 12px 4px; /* ✅ Padding top/bottom untuk hover space */
+  margin: -12px -4px; /* ✅ Negative margin untuk compensate padding */
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
 }
@@ -122,7 +124,7 @@
   background: rgba(59, 130, 246, 0.7);
 }
 
-/* Hero card - large horizontal card */
+/* Hero card */
 .heroCard {
   flex: 0 0 auto;
   width: 420px;
@@ -145,22 +147,21 @@
 .heroCardInner:hover {
   background: rgba(30, 58, 138, 0.25);
   border-color: rgba(59, 130, 246, 0.4);
-  transform: scale(1.02);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.3);
 }
 
-/* ✅ Hero card when playing */
 .heroCardPlaying {
   background: rgba(59, 130, 246, 0.2) !important;
   border-color: rgba(59, 130, 246, 0.5) !important;
+  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.4);
 }
 
-/* Show play button on hover OR when playing */
 .heroCardInner:hover .heroPlayBtn {
   opacity: 1;
   transform: translateY(0);
 }
 
-/* Large cover with emoji */
 .heroCover {
   width: 80px;
   height: 80px;
@@ -171,13 +172,17 @@
   justify-content: center;
   flex-shrink: 0;
   box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  transition: all 0.3s ease;
+}
+
+.heroCardInner:hover .heroCover {
+  box-shadow: 0 6px 16px rgba(59, 130, 246, 0.5);
 }
 
 .heroCoverEmoji {
   font-size: 40px;
 }
 
-/* Track info */
 .heroInfo {
   flex: 1;
   min-width: 0;
@@ -191,6 +196,11 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  transition: color 0.3s ease;
+}
+
+.heroCardInner:hover .heroTrackTitle {
+  color: #60a5fa;
 }
 
 .heroTrackArtist {
@@ -202,7 +212,6 @@
   white-space: nowrap;
 }
 
-/* ✅ Play button - default hidden */
 .heroPlayBtn {
   width: 48px;
   height: 48px;
@@ -221,7 +230,6 @@
   box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
 }
 
-/* ✅ Play button when active (playing) - always visible */
 .heroPlayBtnActive {
   opacity: 1 !important;
   transform: translateY(0) !important;
@@ -231,14 +239,13 @@
 
 .heroPlayBtn:hover {
   background: #2563eb;
-  transform: translateY(0) scale(1.15);
+  transform: translateY(0) scale(1.1);
 }
 
 .heroPlayBtn:active {
   transform: translateY(0) scale(0.95);
 }
 
-/* ✅ Force icon size */
 .heroPlayBtn svg {
   width: 24px !important;
   height: 24px !important;
@@ -246,18 +253,19 @@
 
 /* ========== REGULAR SECTIONS (ALBUMS) ========== */
 .section {
-  flex: 1;
+  flex: 1 1 auto; /* ✅ Allow grow & shrink */
   width: 100%;
   min-height: 0;
   display: flex;
   flex-direction: column;
+  margin-bottom: 40px; /* ✅ Space di bawah */
 }
 
 .sectionTitle {
   font-size: 24px;
   font-weight: 700;
   color: white;
-  margin: 0 0 16px 0;
+  margin: 0 0 20px 0;
   flex-shrink: 0;
   background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
   -webkit-background-clip: text;
@@ -269,32 +277,27 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
   flex-shrink: 0;
 }
 
-/* Grid untuk Album Cards - fixed 2 rows */
+/* ✅ Grid FIXED - auto-fill dengan min-max, bukan fixed rows */
 .cardGrid {
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  grid-template-rows: repeat(2, 1fr);
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 20px;
   width: 100%;
-  height: 100%;
-  overflow: hidden;
+  padding: 8px; /* ✅ Padding untuk hover space */
+  margin: -8px; /* ✅ Negative margin untuk compensate */
 }
 
 /* ========== RESPONSIVE GRID ========== */
 @media (min-width: 1600px) {
-  .homeContainer {
-    height: calc(100vh - 180px);
-  }
-  
   .cardGrid {
     grid-template-columns: repeat(6, 1fr);
     gap: 24px;
   }
-  
+
   .heroCard {
     width: 450px;
     min-width: 450px;
@@ -320,7 +323,7 @@
     grid-template-columns: repeat(4, 1fr);
     gap: 20px;
   }
-  
+
   .heroCard {
     width: 380px;
     min-width: 380px;
@@ -332,12 +335,12 @@
     grid-template-columns: repeat(3, 1fr);
     gap: 18px;
   }
-  
+
   .heroCard {
     width: 350px;
     min-width: 350px;
   }
-  
+
   .heroTitle {
     font-size: 24px;
   }
@@ -348,7 +351,7 @@
     grid-template-columns: repeat(3, 1fr);
     gap: 16px;
   }
-  
+
   .heroCard {
     width: 320px;
     min-width: 320px;
@@ -360,27 +363,32 @@
     grid-template-columns: repeat(2, 1fr);
     gap: 14px;
   }
-  
+
   .heroCard {
     width: 300px;
     min-width: 300px;
   }
-  
+
   .heroTitle {
     font-size: 24px;
+  }
+
+  .homeContainer {
+    padding: 16px;
   }
 }
 
 @media (max-width: 479px) {
   .homeContainer {
-    height: auto;
-    overflow-y: auto;
+    padding: 16px;
+    min-height: auto;
   }
-  
+
   .cardGrid {
     grid-template-columns: repeat(2, 1fr);
-    grid-template-rows: auto;
     gap: 12px;
+    padding: 6px;
+    margin: -6px;
   }
 
   .section {
@@ -391,40 +399,71 @@
     font-size: 20px;
     margin-bottom: 16px;
   }
-  
+
+  .heroSection {
+    margin-bottom: 32px;
+  }
+
   .heroCard {
     width: 280px;
     min-width: 280px;
   }
-  
+
   .heroTitle {
     font-size: 22px;
+    margin-bottom: 16px;
   }
-  
+
   .heroCover {
     width: 64px;
     height: 64px;
   }
-  
+
   .heroCoverEmoji {
     font-size: 32px;
   }
-  
+
   .heroTrackTitle {
     font-size: 14px;
   }
-  
+
   .heroTrackArtist {
     font-size: 12px;
   }
-  
+
   .heroPlayBtn {
     width: 40px;
     height: 40px;
   }
-  
+
   .heroPlayBtn svg {
     width: 20px !important;
     height: 20px !important;
+  }
+
+  .heroCardInner:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);
+  }
+
+  .heroScroll {
+    padding: 8px 4px;
+    margin: -8px -4px;
+  }
+}
+
+/* ✅ Extra small screens */
+@media (max-width: 360px) {
+  .homeContainer {
+    padding: 12px;
+  }
+
+  .cardGrid {
+    gap: 10px;
+  }
+
+  .heroTitle,
+  .sectionTitle {
+    font-size: 18px;
   }
 }
