@@ -1,10 +1,12 @@
-import { API_URL } from './api';
+import { api } from './api';
 
-const API_BASE_URL = await API_URL;
+// ✅ Helper function untuk mendapatkan base URL
+const getBaseURL = async () => await api.getURL();
 
 export const adminService = {
   // --- Dashboard Stats ---
   getStats: async () => {
+    const API_BASE_URL = await getBaseURL();
     const response = await fetch(`${API_BASE_URL}/admin/stats`, {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },
@@ -18,6 +20,7 @@ export const adminService = {
 
   // --- Song Management ---
   getAllSongs: async () => {
+    const API_BASE_URL = await getBaseURL();
     const response = await fetch(`${API_BASE_URL}/songs`, {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },
@@ -31,6 +34,7 @@ export const adminService = {
 
   // --- Genre Management ---
   getAllGenres: async () => {
+    const API_BASE_URL = await getBaseURL();
     const response = await fetch(`${API_BASE_URL}/admin/genres`, {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },
@@ -43,6 +47,7 @@ export const adminService = {
   },
 
   createGenre: async (genreName, description) => {
+    const API_BASE_URL = await getBaseURL();
     const response = await fetch(`${API_BASE_URL}/admin/genres`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -64,6 +69,7 @@ export const adminService = {
   },
 
   updateGenre: async (genreId, genreName, description) => {
+    const API_BASE_URL = await getBaseURL();
     const response = await fetch(`${API_BASE_URL}/admin/genres/${genreId}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -85,6 +91,7 @@ export const adminService = {
   },
 
   deleteGenre: async (genreId) => {
+    const API_BASE_URL = await getBaseURL();
     const response = await fetch(`${API_BASE_URL}/admin/genres/${genreId}`, {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
@@ -106,6 +113,7 @@ export const adminService = {
 
   // --- User Management ---
   getAllUsers: async () => {
+    const API_BASE_URL = await getBaseURL();
     const response = await fetch(`${API_BASE_URL}/admin/users`, {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },
@@ -118,6 +126,7 @@ export const adminService = {
   },
 
   getUsersByType: async (accountType) => {
+    const API_BASE_URL = await getBaseURL();
     const response = await fetch(
       `${API_BASE_URL}/admin/users?type=${accountType}`,
       {
@@ -133,6 +142,7 @@ export const adminService = {
   },
 
   getBannedUsers: async () => {
+    const API_BASE_URL = await getBaseURL();
     const response = await fetch(`${API_BASE_URL}/admin/users/banned`, {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },
@@ -145,6 +155,7 @@ export const adminService = {
   },
 
   banUser: async (accountId, reason) => {
+    const API_BASE_URL = await getBaseURL();
     const response = await fetch(
       `${API_BASE_URL}/admin/users/${accountId}/ban`,
       {
@@ -169,6 +180,7 @@ export const adminService = {
   },
 
   unbanUser: async (accountId) => {
+    const API_BASE_URL = await getBaseURL();
     const response = await fetch(
       `${API_BASE_URL}/admin/users/${accountId}/unban`,
       {
@@ -192,6 +204,7 @@ export const adminService = {
   },
 
   deleteUser: async (accountId) => {
+    const API_BASE_URL = await getBaseURL();
     const response = await fetch(`${API_BASE_URL}/admin/users/${accountId}`, {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
@@ -212,6 +225,7 @@ export const adminService = {
   },
 
   searchUsers: async (query) => {
+    const API_BASE_URL = await getBaseURL();
     const response = await fetch(
       `${API_BASE_URL}/admin/users/search?q=${encodeURIComponent(query)}`,
       {
@@ -227,11 +241,11 @@ export const adminService = {
   },
 
   // --- Artist Management (metadata) ---
-
   /**
    * GET /api/admin/artists
    */
   getAllArtists: async () => {
+    const API_BASE_URL = await getBaseURL();
     const response = await fetch(`${API_BASE_URL}/admin/artists`, {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },
@@ -248,6 +262,7 @@ export const adminService = {
    * body: { artistName, bio }
    */
   createArtist: async (artistName, bio = '') => {
+    const API_BASE_URL = await getBaseURL();
     const response = await fetch(`${API_BASE_URL}/admin/artists`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -272,6 +287,7 @@ export const adminService = {
    * DELETE /api/admin/artists/{artistId}
    */
   deleteArtist: async (artistId) => {
+    const API_BASE_URL = await getBaseURL();
     const response = await fetch(`${API_BASE_URL}/admin/artists/${artistId}`, {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
@@ -294,6 +310,7 @@ export const adminService = {
   // --- Artist (dropdown) & Song Management ---
 
   getArtistsForDropdown: async () => {
+    const API_BASE_URL = await getBaseURL();
     const response = await fetch(`${API_BASE_URL}/admin/songs/artists`, {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },
@@ -306,6 +323,7 @@ export const adminService = {
   },
 
   uploadSong: async (data) => {
+    const API_BASE_URL = await getBaseURL();
     const formData = new FormData();
     formData.append('audioFile', data.audioFile);
     formData.append('title', data.title);
@@ -335,6 +353,7 @@ export const adminService = {
   },
 
   deleteSong: async (songId) => {
+    const API_BASE_URL = await getBaseURL();
     const response = await fetch(`${API_BASE_URL}/admin/songs/${songId}`, {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
