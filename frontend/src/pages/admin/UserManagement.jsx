@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { adminService, handleApiError } from '../../services/api';
+import { adminService, handleApiError } from '../../services/adminService';
 import styles from './UserManagement.module.css';
 
 const UserManagement = () => {

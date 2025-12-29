@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { adminService, handleApiError } from '../../services/api';
+import { adminService, handleApiError } from '../../services/adminService';
 import styles from './GenreManagement.module.css';  // ✅ Import dengan styles
 
 const GenreManagement = () => {

@@ -1,6 +1,6 @@
 // src/pages/admin/ArtistManagement.jsx
 import React, { useState, useEffect } from 'react';
-import { adminService, handleApiError } from '../../services/api';
+import { adminService, handleApiError } from '../../services/adminService';
 import styles from './ArtistManagement.module.css';
 
 const ArtistManagement = () => {

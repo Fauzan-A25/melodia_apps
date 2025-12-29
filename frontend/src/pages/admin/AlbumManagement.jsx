@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import styles from './AlbumManagement.module.css';
 import { musicService } from '../../services/musicService';
-import { adminService, handleApiError } from '../../services/api';
+import { adminService, handleApiError } from '../../services/adminService';
 
 const AlbumManagement = () => {
   const [albums, setAlbums] = useState([]);

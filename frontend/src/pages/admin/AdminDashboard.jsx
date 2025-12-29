@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { adminService, handleApiError } from '../../services/api';
+import { adminService, handleApiError } from '../../services/adminService';
 import { musicService } from '../../services/musicService'; // ✅ Import musicService
 import styles from './AdminDashboard.module.css';
 

@@ -21,7 +21,7 @@ import { useUser } from '../../context/UserContext';
 import { useMusic } from '../../context/MusicContext';
 import { authService } from '../../services/authService';
 import { musicService } from '../../services/musicService';
-import { adminService, handleApiError } from '../../services/api';
+import { adminService, handleApiError } from '../../services/adminService';
 import MultiSelect from '../../components/Common/MultiSelect';
 
 const Settings = () => {

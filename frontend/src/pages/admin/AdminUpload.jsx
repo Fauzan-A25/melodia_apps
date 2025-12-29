@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Upload as UploadIcon, Music, X, Loader } from 'lucide-react';
 import styles from './AdminUpload.module.css';
-import { adminService, handleApiError } from '../../services/api';
+import { adminService, handleApiError } from '../../services/adminService';
 import { useUser } from '../../context/UserContext';
 import MultiSelect from '../../components/Common/MultiSelect';
 

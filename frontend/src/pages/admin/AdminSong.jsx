@@ -1,6 +1,6 @@
 // pages/admin/AdminSong.jsx
 import React, { useState, useEffect } from 'react';
-import { adminService } from '../../services/api';
+import { adminService } from '../../services/adminService';
 import styles from './AdminSong.module.css';
 
 const AdminSong = () => {
