@@ -1,4 +1,4 @@
-// components/Music/AlbumCard.jsx - FIXED
+// components/Music/AlbumCard.jsx - FULLY FIXED
 import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from './AlbumCard.module.css';
@@ -44,7 +44,7 @@ const AlbumCard = ({ album, onViewAlbum }) => {
       try {
         setLoadingPlay(true);
 
-        // 1) Fetch all songs from album
+        // Fetch all songs from album
         const albumSongs = await musicService.getAlbumSongs(album.albumId);
 
         if (!albumSongs || albumSongs.length === 0) {
@@ -53,7 +53,7 @@ const AlbumCard = ({ album, onViewAlbum }) => {
           return;
         }
 
-        // 2) Map to player format
+        // Map to player format
         const playlist = albumSongs.map((song) => ({
           ...song,
           songId: song.songId,
@@ -82,8 +82,6 @@ const AlbumCard = ({ album, onViewAlbum }) => {
           releaseDate: song.releaseDate || album.releaseDate,
         }));
 
-        // ✅ FIX: Play dengan format yang benar untuk MusicContext
-        // playSong(song, songList, index)
         await playSong(playlist[0], playlist, 0);
       } catch (err) {
         console.error('Error playing album:', err);
@@ -159,6 +157,7 @@ const AlbumCard = ({ album, onViewAlbum }) => {
           )}
         </button>
 
+        {/* ✅ FIXED: Badge purely decorative - NO event handlers */}
         {songCount > 0 && (
           <div className={styles.songCount}>
             <Music size={14} />

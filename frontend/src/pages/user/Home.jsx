@@ -8,12 +8,12 @@ import { useMusic } from '../../context/MusicContext';
 import { useUser } from '../../context/UserContext';
 
 const Home = () => {
-  const { playSong, currentSong, isPlaying } = useMusic(); // ✅ Ganti currentTrack jadi currentSong
+  // eslint-disable-next-line no-unused-vars
+  const { playSong, pauseSong, currentSong, isPlaying } = useMusic();
   const { user, loading: authLoading } = useUser();
 
   const [recentlyPlayed, setRecentlyPlayed] = useState([]);
   const [albums, setAlbums] = useState([]);
-
   const [loading, setLoading] = useState(true);
   const [historyLoading, setHistoryLoading] = useState(true);
   const [albumsLoading, setAlbumsLoading] = useState(true);
@@ -52,7 +52,7 @@ const Home = () => {
         setAlbumsLoading(false);
       }
 
-      // Recently Played (Listen Again)
+      // Recently Played
       const effectiveUserId =
         user?.accountId ||
         localStorage.getItem('userId') ||
@@ -72,7 +72,20 @@ const Home = () => {
             historyResp.recentSongs ||
             historyResp ||
             [];
-          setRecentlyPlayed(songs);
+          
+          // ✅ FIX: Normalize songs data
+          const normalizedSongs = songs.map(song => ({
+            ...song,
+            id: song.songId || song.id,
+            songId: song.songId || song.id,
+            // ✅ FIX: Extract artist name as STRING
+            artistName: typeof song.artist === 'object' 
+              ? (song.artist?.name || song.artist?.artistName || song.artist?.username || 'Unknown Artist')
+              : (song.artist || song.artistName || 'Unknown Artist')
+          }));
+          
+          console.log('✅ Normalized songs:', normalizedSongs);
+          setRecentlyPlayed(normalizedSongs);
         } catch (e) {
           console.error('Failed to load recently played:', e);
           setRecentlyPlayed([]);
@@ -93,23 +106,20 @@ const Home = () => {
     loadData();
   }, [authLoading, loadData]);
 
-  const handlePlay = useCallback(
-    (track, playlist, index) => {
-      playSong(track, playlist, index);
-    },
-    [playSong]
-  );
-
-  // ✅ Helper function - cek dengan berbagai format ID
-  const isTrackPlaying = (track) => {
+  const isTrackPlaying = useCallback((track) => {
     if (!currentSong || !isPlaying) return false;
+    return currentSong?.songId === track?.id && isPlaying;
+  }, [currentSong, isPlaying]);
+
+  const handlePlay = useCallback((track) => {
+    if (!track || !track.id) {
+      console.error('Invalid track:', track);
+      return;
+    }
     
-    // Coba berbagai field ID yang mungkin
-    const trackId = track.songId || track.id;
-    const currentId = currentSong.songId || currentSong.id;
-    
-    return trackId === currentId;
-  };
+    console.log('🎵 Playing:', track.title);
+    playSong(track, recentlyPlayed, recentlyPlayed.findIndex(t => t.id === track.id));
+  }, [playSong, recentlyPlayed]);
 
   if (authLoading || loading) {
     return (
@@ -133,34 +143,35 @@ const Home = () => {
 
   return (
     <div className={styles.homeContainer}>
-      {/* Listen Again (Recently Played - Horizontal Scroll) */}
+      {/* Listen Again */}
       {!historyLoading && recentlyPlayed.length > 0 && (
         <section className={styles.heroSection}>
           <h2 className={styles.heroTitle}>Listen Again</h2>
           <div className={styles.heroScroll}>
-            {recentlyPlayed.map((track, index) => {
-              const playing = isTrackPlaying(track); // ✅ Check if playing
+            {recentlyPlayed.map((track) => {
+              const playing = isTrackPlaying(track);
 
               return (
-                <div key={track.songId || track.id} className={styles.heroCard}>
+                <div 
+                  key={track.id || track.songId} 
+                  className={styles.heroCard}
+                  onClick={() => handlePlay(track)}
+                >
                   <div
                     className={`${styles.heroCardInner} ${
                       playing ? styles.heroCardPlaying : ''
                     }`}
-                    onClick={() => handlePlay(track, recentlyPlayed, index)}
                   >
                     <div className={styles.heroCover}>
                       <span className={styles.heroCoverEmoji}>
-                        {track.coverEmoji || '🎵'}
+                        {track.coverEmoji || track.cover || '🎵'}
                       </span>
                     </div>
                     <div className={styles.heroInfo}>
                       <h3 className={styles.heroTrackTitle}>{track.title}</h3>
+                      {/* ✅ FIX: Render STRING, not object */}
                       <p className={styles.heroTrackArtist}>
-                        {track.artist?.name ||
-                          track.artist?.username ||
-                          track.artistName ||
-                          'Unknown Artist'}
+                        {track.artistName || 'Unknown Artist'}
                       </p>
                     </div>
                     <button
@@ -168,9 +179,10 @@ const Home = () => {
                         playing ? styles.heroPlayBtnActive : ''
                       }`}
                       onClick={(e) => {
-                        e.stopPropagation(); // ✅ Prevent double trigger
-                        handlePlay(track, recentlyPlayed, index);
+                        e.stopPropagation();
+                        handlePlay(track);
                       }}
+                      aria-label={playing ? `Pause ${track.title}` : `Play ${track.title}`}
                     >
                       {playing ? (
                         <Pause size={24} fill="currentColor" strokeWidth={0} />
@@ -186,7 +198,7 @@ const Home = () => {
         </section>
       )}
 
-      {/* Your Music Collection (Albums Grid) */}
+      {/* Albums Grid */}
       <section className={styles.section}>
         <div className={styles.sectionHeader}>
           <h2 className={styles.sectionTitle}>Your Music Collection</h2>
