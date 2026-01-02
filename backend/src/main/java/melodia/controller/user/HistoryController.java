@@ -18,7 +18,6 @@ import jakarta.validation.Valid;
 import melodia.model.dto.common.ApiResponse;
 import melodia.model.dto.request.user.AddSongToHistoryRequestDTO;
 import melodia.model.dto.response.history.HistoryResponseDTO;
-import melodia.model.dto.response.history.HistorySummaryResponseDTO;
 import melodia.model.dto.response.history.PlayedSongsResponseDTO;
 import melodia.model.dto.response.history.SongPlayedCheckResponseDTO;
 import melodia.model.entity.Song;
@@ -187,10 +186,10 @@ public class HistoryController {
      * Mendapatkan ringkasan history untuk dashboard
      */
     @GetMapping("/{userId}/summary")
-    public ResponseEntity<ApiResponse<HistorySummaryResponseDTO>> getHistorySummary(@PathVariable String userId) {
+    public ResponseEntity<ApiResponse<HistoryResponseDTO>> getHistorySummary(@PathVariable String userId) {
         HistoryService.HistorySummary summary = historyService.getHistorySummary(userId);
         
-        HistorySummaryResponseDTO response = new HistorySummaryResponseDTO(
+        HistoryResponseDTO response = new HistoryResponseDTO(
             summary.getUserId(),
             summary.getPlayedSongsCount(),
             summary.isExists()

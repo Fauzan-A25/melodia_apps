@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import melodia.model.dto.common.ApiResponse;
-import melodia.model.dto.response.ArtistDropdownResponse;
 import melodia.model.entity.Artist;
 import melodia.model.entity.Genre;
 import melodia.model.entity.Song;
@@ -198,17 +197,8 @@ public class AdminSongController {
      * GET /api/admin/songs/artists
      */
     @GetMapping("/artists")
-    public ResponseEntity<ApiResponse<List<ArtistDropdownResponse>>> getAllArtistsForDropdown() {
+    public ResponseEntity<ApiResponse<List<Artist>>> getAllArtistsForDropdown() {
         List<Artist> artists = artistRepository.findAll();
-
-        List<ArtistDropdownResponse> result = artists.stream()
-                .map(a -> new ArtistDropdownResponse(
-                        a.getArtistId(),
-                        a.getArtistName(),
-                        a.getBio()
-                ))
-                .toList();
-
-        return ResponseEntity.ok(ApiResponse.success("Artists fetched successfully", result));
+        return ResponseEntity.ok(ApiResponse.success("Artists fetched successfully", artists));
     }
 }

@@ -69,7 +69,14 @@ public class AuthenticationService {
 
     /**
      * Update profile untuk Account (User/Admin).
-     * Artist tidak lagi menjadi turunan Account, jadi tidak di-handle di sini.
+     * 
+     * ⚠️ Field bio dari UpdateProfileRequest TIDAK di-handle di sini.
+     * Artist profile update (bio) harus dihandle melalui ArtistController terpisah.
+     * 
+     * @param accountId ID akun yang akan di-update
+     * @param username Username baru
+     * @param email Email baru
+     * @return Account yang sudah di-update
      */
     public Account updateProfile(String accountId, String username, String email) {
         Account account = accountRepository.findById(accountId)

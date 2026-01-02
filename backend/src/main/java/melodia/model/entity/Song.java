@@ -33,11 +33,6 @@ public class Song {
     @Column(name = "title", nullable = false, length = 100, unique = true)
     private String title;  // * Judul lagu yang tampil di UI.
 
-    // * Opsional: cache nama artist di kolom terpisah.
-    //   Bisa berguna untuk query cepat tanpa join ke tabel artist.
-    @Column(name = "artist_name", length = 100)
-    private String artistName;
-
     @Column(name = "duration", nullable = false)
     private int duration;  // * Durasi lagu dalam detik.
 
@@ -84,7 +79,6 @@ public class Song {
     public Song(String title, Artist artist, String filePath, int duration, int releaseYear) {
         this.title = title;
         this.artist = artist;
-        this.artistName = artist != null ? artist.getArtistName() : null;
         this.filePath = filePath;
         this.duration = duration;
         this.releaseYear = releaseYear;
@@ -109,7 +103,6 @@ public class Song {
 
     public String getSongId() { return songId; }
     public String getTitle() { return title; }
-    public String getArtistName() { return artistName; }
     public List<Genre> getGenres() { return genres; }
     public int getDuration() { return duration; }
     public String getFilePath() { return filePath; }
@@ -121,14 +114,6 @@ public class Song {
 
     public void setSongId(String songId) { this.songId = songId; }
     public void setTitle(String title) { this.title = title; }
-
-    /**
-     * Setter untuk cache nama artist di kolom artist_name.
-     * Jika kolom ini dihapus dari DB, field + setter ini juga bisa dihapus.
-     */
-    public void setArtistName(String artistName) {
-        this.artistName = artistName;
-    }
 
     public void setGenres(List<Genre> genres) {
         // * Jaga supaya list tidak null.
@@ -142,10 +127,6 @@ public class Song {
 
     public void setArtist(Artist artist) {
         this.artist = artist;
-        // * Sinkronkan cache nama artist jika field ini masih digunakan.
-        if (artist != null) {
-            this.artistName = artist.getArtistName();
-        }
     }
 
     // ==================== Business Method ====================
@@ -158,7 +139,8 @@ public class Song {
         if (keyword == null || keyword.isEmpty()) {
             return false;
         }
+        String artistNameFromArtist = (this.artist != null) ? this.artist.getArtistName() : "";
         return (this.title != null && this.title.contains(keyword)) ||
-               (this.artistName != null && this.artistName.contains(keyword));
+               (artistNameFromArtist != null && artistNameFromArtist.contains(keyword));
     }
 }

@@ -2,9 +2,9 @@ package melodia.model.dto.request.auth;
 
 public class UpdateProfileRequest {
 
-    private String username;
-    private String email;
-    private String bio; // hanya digunakan jika accountType = ARTIST
+    private String username;  // dari Account.username
+    private String email;     // dari Account.email
+    private String bio;       // ⚠️ TIDAK DIGUNAKAN saat ini - reserved untuk Artist profile update
 
     public UpdateProfileRequest() {
     }
