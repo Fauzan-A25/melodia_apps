@@ -7,18 +7,19 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import melodia.controller.exception.user.UserNotFoundException;
+import melodia.model.entity.Account;
 import melodia.model.entity.History;
 import melodia.model.entity.Playlist;
 import melodia.model.entity.Song;
 import melodia.model.entity.User;
+import melodia.model.repository.AccountRepository;
 import melodia.model.repository.HistoryRepository;
-import melodia.model.repository.UserRepository;
 
 @Service
 public class UserService {
 
     @Autowired
-    private UserRepository userRepository;
+    private AccountRepository accountRepository;
 
     @Autowired
     private HistoryRepository historyRepository;
@@ -26,49 +27,57 @@ public class UserService {
     // ==================== User CRUD ====================
 
     public List<User> getAllUsers() {
-        return userRepository.findAll();
+        return accountRepository.findAll().stream()
+            .filter(acc -> acc instanceof User)
+            .map(acc -> (User) acc)
+            .toList();
     }
 
     public User getUserById(String id) {
-        return userRepository.findById(id).orElse(null);
+        Account account = accountRepository.findById(id).orElse(null);
+        return account instanceof User ? (User) account : null;
     }
 
     public User getUserByUsername(String username) {
-        return userRepository.findByUsername(username).orElse(null);
+        Account account = accountRepository.findByUsername(username).orElse(null);
+        return account instanceof User ? (User) account : null;
     }
 
     @Transactional
     public User updateUserProfile(String id, String newUsername, String newEmail) {
-        User user = userRepository.findById(id)
+        Account account = accountRepository.findById(id)
             .orElseThrow(() -> new UserNotFoundException("User tidak ditemukan"));
+        User user = account instanceof User ? (User) account : null;
+        if (user == null) throw new UserNotFoundException("User tidak ditemukan");
         
         if (newUsername != null && !newUsername.equals(user.getUsername())) {
-            if (userRepository.existsByUsername(newUsername)) {
+            if (accountRepository.existsByUsername(newUsername)) {
                 throw new UserNotFoundException("Username sudah dipakai.");
             }
             user.setUsername(newUsername);
         }
         
         if (newEmail != null && !newEmail.equals(user.getEmail())) {
-            if (userRepository.existsByEmail(newEmail)) {
+            if (accountRepository.existsByEmail(newEmail)) {
                 throw new UserNotFoundException("Email sudah dipakai.");
             }
             user.setEmail(newEmail);
         }
         
-        return userRepository.save(user);
+        return (User) accountRepository.save(user);
     }
 
     @Transactional
     public void deleteUser(String id) {
-        User user = userRepository.findById(id).orElse(null);
-        if (user == null) return;
+        Account account = accountRepository.findById(id).orElse(null);
+        if (account == null || !(account instanceof User)) return;
+        User user = (User) account;
         
         // Delete history by userId
         historyRepository.findById(id).ifPresent(historyRepository::delete);
         
         // Delete user (cascade akan delete playlists)
-        userRepository.delete(user);
+        accountRepository.delete(user);
     }
 
     // ==================== History Operations ====================
@@ -118,8 +127,11 @@ public class UserService {
      * Get playlist milik user
      */
     public List<Playlist> getUserPlaylists(String userId) {
-        User user = userRepository.findById(userId).orElse(null);
-        return user != null ? user.getPlaylists() : List.of();
+        Account account = accountRepository.findById(userId).orElse(null);
+        if (account instanceof User) {
+            return ((User) account).getPlaylists();
+        }
+        return List.of();
     }
 
     /**
@@ -127,11 +139,13 @@ public class UserService {
      */
     @Transactional
     public Playlist createPlaylistForUser(String userId, String playlistName) {
-        User user = userRepository.findById(userId)
+        Account account = accountRepository.findById(userId)
             .orElseThrow(() -> new IllegalArgumentException("User tidak ditemukan"));
+        User user = account instanceof User ? (User) account : null;
+        if (user == null) throw new IllegalArgumentException("User tidak ditemukan");
         
         Playlist playlist = user.createPlaylist(playlistName);
-        userRepository.save(user);  // Cascade save playlist baru
+        accountRepository.save(user);  // Cascade save playlist baru
         
         return playlist;
     }
@@ -150,7 +164,10 @@ public class UserService {
      * Get total playlists count
      */
     public int getUserPlaylistCount(String userId) {
-        User user = userRepository.findById(userId).orElse(null);
-        return user != null ? user.getPlaylists().size() : 0;
+        Account account = accountRepository.findById(userId).orElse(null);
+        if (account instanceof User) {
+            return ((User) account).getPlaylists().size();
+        }
+        return 0;
     }
 }

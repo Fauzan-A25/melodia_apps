@@ -12,12 +12,13 @@ import melodia.controller.exception.music.PlaylistNotFoundException;
 import melodia.controller.exception.music.SongNotFoundException;
 import melodia.controller.exception.user.UnauthorizedAccessException;
 import melodia.controller.exception.user.UserNotFoundException;
+import melodia.model.entity.Account;
 import melodia.model.entity.Playlist;
 import melodia.model.entity.Song;
 import melodia.model.entity.User;
+import melodia.model.repository.AccountRepository;
 import melodia.model.repository.PlaylistRepository;
 import melodia.model.repository.SongRepository;
-import melodia.model.repository.UserRepository;
 
 @Service
 public class PlaylistService {
@@ -29,15 +30,17 @@ public class PlaylistService {
     private SongRepository songRepository;
 
     @Autowired
-    private UserRepository userRepository;
+    private AccountRepository accountRepository;
 
     /**
      * Create new playlist
      */
     @Transactional
     public Playlist createPlaylist(String userId, String name, String description) {
-        User owner = userRepository.findById(userId)
+        Account account = accountRepository.findById(userId)
             .orElseThrow(() -> new UserNotFoundException("User tidak ditemukan"));
+        User owner = account instanceof User ? (User) account : null;
+        if (owner == null) throw new UserNotFoundException("User tidak ditemukan");
 
         Playlist playlist = new Playlist(name, owner);
         playlist.setPlaylistId("PL-" + UUID.randomUUID().toString());
@@ -51,8 +54,10 @@ public class PlaylistService {
      * Get all playlists by user
      */
     public List<Playlist> getUserPlaylists(String userId) {
-        User owner = userRepository.findById(userId)
+        Account account = accountRepository.findById(userId)
             .orElseThrow(() -> new UserNotFoundException("User tidak ditemukan"));
+        User owner = account instanceof User ? (User) account : null;
+        if (owner == null) throw new UserNotFoundException("User tidak ditemukan");
         return playlistRepository.findByOwner(owner);
     }
 

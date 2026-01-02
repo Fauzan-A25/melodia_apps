@@ -8,20 +8,12 @@ import melodia.model.entity.Account;
 import melodia.model.entity.Admin;
 import melodia.model.entity.User;
 import melodia.model.repository.AccountRepository;
-import melodia.model.repository.AdminRepository;
-import melodia.model.repository.UserRepository;
 
 @Service
 public class AuthenticationService {
 
     @Autowired
     private AccountRepository accountRepository;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private AdminRepository adminRepository;
 
     // ==================== LOGIN GENERIC (Account) ====================
 
@@ -43,27 +35,27 @@ public class AuthenticationService {
     // ==================== LOGIN SPESIFIK USER ====================
 
     public User loginUser(String usernameOrEmail, String password) {
-        User user = userRepository.findByUsername(usernameOrEmail)
-                .orElse(userRepository.findByEmail(usernameOrEmail).orElse(null));
+        Account account = accountRepository.findByUsername(usernameOrEmail)
+                .orElse(accountRepository.findByEmail(usernameOrEmail).orElse(null));
 
-        if (user == null || !user.verifyPassword(password)) {
+        if (!(account instanceof User) || !account.verifyPassword(password)) {
             throw new InvalidCredentialsException();
         }
 
-        return user;
+        return (User) account;
     }
 
     // ==================== LOGIN SPESIFIK ADMIN ====================
 
     public Admin loginAdmin(String usernameOrEmail, String password) {
-        Admin admin = adminRepository.findByUsername(usernameOrEmail)
-                .orElse(adminRepository.findByEmail(usernameOrEmail).orElse(null));
+        Account account = accountRepository.findByUsername(usernameOrEmail)
+                .orElse(accountRepository.findByEmail(usernameOrEmail).orElse(null));
 
-        if (admin == null || !admin.verifyPassword(password)) {
+        if (!(account instanceof Admin) || !account.verifyPassword(password)) {
             throw new InvalidCredentialsException();
         }
 
-        return admin;
+        return (Admin) account;
     }
 
     // ==================== HELPER: CHECK ACCOUNT EXISTS ====================

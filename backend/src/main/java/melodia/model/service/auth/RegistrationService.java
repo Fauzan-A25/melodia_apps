@@ -6,22 +6,15 @@ import org.springframework.transaction.annotation.Transactional;
 
 import melodia.controller.exception.auth.AccountAlreadyExistsException;
 import melodia.controller.exception.auth.UnauthorizedException;
+import melodia.model.entity.Account;
 import melodia.model.entity.Admin;
 import melodia.model.entity.History;
 import melodia.model.entity.User;
 import melodia.model.repository.AccountRepository;
-import melodia.model.repository.AdminRepository;
 import melodia.model.repository.HistoryRepository;
-import melodia.model.repository.UserRepository;
 
 @Service
 public class RegistrationService {
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private AdminRepository adminRepository;
 
     @Autowired
     private AccountRepository accountRepository;
@@ -45,7 +38,7 @@ public class RegistrationService {
         User user = new User(username, email, password);
         String userId = "USR" + System.currentTimeMillis();
         user.setAccountId(userId);
-        user = userRepository.save(user);
+        user = (User) accountRepository.save(user);
 
         // 2. Buat dan save History (riwayat dengar)
         History history = new History(userId);
@@ -59,8 +52,9 @@ public class RegistrationService {
     @Transactional
     public Admin registerAdmin(String username, String email, String password, String requestedByAdminId) {
         // Validasi requester adalah admin
-        adminRepository.findById(requestedByAdminId)
+        Account account = accountRepository.findById(requestedByAdminId)
             .orElseThrow(UnauthorizedException::new);
+        if (!(account instanceof Admin)) throw new UnauthorizedException();
 
         // Validasi duplikasi
         if (accountRepository.existsByUsername(username)) {
@@ -74,7 +68,7 @@ public class RegistrationService {
         Admin admin = new Admin(username, email, password);
         admin.setAccountId("ADM" + System.currentTimeMillis());
 
-        return adminRepository.save(admin);
+        return (Admin) accountRepository.save(admin);
     }
 
     // ==================== Helper: Check Account Exists ====================

@@ -9,10 +9,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import melodia.controller.exception.user.UserNotFoundException;
+import melodia.model.entity.Account;
 import melodia.model.entity.History;
 import melodia.model.entity.Song;
+import melodia.model.entity.User;
+import melodia.model.repository.AccountRepository;
 import melodia.model.repository.HistoryRepository;
-import melodia.model.repository.UserRepository;
 
 @Service
 public class HistoryService {
@@ -21,7 +23,7 @@ public class HistoryService {
     private HistoryRepository historyRepository;
 
     @Autowired
-    private UserRepository userRepository;
+    private AccountRepository accountRepository;
 
     // ==================== Get History ====================
 
@@ -64,7 +66,8 @@ public class HistoryService {
         }
 
         // Verify user exists
-        if (!userRepository.existsById(userId)) {
+        Account account = accountRepository.findById(userId).orElse(null);
+        if (!(account instanceof User)) {
             throw new UserNotFoundException("User tidak ditemukan");
         }
 

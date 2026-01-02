@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import melodia.model.dto.common.ApiResponse;
-import melodia.model.dto.response.admin.ArtistDropdownResponse;
+import melodia.model.dto.response.ArtistDropdownResponse;
 import melodia.model.entity.Artist;
 import melodia.model.entity.Genre;
 import melodia.model.entity.Song;

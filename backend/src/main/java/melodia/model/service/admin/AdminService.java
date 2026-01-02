@@ -7,28 +7,24 @@ import org.springframework.stereotype.Service;
 
 import melodia.controller.exception.admin.InvalidOperationException;
 import melodia.model.dto.response.admin.AdminStatsResponse;
-import melodia.model.entity.Admin;
+import melodia.model.entity.Account;
 import melodia.model.entity.Album;
 import melodia.model.entity.Artist;
 import melodia.model.entity.Playlist;
 import melodia.model.entity.Song;
 import melodia.model.entity.User;
-import melodia.model.repository.AdminRepository;
+import melodia.model.repository.AccountRepository;
 import melodia.model.repository.AlbumRepository;
 import melodia.model.repository.ArtistRepository;
 import melodia.model.repository.GenreRepository;
 import melodia.model.repository.PlaylistRepository;
 import melodia.model.repository.SongRepository;
-import melodia.model.repository.UserRepository;
 
 @Service
 public class AdminService {
 
     @Autowired
-    private AdminRepository adminRepository;
-
-    @Autowired
-    private UserRepository userRepository;
+    private AccountRepository accountRepository;
 
     @Autowired
     private ArtistRepository artistRepository;
@@ -52,7 +48,9 @@ public class AdminService {
      * @return AdminStatsResponse with platform statistics
      */
     public AdminStatsResponse getAdminStats() {
-        int totalUsers = (int) userRepository.count();
+        long totalUsers = accountRepository.findAll().stream()
+            .filter(acc -> acc instanceof User)
+            .count();
         int totalArtists = (int) artistRepository.count();
         int totalGenres = (int) genreRepository.count();
         
@@ -60,7 +58,7 @@ public class AdminService {
         // If not, you can use: int bannedAccounts = 0;
         int bannedAccounts = countBannedAccounts();
         
-        return new AdminStatsResponse(totalUsers, totalArtists, totalGenres, bannedAccounts);
+        return new AdminStatsResponse((int) totalUsers, totalArtists, totalGenres, bannedAccounts);
     }
 
     /**
@@ -74,49 +72,6 @@ public class AdminService {
         
         // For now, return 0 if ban system not implemented yet
         return 0;
-    }
-
-    // ==================== Admin Management ====================
-    
-    /**
-     * Get all admins
-     */
-    public List<Admin> getAllAdmins() {
-        return adminRepository.findAll();
-    }
-
-    /**
-     * Get admin by ID
-     */
-    public Admin getAdminById(String adminId) {
-        return adminRepository.findById(adminId)
-            .orElseThrow(() -> new InvalidOperationException("Admin tidak ditemukan"));
-    }
-
-    /**
-     * Update admin profile
-     */
-    public Admin updateAdminProfile(String adminId, String newUsername, String newEmail) {
-        Admin admin = getAdminById(adminId);
-        
-        if (newUsername != null && !newUsername.trim().isEmpty()) {
-            admin.setUsername(newUsername);
-        }
-        if (newEmail != null && !newEmail.trim().isEmpty()) {
-            admin.setEmail(newEmail);
-        }
-        
-        return adminRepository.save(admin);
-    }
-
-    /**
-     * Delete admin (only super admin can do this)
-     */
-    public void deleteAdmin(String adminId) {
-        if (!adminRepository.existsById(adminId)) {
-            throw new InvalidOperationException("Admin tidak ditemukan");
-        }
-        adminRepository.deleteById(adminId);
     }
 
     // ==================== Content Management ====================
@@ -154,10 +109,11 @@ public class AdminService {
      * Delete user by admin
      */
     public void deleteUserByAdmin(String userId) {
-        if (!userRepository.existsById(userId)) {
+        Account account = accountRepository.findById(userId).orElse(null);
+        if (!(account instanceof User)) {
             throw new InvalidOperationException("User tidak ditemukan");
         }
-        userRepository.deleteById(userId);
+        accountRepository.deleteById(userId);
     }
 
     /**
@@ -177,9 +133,15 @@ public class AdminService {
      */
     public List<User> searchUsers(String keyword) {
         if (keyword == null || keyword.trim().isEmpty()) {
-            return userRepository.findAll();
+            return accountRepository.findAll().stream()
+                .filter(acc -> acc instanceof User)
+                .map(acc -> (User) acc)
+                .toList();
         }
-        return userRepository.findByUsernameContainingIgnoreCase(keyword);
+        return accountRepository.findByUsername(keyword).stream()
+            .filter(acc -> acc instanceof User)
+            .map(acc -> (User) acc)
+            .toList();
     }
 
     /**
@@ -189,7 +151,7 @@ public class AdminService {
         if (keyword == null || keyword.trim().isEmpty()) {
             return artistRepository.findAll();
         }
-        return artistRepository.findByBioContainingIgnoreCase(keyword);
+        return artistRepository.searchByKeyword(keyword);
     }
 
     /**

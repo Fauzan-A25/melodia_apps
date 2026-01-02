@@ -19,14 +19,9 @@ public interface ArtistRepository extends JpaRepository<Artist, String> {
     // Cek apakah nama artist sudah dipakai
     boolean existsByArtistName(String artistName);
 
-    // Cari semua artist dengan bio yang mengandung keyword (case-insensitive)
-    List<Artist> findByBioContainingIgnoreCase(String keyword);
-
-    // Optional: search by name OR bio (kalau nanti mau dipakai)
-    List<Artist> findByArtistNameContainingIgnoreCase(String keyword);
-
+    // Search artist by name OR bio (case-insensitive)
     @Query("SELECT a FROM Artist a " +
            "WHERE LOWER(a.artistName) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
            "   OR LOWER(a.bio) LIKE LOWER(CONCAT('%', :keyword, '%'))")
-    List<Artist> searchByName(@Param("keyword") String keyword);
+    List<Artist> searchByKeyword(@Param("keyword") String keyword);
 }
