@@ -89,6 +89,11 @@ public class AuthController {
         Account account = accountRepository.findByUsername(username)
             .orElseThrow(() -> new melodia.controller.exception.auth.InvalidCredentialsException());
 
+        // ✅ Check if account is banned
+        if (account.isBanned()) {
+            throw new melodia.controller.exception.auth.AccountBannedException(account.getBanReason());
+        }
+
         AuthResponse response = createAuthResponseWithToken("Token valid", account, token);
         logger.debug("✅ Token valid for user: {}", username);
         return ResponseEntity.ok(ApiResponse.success("Token is valid", response));
@@ -104,6 +109,11 @@ public class AuthController {
         String username = jwtUtil.extractUsername(oldToken);
         Account account = accountRepository.findByUsername(username)
             .orElseThrow(() -> new melodia.controller.exception.auth.InvalidCredentialsException());
+
+        // ✅ Check if account is banned
+        if (account.isBanned()) {
+            throw new melodia.controller.exception.auth.AccountBannedException(account.getBanReason());
+        }
 
         String newToken = jwtUtil.generateToken(username);
         AuthResponse response = createAuthResponseWithToken("Token refreshed successfully", account, newToken);
@@ -127,6 +137,11 @@ public class AuthController {
 
         Account account = accountRepository.findByUsername(username)
             .orElseThrow(() -> new melodia.controller.exception.auth.InvalidCredentialsException());
+
+        // ✅ Check if account is banned
+        if (account.isBanned()) {
+            throw new melodia.controller.exception.auth.AccountBannedException(account.getBanReason());
+        }
 
         AuthResponse response = createAuthResponseWithToken("Current user retrieved", account, token);
         logger.debug("✅ Current user retrieved: {}", username);

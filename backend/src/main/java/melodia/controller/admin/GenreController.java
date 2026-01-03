@@ -1,6 +1,7 @@
 package melodia.controller.admin;
 
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -49,12 +50,30 @@ public class GenreController {
     // ==================== CREATE OPERATION ====================
 
     @PostMapping
-    public ResponseEntity<ApiResponse<Genre>> createGenre(@RequestParam String name) {
-        if (genreRepository.existsByName(name)) {
-            throw new melodia.controller.exception.music.GenreAlreadyExistsException(name);
+    public ResponseEntity<ApiResponse<Genre>> createGenre(
+        @RequestParam String name,
+        @RequestParam(required = false) String description) {
+        // Validate input
+        if (name == null || name.trim().isEmpty()) {
+            throw new IllegalArgumentException("Genre name cannot be empty");
         }
+        
+        String trimmedName = name.trim();
+        String trimmedDescription = (description != null) ? description.trim() : null;
+        
+        if (genreRepository.existsByName(trimmedName)) {
+            throw new melodia.controller.exception.music.GenreAlreadyExistsException(trimmedName);
+        }
+        
+        // Generate ID for new genre
+        String genreId = "GNR-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+        
         Genre genre = new Genre();
-        genre.setName(name);
+        genre.setId(genreId);
+        genre.setName(trimmedName);
+        if (trimmedDescription != null && !trimmedDescription.isEmpty()) {
+            genre.setDescription(trimmedDescription);
+        }
         genre = genreRepository.save(genre);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success("Genre created successfully", genre));
     }
@@ -62,10 +81,25 @@ public class GenreController {
     // ==================== UPDATE OPERATION ====================
 
     @PutMapping("/{genreId}")
-    public ResponseEntity<ApiResponse<Genre>> updateGenre(@PathVariable String genreId, @RequestParam String newName) {
+    public ResponseEntity<ApiResponse<Genre>> updateGenre(
+        @PathVariable String genreId,
+        @RequestParam String newName,
+        @RequestParam(required = false) String description) {
+        // Validate input
+        if (newName == null || newName.trim().isEmpty()) {
+            throw new IllegalArgumentException("Genre name cannot be empty");
+        }
+        
+        String trimmedName = newName.trim();
+        String trimmedDescription = (description != null) ? description.trim() : null;
+        
         Genre genre = genreRepository.findById(genreId)
             .orElseThrow(() -> new melodia.controller.exception.music.GenreNotFoundException(genreId));
-        genre.setName(newName);
+        
+        genre.setName(trimmedName);
+        if (trimmedDescription != null && !trimmedDescription.isEmpty()) {
+            genre.setDescription(trimmedDescription);
+        }
         genre = genreRepository.save(genre);
         return ResponseEntity.ok(ApiResponse.success("Genre updated successfully", genre));
     }

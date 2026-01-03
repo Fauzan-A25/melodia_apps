@@ -69,7 +69,7 @@ public class AdminSongController {
             @RequestParam("artistId") String artistId,
             @RequestParam("genreIds") String genreIdsJson,
             @RequestParam("releaseYear") int releaseYear,
-            @RequestParam("duration") int duration) {
+            @RequestParam(value = "duration", defaultValue = "0") Integer duration) {
 
         try {
             logger.info("Admin uploading song: {} for artist: {}", title, artistId);
@@ -87,7 +87,12 @@ public class AdminSongController {
                         .body(ApiResponse.error("File must be an audio file"));
             }
 
-            if (songRepository.existsByTitle(title)) {
+            if (title == null || title.trim().isEmpty()) {
+                return ResponseEntity.badRequest()
+                        .body(ApiResponse.error("Song title is required"));
+            }
+
+            if (songRepository.existsByTitle(title.trim())) {
                 return ResponseEntity.status(HttpStatus.CONFLICT)
                         .body(ApiResponse.error("Song with this title already exists"));
             }
@@ -103,6 +108,7 @@ public class AdminSongController {
                         .body(ApiResponse.error("At least one genre is required"));
             }
 
+            // Parse genreIds from JSON array format
             String trimmed = genreIdsJson.trim();
             if (trimmed.startsWith("[")) trimmed = trimmed.substring(1);
             if (trimmed.endsWith("]")) trimmed = trimmed.substring(0, trimmed.length() - 1);
@@ -131,6 +137,13 @@ public class AdminSongController {
                         .body(ApiResponse.error("No valid genres found"));
             }
 
+            // ==================== VALIDATE DURATION ====================
+
+            if (duration == null || duration <= 0) {
+                logger.warn("Invalid duration provided: {}, using default 0", duration);
+                duration = 0; // Use 0 as default if invalid or not provided
+            }
+
             // ==================== SAVE AUDIO FILE ====================
 
             String filePath = fileStorageService.saveSongFile(audioFile, artistId, title);
@@ -139,8 +152,9 @@ public class AdminSongController {
 
             Song song = new Song();
             song.setSongId("SNG" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
-            song.setTitle(title);
+            song.setTitle(title.trim());
             song.setArtist(artist); // Link ke Artist metadata
+            song.setArtistName(artist.getArtistName()); // ✅ Set denormalized artist name
             song.setGenres(genres);
             song.setDuration(duration);
             song.setReleaseYear(releaseYear);

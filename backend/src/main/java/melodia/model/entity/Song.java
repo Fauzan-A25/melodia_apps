@@ -33,6 +33,9 @@ public class Song {
     @Column(name = "title", nullable = false, length = 100, unique = true)
     private String title;  // * Judul lagu yang tampil di UI.
 
+    @Column(name = "artist_name", nullable = false, length = 100)
+    private String artistName; // * Denormalized artist name for quick access
+
     @Column(name = "duration", nullable = false)
     private int duration;  // * Durasi lagu dalam detik.
 
@@ -103,6 +106,7 @@ public class Song {
 
     public String getSongId() { return songId; }
     public String getTitle() { return title; }
+    public String getArtistName() { return artistName; }
     public List<Genre> getGenres() { return genres; }
     public int getDuration() { return duration; }
     public String getFilePath() { return filePath; }
@@ -114,6 +118,7 @@ public class Song {
 
     public void setSongId(String songId) { this.songId = songId; }
     public void setTitle(String title) { this.title = title; }
+    public void setArtistName(String artistName) { this.artistName = artistName; }
 
     public void setGenres(List<Genre> genres) {
         // * Jaga supaya list tidak null.

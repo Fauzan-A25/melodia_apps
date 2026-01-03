@@ -1,19 +1,17 @@
 package melodia.controller.exception;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.RestControllerAdvice;
-
 import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-/**
- * Global Exception Handler untuk handle semua custom exception
- * Langsung serialize ApiException ke JSON response
- */
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.context.request.WebRequest;
+
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -22,7 +20,12 @@ public class GlobalExceptionHandler {
     // ==================== Handle All ApiException ====================
 
     @ExceptionHandler(ApiException.class)
-    public ResponseEntity<Map<String, Object>> handleApiException(ApiException ex) {
+    public ResponseEntity<Map<String, Object>> handleApiException(ApiException ex, WebRequest request) {
+        // Ignore favicon requests
+        if (isFaviconRequest(request)) {
+            return ResponseEntity.notFound().build();
+        }
+        
         logException(ex);
         
         Map<String, Object> response = new LinkedHashMap<>();
@@ -39,7 +42,11 @@ public class GlobalExceptionHandler {
     // ==================== Handle General Exceptions ====================
 
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<Map<String, Object>> handleIllegalArgument(IllegalArgumentException ex) {
+    public ResponseEntity<Map<String, Object>> handleIllegalArgument(IllegalArgumentException ex, WebRequest request) {
+        if (isFaviconRequest(request)) {
+            return ResponseEntity.notFound().build();
+        }
+        
         logger.warn("Validation error: {}", ex.getMessage());
         
         Map<String, Object> response = new LinkedHashMap<>();
@@ -52,7 +59,11 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(IllegalStateException.class)
-    public ResponseEntity<Map<String, Object>> handleIllegalState(IllegalStateException ex) {
+    public ResponseEntity<Map<String, Object>> handleIllegalState(IllegalStateException ex, WebRequest request) {
+        if (isFaviconRequest(request)) {
+            return ResponseEntity.notFound().build();
+        }
+        
         logger.warn("Invalid state: {}", ex.getMessage());
         
         Map<String, Object> response = new LinkedHashMap<>();
@@ -64,8 +75,42 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(response);
     }
 
+    // ==================== Handle Database Constraint Violations ====================
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<Map<String, Object>> handleDataIntegrityViolation(DataIntegrityViolationException ex, WebRequest request) {
+        if (isFaviconRequest(request)) {
+            return ResponseEntity.notFound().build();
+        }
+        
+        logger.warn("Database constraint violation: {}", ex.getMessage());
+        
+        String errorMessage = "Database constraint violation";
+        
+        // Check for unique constraint violation
+        if (ex.getMessage() != null && ex.getMessage().contains("Duplicate entry")) {
+            errorMessage = "This value already exists. Please use a different value.";
+        }
+        // Check for null constraint violation
+        else if (ex.getMessage() != null && ex.getMessage().contains("NOT NULL constraint failed")) {
+            errorMessage = "Required field cannot be empty.";
+        }
+        
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("error", errorMessage);
+        response.put("errorCode", "DATABASE_CONSTRAINT_VIOLATION");
+        response.put("status", 409);
+        response.put("timestamp", LocalDateTime.now());
+        
+        return ResponseEntity.status(409).body(response);
+    }
+
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<Map<String, Object>> handleGeneralException(Exception ex) {
+    public ResponseEntity<Map<String, Object>> handleGeneralException(Exception ex, WebRequest request) {
+        if (isFaviconRequest(request)) {
+            return ResponseEntity.notFound().build();
+        }
+        
         logger.error("Unexpected error: ", ex);
         
         Map<String, Object> response = new LinkedHashMap<>();
@@ -77,7 +122,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(500).body(response);
     }
 
-    // ==================== Helper Method ====================
+    // ==================== Helper Methods ====================
 
     private void logException(ApiException ex) {
         int statusCode = ex.getHttpStatus().value();
@@ -89,5 +134,10 @@ public class GlobalExceptionHandler {
         } else {
             logger.info("[{}] {}", ex.getErrorCode(), ex.getMessage());
         }
+    }
+
+    private boolean isFaviconRequest(WebRequest request) {
+        String path = request.getDescription(false);
+        return path != null && path.contains("favicon.ico");
     }
 }

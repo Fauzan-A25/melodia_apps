@@ -10,6 +10,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 /**
  * Genre musik di Melodia.
@@ -25,6 +27,8 @@ public class Genre {
     private String id; // * ID genre, bisa di-generate di service (mis. "GENPOP001" atau UUID).
 
     @Column(name = "name", unique = true, nullable = false)
+    @NotBlank(message = "Genre name cannot be empty")
+    @Size(min = 1, max = 100, message = "Genre name must be between 1 and 100 characters")
     private String name; // * Nama genre yang tampil di UI (contoh: "Pop", "Lo-fi", "Rock").
 
     @Column(name = "description")

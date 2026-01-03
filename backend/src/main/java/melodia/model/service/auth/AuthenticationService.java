@@ -3,6 +3,7 @@ package melodia.model.service.auth;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import melodia.controller.exception.auth.AccountBannedException;
 import melodia.controller.exception.auth.InvalidCredentialsException;
 import melodia.model.entity.Account;
 import melodia.model.entity.Admin;
@@ -25,6 +26,11 @@ public class AuthenticationService {
             throw new InvalidCredentialsException();
         }
 
+        // ✅ Check if account is banned before validating password
+        if (account.isBanned()) {
+            throw new AccountBannedException(account.getBanReason());
+        }
+
         if (!account.verifyPassword(password)) {
             throw new InvalidCredentialsException();
         }
@@ -38,7 +44,16 @@ public class AuthenticationService {
         Account account = accountRepository.findByUsername(usernameOrEmail)
                 .orElse(accountRepository.findByEmail(usernameOrEmail).orElse(null));
 
-        if (!(account instanceof User) || !account.verifyPassword(password)) {
+        if (!(account instanceof User)) {
+            throw new InvalidCredentialsException();
+        }
+
+        // ✅ Check if account is banned
+        if (account.isBanned()) {
+            throw new AccountBannedException(account.getBanReason());
+        }
+
+        if (!account.verifyPassword(password)) {
             throw new InvalidCredentialsException();
         }
 
@@ -51,7 +66,16 @@ public class AuthenticationService {
         Account account = accountRepository.findByUsername(usernameOrEmail)
                 .orElse(accountRepository.findByEmail(usernameOrEmail).orElse(null));
 
-        if (!(account instanceof Admin) || !account.verifyPassword(password)) {
+        if (!(account instanceof Admin)) {
+            throw new InvalidCredentialsException();
+        }
+
+        // ✅ Check if account is banned
+        if (account.isBanned()) {
+            throw new AccountBannedException(account.getBanReason());
+        }
+
+        if (!account.verifyPassword(password)) {
             throw new InvalidCredentialsException();
         }
 
