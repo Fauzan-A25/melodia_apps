@@ -30,6 +30,19 @@ const PlaylistDetail = () => {
   // ✅ FIXED: Konsisten dengan Sidebar - pakai accountId
   const userId = localStorage.getItem('accountId') || localStorage.getItem('userId');
 
+  // ✅ Helper function to normalize song data
+  const normalizeSongData = (song) => {
+    return {
+      ...song,
+      // Handle artist field variations
+      artist: song.artist || {
+        username: song.artistName || song.artist_name || 'Unknown Artist'
+      },
+      // Ensure duration is a number
+      duration: typeof song.duration === 'number' ? song.duration : (parseInt(song.duration) || 0),
+    };
+  };
+
   // ✅ Fetch playlist detail & songs
   const fetchData = useCallback(async () => {
     try {
@@ -40,12 +53,19 @@ const PlaylistDetail = () => {
       const playlistData = await musicService.getPlaylistById(playlistId);
       setPlaylist(playlistData);
 
-      // Songs
-      const songsData = await musicService.getPlaylistSongs(playlistId);
+      // Songs - with data normalization
+      let songsData = await musicService.getPlaylistSongs(playlistId);
+      console.log('Raw songs data from API:', songsData);
+      
+      // Normalize all songs
+      if (Array.isArray(songsData)) {
+        songsData = songsData.map(song => normalizeSongData(song));
+      }
+      
       setSongs(songsData || []);
 
       console.log('Playlist loaded:', playlistData);
-      console.log('Songs loaded:', songsData);
+      console.log('Songs after normalization:', songsData);
     } catch (err) {
       console.error('Error fetching data:', err);
       setError('Failed to load playlist');
@@ -148,16 +168,24 @@ const PlaylistDetail = () => {
   };
 
   const formatDuration = (seconds) => {
-    if (!seconds) return '0:00';
+    if (!seconds || typeof seconds !== 'number') return '0:00';
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
   const getTotalDuration = () => {
-    const total = songs.reduce((acc, song) => acc + (song.duration || 0), 0);
-    const mins = Math.floor(total / 60);
-    return `${mins} min`;
+    try {
+      const total = songs.reduce((acc, song) => {
+        const duration = typeof song.duration === 'number' ? song.duration : (parseInt(song.duration) || 0);
+        return acc + duration;
+      }, 0);
+      const mins = Math.floor(total / 60);
+      return `${mins} min`;
+    } catch (err) {
+      console.error('Error calculating total duration:', err);
+      return `${songs.length} songs`;
+    }
   };
 
   if (loading) {
@@ -269,7 +297,6 @@ const PlaylistDetail = () => {
               <div className={styles.colNum}>#</div>
               <div className={styles.colTitle}>Title</div>
               <div className={styles.colArtist}>Artist</div>
-              <div className={styles.colAlbum}>Album</div>
               <div className={styles.colDuration}>
                 <Clock size={16} />
               </div>
@@ -315,22 +342,18 @@ const PlaylistDetail = () => {
                       <div className={styles.songText}>
                         <p className={styles.songTitle}>{song.title}</p>
                         <p className={styles.songArtistMobile}>
-                          {song.artist?.username || 'Unknown Artist'}
+                          {song.artist?.username || song.artistName || song.artist_name || 'Unknown Artist'}
                         </p>
                       </div>
                     </div>
                   </div>
 
                   <div className={styles.colArtist}>
-                    {song.artist?.username || 'Unknown Artist'}
-                  </div>
-
-                  <div className={styles.colAlbum}>
-                    {song.album || song.genre?.name || '-'}
+                    {song.artist?.username || song.artistName || song.artist_name || 'Unknown Artist'}
                   </div>
 
                   <div className={styles.colDuration}>
-                    {formatDuration(song.duration || 0)}
+                    {formatDuration(song.duration)}
                   </div>
 
                   <div className={styles.colActions}>
