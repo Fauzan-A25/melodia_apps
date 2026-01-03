@@ -31,10 +31,18 @@ export const adminService = {
     return responseBody.data || responseBody;
   },
 
-  createGenre: async (genreName) => {
-    const response = await api.post(
-      `/admin/genres?name=${encodeURIComponent(genreName)}`,
-      {}
+  createGenre: async (genreName, description = '') => {
+    const baseUrl = await api.getURL();
+    const params = new URLSearchParams({ name: genreName });
+    if (description && description.trim()) {
+      params.append('description', description.trim());
+    }
+    const response = await fetch(
+      `${baseUrl}/admin/genres?${params.toString()}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      }
     );
 
     if (!response.ok) {
@@ -51,10 +59,18 @@ export const adminService = {
     return responseBody.data || responseBody;
   },
 
-  updateGenre: async (genreId, genreName) => {
-    const response = await api.put(
-      `/admin/genres/${genreId}?newName=${encodeURIComponent(genreName)}`,
-      {}
+  updateGenre: async (genreId, genreName, description = '') => {
+    const baseUrl = await api.getURL();
+    const params = new URLSearchParams({ newName: genreName });
+    if (description && description.trim()) {
+      params.append('description', description.trim());
+    }
+    const response = await fetch(
+      `${baseUrl}/admin/genres/${genreId}?${params.toString()}`,
+      {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+      }
     );
 
     if (!response.ok) {
@@ -262,7 +278,12 @@ export const adminService = {
     formData.append('artistId', data.artistId);
     formData.append('genreIds', JSON.stringify(data.genreIds));
     formData.append('releaseYear', String(data.releaseYear));
-    formData.append('duration', String(data.duration));
+    
+    // ✅ Validate and sanitize duration - use 0 as default if invalid
+    const duration = (typeof data.duration === 'number' && data.duration > 0) 
+      ? data.duration 
+      : 0;
+    formData.append('duration', String(duration));
 
     const response = await fetch(`${baseUrl}/admin/songs/upload`, {
       method: 'POST',

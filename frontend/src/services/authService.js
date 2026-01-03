@@ -89,10 +89,17 @@ export const authService = {
         let errorMessage = `Login failed (${response.status})`;
         try {
           const error = await response.json();
-          errorMessage = error.error || error.message || errorMessage;
+          // ✅ Check if account is banned
+          if (error.errorCode === 'ACCOUNT_BANNED' || response.status === 403) {
+            errorMessage = error.error || 'Akun Anda telah di-ban dan tidak dapat login.';
+          } else {
+            errorMessage = error.error || error.message || errorMessage;
+          }
         } catch {
           if (response.status === 401) {
             errorMessage = 'Invalid credentials';
+          } else if (response.status === 403) {
+            errorMessage = 'Akun Anda telah di-ban dan tidak dapat login.';
           }
         }
         throw new Error(errorMessage);
@@ -225,6 +232,18 @@ export const authService = {
       });
 
       if (!response.ok) {
+        // ✅ Check if banned
+        if (response.status === 403) {
+          try {
+            const error = await response.json();
+            if (error.errorCode === 'ACCOUNT_BANNED') {
+              clearAuthData();
+              throw new Error(error.error || 'Akun Anda telah di-ban dan tidak dapat login.');
+            }
+          } catch (e) {
+            if (e.message.includes('di-ban')) throw e;
+          }
+        }
         clearAuthData();
         throw new Error('Token refresh failed');
       }
@@ -249,6 +268,18 @@ export const authService = {
       const response = await api.get('/auth/me');
 
       if (!response.ok) {
+        // ✅ Check if banned
+        if (response.status === 403) {
+          try {
+            const error = await response.json();
+            if (error.errorCode === 'ACCOUNT_BANNED') {
+              clearAuthData();
+              throw new Error(error.error || 'Akun Anda telah di-ban.');
+            }
+          } catch (e) {
+            if (e.message.includes('di-ban')) throw e;
+          }
+        }
         clearAuthData();
         return null;
       }

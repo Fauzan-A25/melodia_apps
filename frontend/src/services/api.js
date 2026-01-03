@@ -41,7 +41,20 @@ async function apiFetch(endpoint, options = {}) {
   const response = await fetch(url, options);
   
   if (!response.ok) {
-    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+    try {
+      // ✅ Try to parse JSON error response from backend
+      const errorData = await response.json();
+      if (errorData.error) {
+        errorMessage = errorData.error;
+      } else if (errorData.message) {
+        errorMessage = errorData.message;
+      }
+    } catch {
+      // If response is not JSON, use default error message
+      console.debug('Could not parse error response as JSON');
+    }
+    throw new Error(errorMessage);
   }
   
   return response;

@@ -1,5 +1,5 @@
 // src/pages/auth/AuthPage.jsx
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuthContext } from '../../context/AuthContext';
 // eslint-disable-next-line no-unused-vars
@@ -42,12 +42,17 @@ const AuthPage = () => {
   // ✅ State untuk animasi terminal bertahap
   const [terminalLines, setTerminalLines] = useState([]);
   const [lastMessage, setLastMessage] = useState('');
+  const [lineCounter, setLineCounter] = useState(0); // ✅ Counter untuk unique keys
   
   // ✅ Track apakah loading sudah benar-benar selesai
   const [isLoadingComplete, setIsLoadingComplete] = useState(false);
   
   // ✅ State untuk menampilkan loading terminal setelah submit
   const [showTerminalLoading, setShowTerminalLoading] = useState(false);
+
+  // ✅ Refs untuk prevent infinite loops
+  const processedErrorRef = useRef(null); // Track yang sudah di-process
+  const errorTimeoutRef = useRef(null);
 
   // ✅ Effect untuk redirect HANYA setelah loading 100% complete dan success
   useEffect(() => {
@@ -56,7 +61,7 @@ const AuthPage = () => {
       
       // Tambahkan final success message ke terminal
       const finalLine = {
-        id: Date.now() + 1000,
+        id: `final-success-${Date.now()}`, // ✅ Use timestamp
         type: 'final-success',
         text: `✓ Authentication complete! Redirecting to ${user.accountType === 'ADMIN' ? 'Admin Dashboard' : 'Home'}...`,
       };
@@ -80,30 +85,47 @@ const AuthPage = () => {
 
       return () => clearTimeout(redirectTimer);
     }
-  }, [contextLoading, isAuthenticated, user, loadingProgress, success, navigate, location.state]);
+  }, [contextLoading, isAuthenticated, user, loadingProgress, success, navigate, location.state]); // ✅ HAPUS lineCounter
 
-  // ✅ Effect untuk handle error di terminal
+  // ✅ Effect untuk handle error di terminal - PREVENT LOOP
   useEffect(() => {
-    if (authError && showTerminalLoading) {
+    // ✅ Hanya process jika error baru (berbeda dari sebelumnya)
+    if (authError && showTerminalLoading && authError !== processedErrorRef.current) {
+      processedErrorRef.current = authError;
+
       // Tambahkan error message ke terminal
       const errorLine = {
-        id: Date.now(),
+        id: `authError-${Date.now()}`, // ✅ Gunakan timestamp untuk unique ID
         type: 'error',
         text: authError,
       };
       
       setTerminalLines((prev) => [...prev, errorLine]);
       
+      // ✅ Clear existing timeout jika ada
+      if (errorTimeoutRef.current) {
+        clearTimeout(errorTimeoutRef.current);
+      }
+
       // Setelah 3 detik, hide terminal dan reset
-      setTimeout(() => {
+      errorTimeoutRef.current = setTimeout(() => {
         setShowTerminalLoading(false);
         setTerminalLines([]);
         setLastMessage('');
         setLoading(false);
         setError(authError);
+        setLineCounter(0);
+        processedErrorRef.current = null; // ✅ Reset ref untuk error berikutnya
       }, 3000);
     }
-  }, [authError, showTerminalLoading]);
+
+    // ✅ Cleanup timeout saat component unmount
+    return () => {
+      if (errorTimeoutRef.current) {
+        clearTimeout(errorTimeoutRef.current);
+      }
+    };
+  }, [authError, showTerminalLoading]); // ✅ HAPUS lineCounter dari dependency
 
   // ✅ Effect untuk menambahkan terminal line HANYA saat loadingMessage berubah
   useEffect(() => {
@@ -132,9 +154,9 @@ const AuthPage = () => {
         displayText = `Welcome back, ${storedUsername}!`;
       }
 
-      // Tambahkan line baru
+      // Tambahkan line baru dengan unique timestamp ID
       const newLine = {
-        id: Date.now(),
+        id: `line-${Date.now()}-${Math.random()}`, // ✅ Unique ID tanpa lineCounter
         type: lineType,
         text: displayText,
       };
@@ -142,7 +164,7 @@ const AuthPage = () => {
       setTerminalLines((prev) => [...prev, newLine]);
       setLastMessage(loadingMessage);
     }
-  }, [contextLoading, showTerminalLoading, loadingMessage, lastMessage, user, formData.username]);
+  }, [contextLoading, showTerminalLoading, loadingMessage, lastMessage, user, formData.username]); // ✅ HAPUS lineCounter
 
   // ✅ Reset terminal lines saat loading selesai dengan error atau cancel
   useEffect(() => {
@@ -165,6 +187,7 @@ const AuthPage = () => {
     setShowTerminalLoading(true); // ✅ Show terminal saat submit
     setTerminalLines([]); // Reset terminal lines
     setLastMessage('');
+    setLineCounter(0); // ✅ Reset counter
 
     try {
       if (!USERNAME_REGEX.test(formData.username)) {
@@ -201,6 +224,9 @@ const AuthPage = () => {
       // Translate error messages
       if (errorMessage.includes('Username tidak boleh mengandung spasi')) {
         errorMessage = 'Username tidak boleh mengandung spasi';
+      } else if (errorMessage.includes('di-ban')) {
+        // ✅ Keep ban error message as is - it already includes the reason
+        // e.g. "Akun Anda telah di-ban. Alasan: ..."
       } else if (
         errorMessage.includes('401') ||
         errorMessage.includes('Invalid credentials')
@@ -216,12 +242,13 @@ const AuthPage = () => {
 
       // ✅ Tambahkan error ke terminal
       const errorLine = {
-        id: Date.now(),
+        id: `error-${lineCounter}`,
         type: 'error',
-        text: `✗ Error: ${errorMessage}`,
+        text: `✗ ${errorMessage}`,
       };
       
       setTerminalLines((prev) => [...prev, errorLine]);
+      setLineCounter(prev => prev + 1);
       
       // Hide terminal setelah 3 detik
       setTimeout(() => {
