@@ -1,26 +1,26 @@
 // services/musicService.js
-import { API_URL } from './api';
+import { api } from './api';
 
 export const musicService = {
   // ==================== SONG ENDPOINTS ====================
 
   getAllSongs: async () => {
-    const response = await fetch(`${API_URL}/songs`);
+    const response = await api.get('/songs');
     if (!response.ok) throw new Error('Failed to fetch songs');
     const responseBody = await response.json();
     return responseBody.data || responseBody;
   },
 
   getSongById: async (id) => {
-    const response = await fetch(`${API_URL}/songs/${id}`);
+    const response = await api.get(`/songs/${id}`);
     if (!response.ok) throw new Error('Song not found');
     const responseBody = await response.json();
     return responseBody.data || responseBody;
   },
 
   searchSongs: async (query) => {
-    const response = await fetch(
-      `${API_URL}/songs/search?query=${encodeURIComponent(query)}`
+    const response = await api.get(
+      `/songs/search?query=${encodeURIComponent(query)}`
     );
     if (!response.ok) throw new Error('Search failed');
     const responseBody = await response.json();
@@ -28,8 +28,8 @@ export const musicService = {
   },
 
   searchByTitle: async (query) => {
-    const response = await fetch(
-      `${API_URL}/songs/search/title?query=${encodeURIComponent(query)}`
+    const response = await api.get(
+      `/songs/search/title?query=${encodeURIComponent(query)}`
     );
     if (!response.ok) throw new Error('Search failed');
     const responseBody = await response.json();
@@ -37,8 +37,8 @@ export const musicService = {
   },
 
   searchByArtist: async (query) => {
-    const response = await fetch(
-      `${API_URL}/songs/search/artist?query=${encodeURIComponent(query)}`
+    const response = await api.get(
+      `/songs/search/artist?query=${encodeURIComponent(query)}`
     );
     if (!response.ok) throw new Error('Search failed');
     const responseBody = await response.json();
@@ -46,8 +46,8 @@ export const musicService = {
   },
 
   filterByGenre: async (genreName) => {
-    const response = await fetch(
-      `${API_URL}/songs/filter/genre?name=${encodeURIComponent(genreName)}`
+    const response = await api.get(
+      `/songs/filter/genre?name=${encodeURIComponent(genreName)}`
     );
     if (!response.ok) throw new Error('Filter failed');
     const responseBody = await response.json();
@@ -55,24 +55,23 @@ export const musicService = {
   },
 
   filterByYear: async (year) => {
-    const response = await fetch(
-      `${API_URL}/songs/filter/year?year=${year}`
+    const response = await api.get(
+      `/songs/filter/year?year=${year}`
     );
     if (!response.ok) throw new Error('Filter failed');
     const responseBody = await response.json();
     return responseBody.data || responseBody;
   },
 
-  getStreamUrl: (songId) => `${API_URL}/songs/stream/${songId}`,
+  getStreamUrl: async () => {
+    const baseUrl = await api.getURL();
+    return (songId) => `${baseUrl}/songs/stream/${songId}`;
+  },
 
   // ==================== PLAYLIST ENDPOINTS ====================
 
   createPlaylist: async (userId, name, description = '') => {
-    const response = await fetch(`${API_URL}/playlists`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId, name, description }),
-    });
+    const response = await api.post('/playlists', { userId, name, description });
 
     if (!response.ok) {
       const errorData = await response
@@ -94,7 +93,7 @@ export const musicService = {
       return [];
     }
 
-    const response = await fetch(`${API_URL}/playlists/user/${userId}`);
+    const response = await api.get(`/playlists/user/${userId}`);
 
     if (!response.ok) {
       if (response.status === 404) {
@@ -108,7 +107,7 @@ export const musicService = {
   },
 
   getPlaylistById: async (playlistId) => {
-    const response = await fetch(`${API_URL}/playlists/${playlistId}`);
+    const response = await api.get(`/playlists/${playlistId}`);
 
     if (!response.ok) {
       throw new Error('Playlist not found');
@@ -119,10 +118,8 @@ export const musicService = {
   },
 
   updatePlaylist: async (playlistId, userId, name, description) => {
-    const response = await fetch(`${API_URL}/playlists/${playlistId}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId, name, description }),
+    const response = await api.put(`/playlists/${playlistId}`, {
+      userId, name, description
     });
 
     if (!response.ok) {
@@ -137,12 +134,8 @@ export const musicService = {
   },
 
   deletePlaylist: async (playlistId, userId) => {
-    const response = await fetch(
-      `${API_URL}/playlists/${playlistId}?userId=${userId}`,
-      {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-      }
+    const response = await api.delete(
+      `/playlists/${playlistId}?userId=${userId}`
     );
 
     if (!response.ok) {
@@ -157,10 +150,8 @@ export const musicService = {
   },
 
   addSongToPlaylist: async (playlistId, songId, userId) => {
-    const response = await fetch(`${API_URL}/playlists/${playlistId}/songs`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ songId, userId }),
+    const response = await api.post(`/playlists/${playlistId}/songs`, {
+      songId, userId
     });
 
     if (!response.ok) {
@@ -177,12 +168,8 @@ export const musicService = {
   },
 
   removeSongFromPlaylist: async (playlistId, songId, userId) => {
-    const response = await fetch(
-      `${API_URL}/playlists/${playlistId}/songs/${songId}?userId=${userId}`,
-      {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-      }
+    const response = await api.delete(
+      `/playlists/${playlistId}/songs/${songId}?userId=${userId}`
     );
 
     if (!response.ok) {
@@ -199,8 +186,8 @@ export const musicService = {
   },
 
   searchPlaylists: async (query) => {
-    const response = await fetch(
-      `${API_URL}/playlists/search?query=${encodeURIComponent(query)}`
+    const response = await api.get(
+      `/playlists/search?query=${encodeURIComponent(query)}`
     );
 
     if (!response.ok) {
@@ -212,8 +199,8 @@ export const musicService = {
   },
 
   getPlaylistSongs: async (playlistId) => {
-    const response = await fetch(
-      `${API_URL}/playlists/${playlistId}/songs`
+    const response = await api.get(
+      `/playlists/${playlistId}/songs`
     );
 
     if (!response.ok) {
@@ -227,7 +214,7 @@ export const musicService = {
   // ==================== HISTORY ENDPOINTS ====================
 
   getUserHistory: async (userId) => {
-    const response = await fetch(`${API_URL}/history/${userId}`);
+    const response = await api.get(`/history/${userId}`);
 
     if (!response.ok) {
       throw new Error('Failed to fetch history');
@@ -238,7 +225,7 @@ export const musicService = {
   },
 
   getPlayedSongs: async (userId) => {
-    const response = await fetch(`${API_URL}/history/${userId}/songs`);
+    const response = await api.get(`/history/${userId}/songs`);
 
     if (!response.ok) {
       throw new Error('Failed to fetch played songs');
@@ -253,8 +240,8 @@ export const musicService = {
       throw new Error('Limit must be positive');
     }
 
-    const response = await fetch(
-      `${API_URL}/history/${userId}/songs/recent?limit=${limit}`
+    const response = await api.get(
+      `/history/${userId}/songs/recent?limit=${limit}`
     );
 
     if (!response.ok) {
@@ -266,10 +253,8 @@ export const musicService = {
   },
 
   addSongToHistory: async (userId, songId) => {
-    const response = await fetch(`${API_URL}/history/${userId}/songs`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ songId }),
+    const response = await api.post(`/history/${userId}/songs`, {
+      songId
     });
 
     if (!response.ok) {
@@ -289,12 +274,8 @@ export const musicService = {
   },
 
   removeSongFromHistory: async (userId, songId) => {
-    const response = await fetch(
-      `${API_URL}/history/${userId}/songs/${songId}`,
-      {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-      }
+    const response = await api.delete(
+      `/history/${userId}/songs/${songId}`
     );
 
     if (!response.ok) {
@@ -314,10 +295,7 @@ export const musicService = {
   },
 
   clearUserHistory: async (userId) => {
-    const response = await fetch(`${API_URL}/history/${userId}`, {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-    });
+    const response = await api.delete(`/history/${userId}`);
 
     if (!response.ok) {
       let errorMessage = 'Failed to clear history';
@@ -336,8 +314,8 @@ export const musicService = {
   },
 
   checkIfSongPlayed: async (userId, songId) => {
-    const response = await fetch(
-      `${API_URL}/history/${userId}/songs/${songId}/played`
+    const response = await api.get(
+      `/history/${userId}/songs/${songId}/played`
     );
 
     if (!response.ok) {
@@ -349,7 +327,7 @@ export const musicService = {
   },
 
   getHistorySummary: async (userId) => {
-    const response = await fetch(`${API_URL}/history/${userId}/summary`);
+    const response = await api.get(`/history/${userId}/summary`);
 
     if (!response.ok) {
       throw new Error('Failed to fetch history summary');
@@ -366,7 +344,7 @@ export const musicService = {
    * GET /api/albums
    */
   getAllAlbums: async () => {
-    const response = await fetch(`${API_URL}/albums`);
+    const response = await api.get(`/albums`);
 
     if (!response.ok) {
       let errorMessage = 'Failed to fetch albums';
@@ -389,7 +367,7 @@ export const musicService = {
    * GET /api/albums/{albumId}
    */
   getAlbumById: async (albumId) => {
-    const response = await fetch(`${API_URL}/albums/${albumId}`);
+    const response = await api.get(`/albums/${albumId}`);
 
     if (!response.ok) {
       let errorMessage = 'Failed to fetch album';
@@ -416,7 +394,7 @@ export const musicService = {
    * GET /api/albums/{albumId}/songs
    */
   getAlbumSongs: async (albumId) => {
-    const response = await fetch(`${API_URL}/albums/${albumId}/songs`);
+    const response = await api.get(`/albums/${albumId}/songs`);
 
     if (!response.ok) {
       let errorMessage = 'Failed to fetch album songs';
@@ -443,7 +421,7 @@ export const musicService = {
    * GET /api/albums/artist/{artistId}
    */
   getAlbumsByArtist: async (artistId) => {
-    const response = await fetch(`${API_URL}/albums/artist/${artistId}`);
+    const response = await api.get(`/albums/artist/${artistId}`);
 
     if (!response.ok) {
       let errorMessage = 'Failed to fetch artist albums';
@@ -466,8 +444,8 @@ export const musicService = {
    * GET /api/albums/search?title={query}
    */
   searchAlbums: async (query) => {
-    const response = await fetch(
-      `${API_URL}/albums/search?title=${encodeURIComponent(query)}`
+    const response = await api.get(
+      `/albums/search?title=${encodeURIComponent(query)}`
     );
 
     if (!response.ok) {
@@ -491,8 +469,8 @@ export const musicService = {
    * GET /api/albums/genre/{genreName}
    */
   filterAlbumsByGenre: async (genreName) => {
-    const response = await fetch(
-      `${API_URL}/albums/genre/${encodeURIComponent(genreName)}`
+    const response = await api.get(
+      `/albums/genre/${encodeURIComponent(genreName)}`
     );
 
     if (!response.ok) {
@@ -516,7 +494,7 @@ export const musicService = {
    * GET /api/albums/year/{year}
    */
   filterAlbumsByYear: async (year) => {
-    const response = await fetch(`${API_URL}/albums/year/${year}`);
+    const response = await api.get(`/albums/year/${year}`);
 
     if (!response.ok) {
       let errorMessage = 'Failed to filter albums by year';
@@ -550,10 +528,7 @@ export const musicService = {
       genreNames.forEach(genre => params.append('genreNames', genre));
     }
 
-    const response = await fetch(`${API_URL}/albums?${params.toString()}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-    });
+    const response = await api.post(`/albums?${params.toString()}`, {});
 
     if (!response.ok) {
       let errorMessage = 'Failed to create album';
@@ -581,12 +556,8 @@ export const musicService = {
     if (title && title.trim()) params.append('title', title);
     if (releaseYear) params.append('releaseYear', releaseYear.toString());
 
-    const response = await fetch(
-      `${API_URL}/albums/${albumId}?${params.toString()}`,
-      {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-      }
+    const response = await api.put(
+      `/albums/${albumId}?${params.toString()}`, {}
     );
 
     if (!response.ok) {
@@ -610,10 +581,7 @@ export const musicService = {
    * DELETE /api/albums/{albumId}
    */
   deleteAlbum: async (albumId) => {
-    const response = await fetch(`${API_URL}/albums/${albumId}`, {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-    });
+    const response = await api.delete(`/albums/${albumId}`);
 
     if (!response.ok) {
       let errorMessage = 'Failed to delete album';
@@ -645,12 +613,8 @@ export const musicService = {
    * POST /api/albums/{albumId}/songs/{songId}
    */
   addSongToAlbum: async (albumId, songId) => {
-    const response = await fetch(
-      `${API_URL}/albums/${albumId}/songs/${songId}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-      }
+    const response = await api.post(
+      `/albums/${albumId}/songs/${songId}`, {}
     );
 
     if (!response.ok) {
@@ -679,12 +643,8 @@ export const musicService = {
    * DELETE /api/albums/{albumId}/songs/{songId}
    */
   removeSongFromAlbum: async (albumId, songId) => {
-    const response = await fetch(
-      `${API_URL}/albums/${albumId}/songs/${songId}`,
-      {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-      }
+    const response = await api.delete(
+      `/albums/${albumId}/songs/${songId}`
     );
 
     if (!response.ok) {
@@ -715,7 +675,7 @@ export const musicService = {
    * GET /api/albums/stats/count
    */
   getAlbumsCount: async () => {
-    const response = await fetch(`${API_URL}/albums/stats/count`);
+    const response = await api.get(`/albums/stats/count`);
 
     if (!response.ok) {
       throw new Error('Failed to fetch albums count');
@@ -730,7 +690,7 @@ export const musicService = {
    * GET /api/albums/{albumId}/stats/songs
    */
   getAlbumSongCount: async (albumId) => {
-    const response = await fetch(`${API_URL}/albums/${albumId}/stats/songs`);
+    const response = await api.get(`/albums/${albumId}/stats/songs`);
 
     if (!response.ok) {
       let errorMessage = 'Failed to fetch song count';

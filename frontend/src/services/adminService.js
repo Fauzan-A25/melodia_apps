@@ -1,16 +1,9 @@
 import { api } from './api';
 
-// ✅ Helper function untuk mendapatkan base URL
-const getBaseURL = async () => await api.getURL();
-
 export const adminService = {
   // --- Dashboard Stats ---
   getStats: async () => {
-    const API_BASE_URL = await getBaseURL();
-    const response = await fetch(`${API_BASE_URL}/admin/stats`, {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
-    });
+    const response = await api.get('/admin/stats');
     if (!response.ok) {
       throw new Error('Failed to fetch admin stats');
     }
@@ -20,11 +13,7 @@ export const adminService = {
 
   // --- Song Management ---
   getAllSongs: async () => {
-    const API_BASE_URL = await getBaseURL();
-    const response = await fetch(`${API_BASE_URL}/songs`, {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
-    });
+    const response = await api.get('/songs');
     if (!response.ok) {
       throw new Error('Failed to fetch songs');
     }
@@ -34,11 +23,7 @@ export const adminService = {
 
   // --- Genre Management ---
   getAllGenres: async () => {
-    const API_BASE_URL = await getBaseURL();
-    const response = await fetch(`${API_BASE_URL}/admin/genres`, {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
-    });
+    const response = await api.get('/admin/genres');
     if (!response.ok) {
       throw new Error('Failed to fetch genres');
     }
@@ -46,13 +31,11 @@ export const adminService = {
     return responseBody.data || responseBody;
   },
 
-  createGenre: async (genreName, description) => {
-    const API_BASE_URL = await getBaseURL();
-    const response = await fetch(`${API_BASE_URL}/admin/genres`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: genreName, description }),
-    });
+  createGenre: async (genreName) => {
+    const response = await api.post(
+      `/admin/genres?name=${encodeURIComponent(genreName)}`,
+      {}
+    );
 
     if (!response.ok) {
       let errorMessage = 'Failed to create genre';
@@ -68,13 +51,11 @@ export const adminService = {
     return responseBody.data || responseBody;
   },
 
-  updateGenre: async (genreId, genreName, description) => {
-    const API_BASE_URL = await getBaseURL();
-    const response = await fetch(`${API_BASE_URL}/admin/genres/${genreId}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: genreName, description }),
-    });
+  updateGenre: async (genreId, genreName) => {
+    const response = await api.put(
+      `/admin/genres/${genreId}?newName=${encodeURIComponent(genreName)}`,
+      {}
+    );
 
     if (!response.ok) {
       let errorMessage = 'Failed to update genre';
@@ -91,11 +72,7 @@ export const adminService = {
   },
 
   deleteGenre: async (genreId) => {
-    const API_BASE_URL = await getBaseURL();
-    const response = await fetch(`${API_BASE_URL}/admin/genres/${genreId}`, {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-    });
+    const response = await api.delete(`/admin/genres/${genreId}`);
 
     if (!response.ok) {
       let errorMessage = 'Failed to delete genre';
@@ -113,11 +90,7 @@ export const adminService = {
 
   // --- User Management ---
   getAllUsers: async () => {
-    const API_BASE_URL = await getBaseURL();
-    const response = await fetch(`${API_BASE_URL}/admin/users`, {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
-    });
+    const response = await api.get('/admin/users');
     if (!response.ok) {
       throw new Error('Failed to fetch users');
     }
@@ -126,13 +99,8 @@ export const adminService = {
   },
 
   getUsersByType: async (accountType) => {
-    const API_BASE_URL = await getBaseURL();
-    const response = await fetch(
-      `${API_BASE_URL}/admin/users?type=${accountType}`,
-      {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
-      },
+    const response = await api.get(
+      `/admin/users?type=${accountType}`
     );
     if (!response.ok) {
       throw new Error(`Failed to fetch ${accountType}s`);
@@ -142,11 +110,7 @@ export const adminService = {
   },
 
   getBannedUsers: async () => {
-    const API_BASE_URL = await getBaseURL();
-    const response = await fetch(`${API_BASE_URL}/admin/users/banned`, {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
-    });
+    const response = await api.get('/admin/users/banned');
     if (!response.ok) {
       throw new Error('Failed to fetch banned users');
     }
@@ -155,14 +119,9 @@ export const adminService = {
   },
 
   banUser: async (accountId, reason) => {
-    const API_BASE_URL = await getBaseURL();
-    const response = await fetch(
-      `${API_BASE_URL}/admin/users/${accountId}/ban`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ reason }),
-      },
+    const response = await api.put(
+      `/admin/users/${accountId}/ban?reason=${encodeURIComponent(reason)}`,
+      {}
     );
 
     if (!response.ok) {
@@ -180,13 +139,9 @@ export const adminService = {
   },
 
   unbanUser: async (accountId) => {
-    const API_BASE_URL = await getBaseURL();
-    const response = await fetch(
-      `${API_BASE_URL}/admin/users/${accountId}/unban`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-      },
+    const response = await api.put(
+      `/admin/users/${accountId}/unban`,
+      {}
     );
 
     if (!response.ok) {
@@ -204,11 +159,7 @@ export const adminService = {
   },
 
   deleteUser: async (accountId) => {
-    const API_BASE_URL = await getBaseURL();
-    const response = await fetch(`${API_BASE_URL}/admin/users/${accountId}`, {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-    });
+    const response = await api.delete(`/admin/users/${accountId}`);
 
     if (!response.ok) {
       let errorMessage = 'Failed to delete user';
@@ -225,13 +176,8 @@ export const adminService = {
   },
 
   searchUsers: async (query) => {
-    const API_BASE_URL = await getBaseURL();
-    const response = await fetch(
-      `${API_BASE_URL}/admin/users/search?q=${encodeURIComponent(query)}`,
-      {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
-      },
+    const response = await api.get(
+      `/admin/users/search?keyword=${encodeURIComponent(query)}`
     );
     if (!response.ok) {
       throw new Error('Failed to search users');
@@ -245,11 +191,7 @@ export const adminService = {
    * GET /api/admin/artists
    */
   getAllArtists: async () => {
-    const API_BASE_URL = await getBaseURL();
-    const response = await fetch(`${API_BASE_URL}/admin/artists`, {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
-    });
+    const response = await api.get('/admin/artists');
     if (!response.ok) {
       throw new Error('Failed to fetch artists');
     }
@@ -262,11 +204,9 @@ export const adminService = {
    * body: { artistName, bio }
    */
   createArtist: async (artistName, bio = '') => {
-    const API_BASE_URL = await getBaseURL();
-    const response = await fetch(`${API_BASE_URL}/admin/artists`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ artistName, bio }),
+    const response = await api.post('/admin/artists', {
+      artistName,
+      bio
     });
 
     if (!response.ok) {
@@ -287,11 +227,7 @@ export const adminService = {
    * DELETE /api/admin/artists/{artistId}
    */
   deleteArtist: async (artistId) => {
-    const API_BASE_URL = await getBaseURL();
-    const response = await fetch(`${API_BASE_URL}/admin/artists/${artistId}`, {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-    });
+    const response = await api.delete(`/admin/artists/${artistId}`);
 
     if (!response.ok) {
       let errorMessage = 'Failed to delete artist';
@@ -310,11 +246,7 @@ export const adminService = {
   // --- Artist (dropdown) & Song Management ---
 
   getArtistsForDropdown: async () => {
-    const API_BASE_URL = await getBaseURL();
-    const response = await fetch(`${API_BASE_URL}/admin/songs/artists`, {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
-    });
+    const response = await api.get('/admin/songs/artists');
     if (!response.ok) {
       throw new Error('Failed to fetch artists');
     }
@@ -323,7 +255,7 @@ export const adminService = {
   },
 
   uploadSong: async (data) => {
-    const API_BASE_URL = await getBaseURL();
+    const baseUrl = await api.getURL();
     const formData = new FormData();
     formData.append('audioFile', data.audioFile);
     formData.append('title', data.title);
@@ -332,7 +264,7 @@ export const adminService = {
     formData.append('releaseYear', String(data.releaseYear));
     formData.append('duration', String(data.duration));
 
-    const response = await fetch(`${API_BASE_URL}/admin/songs/upload`, {
+    const response = await fetch(`${baseUrl}/admin/songs/upload`, {
       method: 'POST',
       body: formData,
     });
@@ -353,11 +285,7 @@ export const adminService = {
   },
 
   deleteSong: async (songId) => {
-    const API_BASE_URL = await getBaseURL();
-    const response = await fetch(`${API_BASE_URL}/admin/songs/${songId}`, {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-    });
+    const response = await api.delete(`/admin/songs/${songId}`);
 
     if (!response.ok) {
       let errorMessage = 'Failed to delete song';
