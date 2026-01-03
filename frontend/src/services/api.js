@@ -2,7 +2,7 @@
 
 const API_URLS = [
   'http://localhost:8080/api',
-  'https://melodia-backend-production.up.railway.app/api'
+  'http://melodia-backend-production-0ad4.up.railway.app/api'
 ];
 
 let API_URL = null;

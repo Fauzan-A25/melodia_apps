@@ -43,6 +43,7 @@ Aplikasi ini dikembangkan dengan menerapkan prinsip **Object-Oriented Programmin
 ## 🛠️ Tech Stack & Arsitektur
 
 ### Frontend
+
 - **Framework**: React 18.x
 - **Build Tool**: Vite
 - **Routing**: React Router DOM
@@ -52,6 +53,7 @@ Aplikasi ini dikembangkan dengan menerapkan prinsip **Object-Oriented Programmin
 - **Deployment**: GitHub Pages
 
 ### Backend
+
 - **Framework**: Spring Boot 3.x (Java)
 - **Security**: Spring Security + JWT Authentication
 - **ORM**: Spring Data JPA
@@ -59,6 +61,7 @@ Aplikasi ini dikembangkan dengan menerapkan prinsip **Object-Oriented Programmin
 - **Deployment**: Railway
 
 ### Database
+
 - **RDBMS**: PostgreSQL 15
 - **Cloud Provider**: Supabase
 - **Local Dev**: Docker (optional)
@@ -178,6 +181,7 @@ mvn spring-boot:run
 ```
 
 **Environment Variables (Backend)**:
+
 ```
 
 spring.datasource.url=jdbc:postgresql://your-supabase-url:5432/melodia
@@ -237,6 +241,7 @@ docker-compose up -d
 ## 🚀 Deployment
 
 ### Frontend (GitHub Pages)
+
 ```
 
 cd frontend
@@ -246,6 +251,7 @@ npm run deploy
 ```
 
 ### Backend (Railway)
+
 1. Push code ke GitHub
 2. Connect repository di Railway dashboard
 3. Set environment variables
@@ -257,11 +263,11 @@ npm run deploy
 
 Proyek ini dikembangkan sebagai tugas mata kuliah **Object-Oriented Programming**.
 
-| Role | Responsibility |
-|------|----------------|
-| Backend Developer | Spring Boot API, Database design, Security |
-| Frontend Developer | React UI/UX, State management, Integration |
-| Full-Stack Developer | End-to-end features, Testing, Deployment |
+| Role                 | Responsibility                             |
+| -------------------- | ------------------------------------------ |
+| Backend Developer    | Spring Boot API, Database design, Security |
+| Frontend Developer   | React UI/UX, State management, Integration |
+| Full-Stack Developer | End-to-end features, Testing, Deployment   |
 
 ---
 
