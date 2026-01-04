@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
@@ -63,6 +64,31 @@ public class AdminArtistController {
             logger.warn("Artist with name '{}' already exists", request.getArtistName());
             return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body(ApiResponse.error(e.getMessage()));
+        }
+    }
+
+    /**
+     * Search artists by keyword (name or bio)
+     * GET /api/admin/artists/search?keyword={keyword}
+     */
+    @GetMapping("/search")
+    public ResponseEntity<ApiResponse<List<Artist>>> searchArtists(@RequestParam String keyword) {
+        logger.info("Admin searching artists with keyword: {}", keyword);
+        
+        try {
+            if (keyword == null || keyword.trim().isEmpty()) {
+                logger.warn("Search keyword is empty");
+                return ResponseEntity.badRequest()
+                        .body(ApiResponse.error("Search keyword cannot be empty"));
+            }
+            
+            List<Artist> artists = artistService.searchArtistsByName(keyword);
+            logger.info("✅ Found {} artists", artists.size());
+            return ResponseEntity.ok(ApiResponse.success("Artists searched successfully", artists));
+        } catch (Exception e) {
+            logger.error("❌ Error searching artists: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error("Failed to search artists"));
         }
     }
 

@@ -2,6 +2,7 @@ package melodia.model.service.music;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -159,6 +160,34 @@ public class AlbumService {
             return List.of();
         }
         return albumRepository.findByTitleContainingIgnoreCase(title.trim());
+    }
+
+    /**
+     * Search album by title OR artist name (comprehensive search)
+     * Digunakan untuk general search dari user
+     */
+    @Transactional(readOnly = true)
+    public List<Album> searchByTitleOrArtist(String keyword) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return List.of();
+        }
+        
+        String trimmedKeyword = keyword.trim();
+        
+        // Search by title
+        List<Album> albumsByTitle = albumRepository.findByTitleContainingIgnoreCase(trimmedKeyword);
+        
+        // Search by artist name
+        List<Album> albumsByArtist = albumRepository.findAll().stream()
+            .filter(album -> album.getArtist() != null && 
+                   album.getArtist().getArtistName() != null &&
+                   album.getArtist().getArtistName().toLowerCase().contains(trimmedKeyword.toLowerCase()))
+            .toList();
+        
+        // Combine results and remove duplicates
+        return Stream.concat(albumsByTitle.stream(), albumsByArtist.stream())
+            .distinct()
+            .toList();
     }
 
     @Transactional(readOnly = true)

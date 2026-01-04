@@ -226,13 +226,19 @@ public class AlbumController {
      * GET /api/albums/search?title={query}
      */
     @GetMapping("/search")
-    public ResponseEntity<ApiResponse<?>> searchAlbums(@RequestParam String title) {
+    public ResponseEntity<ApiResponse<?>> searchAlbums(@RequestParam(value = "title", required = false) String title, 
+                                                        @RequestParam(value = "query", required = false) String query) {
         try {
-            if (title == null || title.trim().isEmpty()) {
+            // Accept both 'title' and 'query' parameters for flexibility
+            String searchTerm = (title != null && !title.trim().isEmpty()) ? title : query;
+            
+            if (searchTerm == null || searchTerm.trim().isEmpty()) {
                 return ResponseEntity.badRequest()
                     .body(ApiResponse.error("Search query cannot be empty"));
             }
-            List<Album> albums = albumService.searchByTitle(title);
+            
+            // Use new method that searches by both title AND artist name
+            List<Album> albums = albumService.searchByTitleOrArtist(searchTerm);
             
             // ✅ Mapping search results
             List<Map<String, Object>> albumList = albums.stream()
