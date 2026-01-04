@@ -99,6 +99,33 @@ public class AlbumService {
     }
 
     /**
+     * Update album dengan genres (lengkap)
+     */
+    @Transactional
+    public Album updateAlbumWithGenres(String albumId, String newTitle, Integer newReleaseYear, List<String> genreNames) {
+        Album album = getAlbumById(albumId);
+
+        if (newTitle != null && !newTitle.trim().isEmpty()) {
+            album.setTitle(newTitle);
+        }
+
+        if (newReleaseYear != null) {
+            album.setReleaseYear(newReleaseYear);
+        }
+
+        // Update genres (required: at least 1 genre)
+        if (genreNames != null && !genreNames.isEmpty()) {
+            List<Genre> genres = genreNames.stream()
+                .map(name -> genreRepository.findByName(name)
+                    .orElseThrow(() -> new GenreNotFoundException("Genre tidak ditemukan: " + name)))
+                .collect(Collectors.toList());
+            album.setGenres(genres);
+        }
+
+        return albumRepository.save(album);
+    }
+
+    /**
      * Tambah lagu ke album
      */
     @Transactional

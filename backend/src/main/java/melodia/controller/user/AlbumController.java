@@ -345,6 +345,11 @@ public class AlbumController {
                 return ResponseEntity.badRequest()
                     .body(ApiResponse.error("Invalid release year"));
             }
+            // ✅ Require at least 1 genre
+            if (genreNames == null || genreNames.isEmpty()) {
+                return ResponseEntity.badRequest()
+                    .body(ApiResponse.error("At least 1 genre is required"));
+            }
 
             Album album = albumService.createAlbum(title, artistId, releaseYear, genreNames);
             
@@ -368,26 +373,37 @@ public class AlbumController {
 
     /**
      * PUT update album
-     * PUT /api/albums/{albumId}?title={newTitle}&releaseYear={newYear}
+     * PUT /api/albums/{albumId}?title={newTitle}&releaseYear={newYear}&genreNames={genres}
      */
     @PutMapping("/{albumId}")
     public ResponseEntity<?> updateAlbum(
             @PathVariable String albumId,
             @RequestParam(required = false) String title,
-            @RequestParam(required = false) Integer releaseYear) {
+            @RequestParam(required = false) Integer releaseYear,
+            @RequestParam(required = false) List<String> genreNames) {
         try {
             // Validation
-            if ((title == null || title.trim().isEmpty()) && releaseYear == null) {
+            if ((title == null || title.trim().isEmpty()) && releaseYear == null && 
+                (genreNames == null || genreNames.isEmpty())) {
                 return ResponseEntity.badRequest()
-                    .body(Map.of("message", "At least one field (title or releaseYear) must be provided"));
+                    .body(Map.of("message", "At least one field must be provided"));
             }
 
-            Album updatedAlbum = albumService.updateAlbum(albumId, title, releaseYear);
+            // Validate genres if provided
+            if (genreNames != null && !genreNames.isEmpty()) {
+                if (genreNames.isEmpty()) {
+                    return ResponseEntity.badRequest()
+                        .body(Map.of("message", "At least 1 genre is required"));
+                }
+            }
+
+            Album updatedAlbum = albumService.updateAlbumWithGenres(albumId, title, releaseYear, genreNames);
             
             Map<String, Object> response = new HashMap<>();
             response.put("message", "Album updated successfully");
             response.put("albumId", updatedAlbum.getAlbumId());
             response.put("title", updatedAlbum.getTitle());
+            response.put("releaseYear", updatedAlbum.getReleaseYear());
             
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {

@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -203,6 +204,84 @@ public class AdminSongController {
             logger.error("Error deleting song: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiResponse.error("Failed to delete song: " + e.getMessage()));
+        }
+    }
+
+    /**
+     * Admin update song (title, genres, release year)
+     * PUT /api/admin/songs/{songId}?title={title}&releaseYear={year}&genreIds={ids}
+     */
+    @PutMapping("/{songId}")
+    public ResponseEntity<ApiResponse<?>> updateSong(
+            @PathVariable String songId,
+            @RequestParam(required = false) String title,
+            @RequestParam(required = false) Integer releaseYear,
+            @RequestParam(required = false) String genreIdsJson) {
+
+        try {
+            logger.info("Admin updating song: {}", songId);
+
+            // Validation
+            if ((title == null || title.trim().isEmpty()) && 
+                releaseYear == null && 
+                (genreIdsJson == null || genreIdsJson.isBlank())) {
+                return ResponseEntity.badRequest()
+                        .body(ApiResponse.error("At least one field must be provided"));
+            }
+
+            Song song = songRepository.findById(songId)
+                    .orElseThrow(() -> new RuntimeException("Song not found: " + songId));
+
+            // Update title if provided
+            if (title != null && !title.trim().isEmpty()) {
+                song.setTitle(title.trim());
+            }
+
+            // Update release year if provided
+            if (releaseYear != null) {
+                song.setReleaseYear(releaseYear);
+            }
+
+            // Update genres if provided
+            if (genreIdsJson != null && !genreIdsJson.isBlank()) {
+                String trimmed = genreIdsJson.trim();
+                if (trimmed.startsWith("[")) trimmed = trimmed.substring(1);
+                if (trimmed.endsWith("]")) trimmed = trimmed.substring(0, trimmed.length() - 1);
+
+                String[] idArray = trimmed.isBlank()
+                        ? new String[0]
+                        : trimmed.split("\\s*,\\s*");
+
+                if (idArray.length > 0) {
+                    List<Genre> genres = new ArrayList<>();
+                    for (String rawId : idArray) {
+                        String genreId = rawId.replace("\"", "").trim();
+                        if (genreId.isEmpty()) continue;
+
+                        Genre genre = genreRepository.findById(genreId)
+                                .orElseThrow(() -> new RuntimeException("Genre not found: " + genreId));
+                        genres.add(genre);
+                    }
+
+                    if (!genres.isEmpty()) {
+                        song.setGenres(genres);
+                    }
+                }
+            }
+
+            Song updatedSong = songRepository.save(song);
+            logger.info("Song updated successfully: {}", songId);
+
+            return ResponseEntity.ok(ApiResponse.success("Song updated successfully", updatedSong));
+
+        } catch (RuntimeException e) {
+            logger.error("Error updating song: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(ApiResponse.error(e.getMessage()));
+        } catch (Exception e) {
+            logger.error("Error updating song: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error("Failed to update song: " + e.getMessage()));
         }
     }
 

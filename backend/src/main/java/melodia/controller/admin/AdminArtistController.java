@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -111,6 +112,35 @@ public class AdminArtistController {
         } catch (InvalidOperationException e) {
             logger.warn("Cannot delete artist {}: {}", artistId, e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(ApiResponse.error(e.getMessage()));
+        }
+    }
+
+    /**
+     * Update artist metadata (nama dan bio).
+     * PUT /api/admin/artists/{artistId}
+     */
+    @PutMapping("/{artistId}")
+    public ResponseEntity<ApiResponse<?>> updateArtist(
+            @PathVariable String artistId,
+            @Valid @RequestBody RegisterArtistRequest request) {
+        logger.info("Admin updating artist: {}", artistId);
+
+        try {
+            Artist updated = artistService.updateArtist(
+                    artistId,
+                    request.getArtistName(),
+                    request.getBio()
+            );
+            logger.info("✅ Artist updated successfully: {}", artistId);
+            return ResponseEntity.ok(ApiResponse.success("Artist updated successfully", updated));
+        } catch (ArtistNotFoundException e) {
+            logger.warn("Artist not found: {}", artistId);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(ApiResponse.error(e.getMessage()));
+        } catch (ArtistAlreadyExistsException e) {
+            logger.warn("Cannot update artist {}: {}", artistId, e.getMessage());
+            return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body(ApiResponse.error(e.getMessage()));
         }
     }
