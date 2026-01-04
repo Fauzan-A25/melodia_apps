@@ -115,6 +115,19 @@
   padding-bottom: 40px;
 }
 
+/* ========== RESULTS SECTION (untuk separate albums & songs) ========== */
+.resultsSection {
+  padding: 0 32px 32px;
+}
+
+.sectionTitle {
+  font-size: 28px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 20px 0;
+  letter-spacing: -0.01em;
+}
+
 /* ========== RESPONSIVE GRID ========== */
 @media (min-width: 1600px) {
   .resultsGrid {

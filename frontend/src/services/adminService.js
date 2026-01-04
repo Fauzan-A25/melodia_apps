@@ -51,7 +51,7 @@ export const adminService = {
         const error = await response.json();
         errorMessage = error.error || errorMessage;
       } catch {
-        console.log('Error parsing create genre response');
+        // Error parsing response
       }
       throw new Error(errorMessage);
     }
@@ -79,7 +79,7 @@ export const adminService = {
         const error = await response.json();
         errorMessage = error.error || errorMessage;
       } catch {
-        console.log('Error parsing update genre response');
+        // Error parsing response
       }
       throw new Error(errorMessage);
     }
@@ -96,7 +96,7 @@ export const adminService = {
         const error = await response.json();
         errorMessage = error.error || errorMessage;
       } catch {
-        console.log('Error parsing delete genre response');
+        // Error parsing response
       }
       throw new Error(errorMessage);
     }
@@ -146,7 +146,7 @@ export const adminService = {
         const error = await response.json();
         errorMessage = error.error || errorMessage;
       } catch {
-        console.log('Error parsing ban user response');
+        // Error parsing response
       }
       throw new Error(errorMessage);
     }
@@ -166,7 +166,7 @@ export const adminService = {
         const error = await response.json();
         errorMessage = error.error || errorMessage;
       } catch {
-        console.log('Error parsing unban user response');
+        // Error parsing response
       }
       throw new Error(errorMessage);
     }
@@ -183,7 +183,7 @@ export const adminService = {
         const error = await response.json();
         errorMessage = error.error || errorMessage;
       } catch {
-        console.log('Error parsing delete user response');
+        // Error parsing response
       }
       throw new Error(errorMessage);
     }
@@ -231,7 +231,7 @@ export const adminService = {
         const error = await response.json();
         errorMessage = error.message || error.error || errorMessage;
       } catch {
-        console.log('Error parsing create artist response');
+        // Error parsing response
       }
       throw new Error(errorMessage);
     }
@@ -251,10 +251,34 @@ export const adminService = {
         const error = await response.json();
         errorMessage = error.message || error.error || errorMessage;
       } catch {
-        console.log('Error parsing delete artist response');
+        // Error parsing response
       }
       throw new Error(errorMessage);
     }
+    const responseBody = await response.json();
+    return responseBody.data || responseBody;
+  },
+
+  /**
+   * Search artists by keyword (name or bio)
+   * GET /api/admin/artists/search?keyword={keyword}
+   */
+  searchArtists: async (keyword) => {
+    const response = await api.get(
+      `/admin/artists/search?keyword=${encodeURIComponent(keyword)}`
+    );
+
+    if (!response.ok) {
+      let errorMessage = 'Failed to search artists';
+      try {
+        const error = await response.json();
+        errorMessage = error.message || error.error || errorMessage;
+      } catch {
+        // Error parsing response
+      }
+      throw new Error(errorMessage);
+    }
+
     const responseBody = await response.json();
     return responseBody.data || responseBody;
   },
@@ -296,7 +320,7 @@ export const adminService = {
         const error = await response.json();
         errorMessage = error.error || error.message || errorMessage;
       } catch {
-        console.log('Error parsing upload song response');
+        // Error parsing response
       }
       throw new Error(errorMessage);
     }
@@ -314,7 +338,7 @@ export const adminService = {
         const error = await response.json();
         errorMessage = error.error || error.message || errorMessage;
       } catch {
-        console.log('Error parsing delete song response');
+        // Error parsing response
       }
       throw new Error(errorMessage);
     }

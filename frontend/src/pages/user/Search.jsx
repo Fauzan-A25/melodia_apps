@@ -1,19 +1,22 @@
 import { useEffect, useState, useMemo, useCallback } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import styles from './Search.module.css';
 import { Loader, Search as SearchIcon } from 'lucide-react';
 import { musicService } from '../../services/musicService';
 import { useMusic } from '../../context/MusicContext';
 import SongCard from '../../components/Music/SongCard';
+import AlbumCard from '../../components/Music/AlbumCard';
 
 const Search = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const queryFromUrl = searchParams.get('q') || '';
+  const navigate = useNavigate();
 
   const { playSong, currentSong, togglePlay } = useMusic();
 
   const [searchQuery, setSearchQuery] = useState(queryFromUrl);
   const [searchResults, setSearchResults] = useState([]);
+  const [albumResults, setAlbumResults] = useState([]);
   const [latestSongs, setLatestSongs] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -78,6 +81,7 @@ const Search = () => {
   const performSearch = async (searchQuery) => {
     if (!searchQuery || searchQuery.trim() === '') {
       setSearchResults([]);
+      setAlbumResults([]);
       return;
     }
 
@@ -85,12 +89,31 @@ const Search = () => {
       setLoading(true);
       setError('');
 
-      const results = await musicService.searchSongs(searchQuery);
-      setSearchResults(results || []);
+      // Search both songs and albums in parallel
+      let songResults = [];
+      let albumResultsData = [];
+
+      try {
+        const songRes = await musicService.searchSongs(searchQuery);
+        songResults = songRes || [];
+      } catch (err) {
+        console.error('Error searching songs:', err.message || err);
+      }
+
+      try {
+        const albumRes = await musicService.searchAlbums(searchQuery);
+        albumResultsData = albumRes || [];
+      } catch (err) {
+        console.error('Error searching albums:', err.message || err);
+      }
+
+      setSearchResults(songResults);
+      setAlbumResults(albumResultsData);
     } catch (err) {
-      console.error('Error searching songs:', err);
-      setError('Search failed');
+      console.error('Unexpected error during search:', err);
+      setError('Search failed: ' + (err.message || 'Unknown error'));
       setSearchResults([]);
+      setAlbumResults([]);
     } finally {
       setLoading(false);
     }
@@ -145,9 +168,12 @@ const Search = () => {
 
   // ✅ Logic baru
   const isSearching = queryFromUrl && queryFromUrl.trim() !== '';
-  const hasSearchResults = isSearching && searchResults.length > 0;
-  const noSearchResults = isSearching && searchResults.length === 0;
+  const hasSearchResults = isSearching && (searchResults.length > 0 || albumResults.length > 0);
+  const noSearchResults = isSearching && searchResults.length === 0 && albumResults.length === 0;
   const showLatestSongs = !isSearching && latestSongs.length > 0;
+
+  const hasSongResults = isSearching && searchResults.length > 0;
+  const hasAlbumResults = isSearching && albumResults.length > 0;
 
   return (
     <div className={styles.container}>
@@ -180,7 +206,7 @@ const Search = () => {
           </h2>
           <p className={styles.subtitle}>
             {isSearching
-              ? 'do you find what you looking for?'
+              ? `Found ${searchResults.length} songs and ${albumResults.length} albums`
               : 'Discover the newest music additions'}
           </p>
         </header>
@@ -223,24 +249,76 @@ const Search = () => {
 
       {/* Results Grid - tampil saat ada search results ATAU latest songs */}
       {!loading && (hasSearchResults || showLatestSongs) && (
-        <div className={styles.resultsGrid}>
-          {playableResults.map((track) => (
-            <SongCard
-              key={track.songId || track.id}
-              track={{
-                id: track.songId || track.id,
-                songId: track.songId || track.id,
-                title: track.title,
-                artist: track.artist,
-                cover: track.cover || track.coverEmoji || '🎵',
-                coverEmoji: track.coverEmoji || '🎵',
-                duration: track.duration,
-                audioUrl: track.audioUrl,
-              }}
-              onPlay={() => handlePlay(track)}
-            />
-          ))}
-        </div>
+        <>
+          {/* Albums Section */}
+          {hasAlbumResults && (
+            <div className={styles.resultsSection}>
+              <h3 className={styles.sectionTitle}>Albums ({albumResults.length})</h3>
+              <div className={styles.resultsGrid}>
+                {albumResults.map((album) => (
+                  <AlbumCard
+                    key={album.albumId || album.id}
+                    album={{
+                      albumId: album.albumId || album.id,
+                      title: album.title,
+                      releaseYear: album.releaseYear,
+                      coverEmoji: album.coverEmoji || '🎵',
+                      artistName: album.artistName || 'Unknown Artist',
+                    }}
+                    onViewAlbum={() => navigate(`/album/${album.albumId || album.id}`)}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Songs Section */}
+          {hasSongResults && (
+            <div className={styles.resultsSection}>
+              <h3 className={styles.sectionTitle}>Songs</h3>
+              <div className={styles.resultsGrid}>
+                {playableResults.map((track) => (
+                  <SongCard
+                    key={track.songId || track.id}
+                    track={{
+                      id: track.songId || track.id,
+                      songId: track.songId || track.id,
+                      title: track.title,
+                      artist: track.artist,
+                      cover: track.cover || track.coverEmoji || '🎵',
+                      coverEmoji: track.coverEmoji || '🎵',
+                      duration: track.duration,
+                      audioUrl: track.audioUrl,
+                    }}
+                    onPlay={() => handlePlay(track)}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Latest Songs when no search */}
+          {!isSearching && latestSongs.length > 0 && (
+            <div className={styles.resultsGrid}>
+              {playableResults.map((track) => (
+                <SongCard
+                  key={track.songId || track.id}
+                  track={{
+                    id: track.songId || track.id,
+                    songId: track.songId || track.id,
+                    title: track.title,
+                    artist: track.artist,
+                    cover: track.cover || track.coverEmoji || '🎵',
+                    coverEmoji: track.coverEmoji || '🎵',
+                    duration: track.duration,
+                    audioUrl: track.audioUrl,
+                  }}
+                  onPlay={() => handlePlay(track)}
+                />
+              ))}
+            </div>
+          )}
+        </>
       )}
     </div>
   );

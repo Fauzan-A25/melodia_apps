@@ -84,7 +84,7 @@ const Home = () => {
               : (song.artist || song.artistName || 'Unknown Artist')
           }));
           
-          console.log('✅ Normalized songs:', normalizedSongs);
+
           setRecentlyPlayed(normalizedSongs);
         } catch (e) {
           console.error('Failed to load recently played:', e);
@@ -113,11 +113,9 @@ const Home = () => {
 
   const handlePlay = useCallback((track) => {
     if (!track || !track.id) {
-      console.error('Invalid track:', track);
       return;
     }
     
-    console.log('🎵 Playing:', track.title);
     playSong(track, recentlyPlayed, recentlyPlayed.findIndex(t => t.id === track.id));
   }, [playSong, recentlyPlayed]);
 
@@ -201,7 +199,7 @@ const Home = () => {
       {/* Albums Grid */}
       <section className={styles.section}>
         <div className={styles.sectionHeader}>
-          <h2 className={styles.sectionTitle}>Your Music Collection</h2>
+          <h2 className={styles.sectionTitle}>Album Collection</h2>
         </div>
 
         {albumsLoading ? (

@@ -55,7 +55,6 @@ const PlaylistDetail = () => {
 
       // Songs - with data normalization
       let songsData = await musicService.getPlaylistSongs(playlistId);
-      console.log('Raw songs data from API:', songsData);
       
       // Normalize all songs
       if (Array.isArray(songsData)) {
@@ -63,9 +62,6 @@ const PlaylistDetail = () => {
       }
       
       setSongs(songsData || []);
-
-      console.log('Playlist loaded:', playlistData);
-      console.log('Songs after normalization:', songsData);
     } catch (err) {
       console.error('Error fetching data:', err);
       setError('Failed to load playlist');
@@ -77,18 +73,6 @@ const PlaylistDetail = () => {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
-
-  // ✅ DEBUG LOG - Hapus setelah fix
-  useEffect(() => {
-    if (playlist && userId) {
-      console.log('=== PLAYLIST DETAIL DEBUG ===');
-      console.log('userId (localStorage):', userId);
-      console.log('playlist:', playlist);
-      console.log('playlist.owner:', playlist.owner);
-      console.log('owner.userId:', playlist.owner?.userId);
-      console.log('owner.accountId:', playlist.owner?.accountId);
-    }
-  }, [playlist, userId]);
 
   // ✅ FIXED: isOwner check - support semua format ID
   const isOwner = playlist && userId && (

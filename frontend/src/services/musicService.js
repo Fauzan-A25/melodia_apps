@@ -445,7 +445,7 @@ export const musicService = {
    */
   searchAlbums: async (query) => {
     const response = await api.get(
-      `/albums/search?title=${encodeURIComponent(query)}`
+      `/albums/search?query=${encodeURIComponent(query)}`
     );
 
     if (!response.ok) {
