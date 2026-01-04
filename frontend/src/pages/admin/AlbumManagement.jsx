@@ -26,6 +26,15 @@ const AlbumManagement = () => {
   });
   const [submitting, setSubmitting] = useState(false);
 
+  // Edit modal states
+  const [editingAlbum, setEditingAlbum] = useState(null);
+  const [editFormData, setEditFormData] = useState({
+    title: '',
+    releaseYear: new Date().getFullYear(),
+    genreNames: [],
+  });
+  const [isEditSubmitting, setIsEditSubmitting] = useState(false);
+
   // Fetch initial data
   const loadData = useCallback(async () => {
     try {
@@ -88,6 +97,12 @@ const AlbumManagement = () => {
       return;
     }
 
+    // ✅ Validate genres required
+    if (!formData.genreNames || formData.genreNames.length === 0) {
+      alert('At least 1 genre is required');
+      return;
+    }
+
     try {
       setSubmitting(true);
       await musicService.createAlbum(
@@ -127,6 +142,67 @@ const AlbumManagement = () => {
     } catch (err) {
       console.error('Error deleting album:', err);
       alert(handleApiError(err) || 'Failed to delete album');
+    }
+  };
+
+  // Open edit modal
+  const openEditModal = (album) => {
+    setEditingAlbum(album);
+    setEditFormData({
+      title: album.title,
+      releaseYear: album.releaseYear,
+      genreNames: album.genreNames || album.genres?.map(g => g.name) || [],
+    });
+  };
+
+  const closeEditModal = () => {
+    setEditingAlbum(null);
+    setEditFormData({
+      title: '',
+      releaseYear: new Date().getFullYear(),
+      genreNames: [],
+    });
+  };
+
+  const handleEditGenreToggle = (genreName) => {
+    setEditFormData((prev) => ({
+      ...prev,
+      genreNames: prev.genreNames.includes(genreName)
+        ? prev.genreNames.filter((g) => g !== genreName)
+        : [...prev.genreNames, genreName],
+    }));
+  };
+
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!editFormData.title.trim()) {
+      alert('Album title is required');
+      return;
+    }
+
+    // ✅ Validate genres required
+    if (!editFormData.genreNames || editFormData.genreNames.length === 0) {
+      alert('At least 1 genre is required');
+      return;
+    }
+
+    setIsEditSubmitting(true);
+    try {
+      await adminService.updateAlbum(
+        editingAlbum.albumId,
+        editFormData.title.trim(),
+        editFormData.releaseYear,
+        editFormData.genreNames
+      );
+      await loadData();
+      closeEditModal();
+      alert('Album updated successfully!');
+    } catch (err) {
+      console.error('Error updating album:', err);
+      alert(handleApiError(err) || 'Failed to update album');
+    } finally {
+      setIsEditSubmitting(false);
     }
   };
 
@@ -311,7 +387,7 @@ const AlbumManagement = () => {
 
         {/* Genre Selection */}
         <div className={styles.formGroup}>
-          <label>Genres (Optional)</label>
+          <label>Genres (Required *)</label>
           <div className={styles.genreGrid}>
             {genres.map((genre) => (
               <label
@@ -395,6 +471,13 @@ const AlbumManagement = () => {
                   </td>
                   <td data-label="Actions">
                     <div className={styles.actionButtons}>
+                      <button
+                        type="button"
+                        className={styles.editBtn}
+                        onClick={() => openEditModal(album)}
+                      >
+                        ✏️ Edit
+                      </button>
                       <button
                         type="button"
                         className={styles.manageSongsBtn}
@@ -510,6 +593,102 @@ const AlbumManagement = () => {
                 )}
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Modal */}
+      {editingAlbum && (
+        <div className={styles.editModalOverlay} onClick={closeEditModal}>
+          <div className={styles.editModal} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.editModalHeader}>
+              <h2>Edit Album</h2>
+              <button
+                type="button"
+                className={styles.editCloseBtn}
+                onClick={closeEditModal}
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleEditSubmit} className={styles.editModalForm}>
+              <div className={styles.editFormGroup}>
+                <label htmlFor="editTitle">Album Title *</label>
+                <input
+                  type="text"
+                  id="editTitle"
+                  value={editFormData.title}
+                  onChange={(e) =>
+                    setEditFormData((prev) => ({
+                      ...prev,
+                      title: e.target.value,
+                    }))
+                  }
+                  placeholder="Album title"
+                  disabled={isEditSubmitting}
+                  required
+                  autoFocus
+                />
+              </div>
+
+              <div className={styles.editFormGroup}>
+                <label htmlFor="editReleaseYear">Release Year *</label>
+                <input
+                  type="number"
+                  id="editReleaseYear"
+                  value={editFormData.releaseYear}
+                  onChange={(e) =>
+                    setEditFormData((prev) => ({
+                      ...prev,
+                      releaseYear: parseInt(e.target.value),
+                    }))
+                  }
+                  min="1900"
+                  max={new Date().getFullYear() + 1}
+                  disabled={isEditSubmitting}
+                  required
+                />
+              </div>
+
+              <div className={styles.editFormGroup}>
+                <label>Genres (Required *)</label>
+                <div className={styles.editGenreGrid}>
+                  {genres.map((genre) => (
+                    <label
+                      key={genre.id || genre.name}
+                      className={styles.editGenreCheckbox}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={editFormData.genreNames.includes(genre.name)}
+                        onChange={() => handleEditGenreToggle(genre.name)}
+                        disabled={isEditSubmitting}
+                      />
+                      <span>{genre.name}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div className={styles.editModalActions}>
+                <button
+                  type="button"
+                  className={styles.editCancelBtn}
+                  onClick={closeEditModal}
+                  disabled={isEditSubmitting}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className={styles.editSaveBtn}
+                  disabled={isEditSubmitting}
+                >
+                  {isEditSubmitting ? 'Saving...' : 'Save Changes'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

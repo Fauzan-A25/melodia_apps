@@ -12,6 +12,12 @@ const ArtistManagement = () => {
   const [bioInput, setBioInput] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Edit modal states
+  const [editingArtist, setEditingArtist] = useState(null);
+  const [editNameInput, setEditNameInput] = useState('');
+  const [editBioInput, setEditBioInput] = useState('');
+  const [isEditSubmitting, setIsEditSubmitting] = useState(false);
+
   useEffect(() => {
     fetchArtists();
   }, []);
@@ -49,6 +55,42 @@ const ArtistManagement = () => {
       setError(handleApiError(err));
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const openEditModal = (artist) => {
+    setEditingArtist(artist);
+    setEditNameInput(artist.artistName);
+    setEditBioInput(artist.bio || '');
+  };
+
+  const closeEditModal = () => {
+    setEditingArtist(null);
+    setEditNameInput('');
+    setEditBioInput('');
+  };
+
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+    if (!editNameInput.trim()) {
+      alert('Artist name is required');
+      return;
+    }
+
+    setIsEditSubmitting(true);
+    try {
+      await adminService.updateArtist(
+        editingArtist.artistId,
+        editNameInput.trim(),
+        editBioInput.trim()
+      );
+      await fetchArtists();
+      closeEditModal();
+    } catch (err) {
+      console.error('Error updating artist:', err);
+      alert(handleApiError(err));
+    } finally {
+      setIsEditSubmitting(false);
     }
   };
 
@@ -155,6 +197,12 @@ const ArtistManagement = () => {
                 </td>
                 <td>
                   <button
+                    className={styles.editBtn}
+                    onClick={() => openEditModal(artist)}
+                  >
+                    ✏️ Edit
+                  </button>
+                  <button
                     className={styles.deleteBtn}
                     onClick={() =>
                       handleDelete(artist.artistId, artist.artistName)
@@ -174,6 +222,63 @@ const ArtistManagement = () => {
           </div>
         )}
       </div>
+
+      {/* Edit Modal */}
+      {editingArtist && (
+        <div className={styles.modalOverlay} onClick={closeEditModal}>
+          <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <h2>Edit Artist</h2>
+              <button className={styles.closeBtn} onClick={closeEditModal}>
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleEditSubmit} className={styles.modalForm}>
+              <div className={styles.formGroup}>
+                <label>Artist Name *</label>
+                <input
+                  type="text"
+                  value={editNameInput}
+                  onChange={(e) => setEditNameInput(e.target.value)}
+                  placeholder="Artist name"
+                  disabled={isEditSubmitting}
+                  autoFocus
+                />
+              </div>
+
+              <div className={styles.formGroup}>
+                <label>Bio (optional)</label>
+                <textarea
+                  value={editBioInput}
+                  onChange={(e) => setEditBioInput(e.target.value)}
+                  placeholder="Artist bio..."
+                  rows={4}
+                  disabled={isEditSubmitting}
+                />
+              </div>
+
+              <div className={styles.modalActions}>
+                <button
+                  type="button"
+                  className={styles.cancelBtn}
+                  onClick={closeEditModal}
+                  disabled={isEditSubmitting}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className={styles.saveBtn}
+                  disabled={isEditSubmitting}
+                >
+                  {isEditSubmitting ? 'Saving...' : 'Save Changes'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

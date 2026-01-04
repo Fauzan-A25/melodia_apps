@@ -240,6 +240,30 @@ export const adminService = {
   },
 
   /**
+   * PUT /api/admin/artists/{artistId}
+   * body: { artistName, bio }
+   */
+  updateArtist: async (artistId, artistName, bio = '') => {
+    const response = await api.put(`/admin/artists/${artistId}`, {
+      artistName,
+      bio
+    });
+
+    if (!response.ok) {
+      let errorMessage = 'Failed to update artist';
+      try {
+        const error = await response.json();
+        errorMessage = error.message || error.error || errorMessage;
+      } catch {
+        // Error parsing response
+      }
+      throw new Error(errorMessage);
+    }
+    const responseBody = await response.json();
+    return responseBody.data || responseBody;
+  },
+
+  /**
    * DELETE /api/admin/artists/{artistId}
    */
   deleteArtist: async (artistId) => {
@@ -343,6 +367,88 @@ export const adminService = {
       throw new Error(errorMessage);
     }
 
+    const responseBody = await response.json();
+    return responseBody.data || responseBody;
+  },
+
+  /**
+   * PUT /api/admin/songs/{songId}
+   * Update song title, release year, and genres
+   */
+  updateSong: async (songId, title, releaseYear, genreIds) => {
+    const baseUrl = await api.getURL();
+    const params = new URLSearchParams();
+
+    if (title && title.trim()) {
+      params.append('title', title.trim());
+    }
+    if (releaseYear) {
+      params.append('releaseYear', String(releaseYear));
+    }
+    if (genreIds && genreIds.length > 0) {
+      params.append('genreIdsJson', JSON.stringify(genreIds));
+    }
+
+    const response = await fetch(
+      `${baseUrl}/admin/songs/${songId}?${params.toString()}`,
+      {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
+
+    if (!response.ok) {
+      let errorMessage = 'Failed to update song';
+      try {
+        const error = await response.json();
+        errorMessage = error.message || error.error || errorMessage;
+      } catch {
+        // Error parsing response
+      }
+      throw new Error(errorMessage);
+    }
+    const responseBody = await response.json();
+    return responseBody.data || responseBody;
+  },
+
+  // --- Album Management ---
+
+  /**
+   * PUT /api/albums/{albumId}
+   * body: { title, releaseYear, genreNames }
+   */
+  updateAlbum: async (albumId, title, releaseYear, genreNames) => {
+    const baseUrl = await api.getURL();
+    const params = new URLSearchParams();
+    
+    if (title && title.trim()) {
+      params.append('title', title.trim());
+    }
+    if (releaseYear) {
+      params.append('releaseYear', String(releaseYear));
+    }
+    if (genreNames && genreNames.length > 0) {
+      genreNames.forEach(genre => params.append('genreNames', genre));
+    }
+
+    const response = await fetch(
+      `${baseUrl}/albums/${albumId}?${params.toString()}`,
+      {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
+
+    if (!response.ok) {
+      let errorMessage = 'Failed to update album';
+      try {
+        const error = await response.json();
+        errorMessage = error.message || error.error || errorMessage;
+      } catch {
+        // Error parsing response
+      }
+      throw new Error(errorMessage);
+    }
     const responseBody = await response.json();
     return responseBody.data || responseBody;
   },
