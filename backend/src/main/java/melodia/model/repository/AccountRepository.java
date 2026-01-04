@@ -1,14 +1,11 @@
 package melodia.model.repository;
 
-import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
-import org.springframework.stereotype.Repository;  // ✅ TAMBAHKAN
+import org.springframework.stereotype.Repository;
 
-import melodia.model.entity.Account;  // ✅ TAMBAHKAN
+import melodia.model.entity.Account;
 
 @Repository
 public interface AccountRepository extends JpaRepository<Account, String> {
@@ -24,7 +21,4 @@ public interface AccountRepository extends JpaRepository<Account, String> {
 
     // Cek apakah email sudah ada
     boolean existsByEmail(String email);
-
-    @Query("SELECT a FROM Account a WHERE TYPE(a) = :type")
-    List<Account> findByAccountType(@Param("type") Class<?> type);
 }

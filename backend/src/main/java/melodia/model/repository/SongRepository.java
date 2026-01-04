@@ -22,9 +22,6 @@ public interface SongRepository extends JpaRepository<Song, String> {
     // Cari lagu berdasarkan tahun rilis
     List<Song> findByReleaseYear(int releaseYear);
 
-    // Cari lagu berdasarkan filePath (jika fitur file management)
-    Song findByFilePath(String filePath);
-
     // Cek duplikasi judul
     boolean existsByTitle(String title);
 }
